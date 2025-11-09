@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model categorias_globales {
+  id_categoria_g    Int                 @id @default(autoincrement())
+  nombre            String              @unique @db.VarChar(100)
+  descripcion       String?
+  negocio_categoria negocio_categoria[]
+}
+
+model categorias_producto {
+  id_categoria Int         @id @default(autoincrement())
+  id_negocio   Int
+  nombre       String      @db.VarChar(100)
+  descripcion  String?
+  orden        Int?        @default(0) @db.SmallInt
+  activo       Boolean?    @default(true)
+  negocios     negocios    @relation(fields: [id_negocio], references: [id_negocio], onDelete: Cascade, onUpdate: NoAction, map: "fk_negocio_categorias")
+  productos    productos[]
+
+  @@index([id_negocio], map: "idx_categorias_producto_id_negocio")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model detalle_pedido {
+  id_pedido       Int
+  id_producto     Int
+  cantidad        Int
+  precio_unitario Decimal   @db.Decimal(10, 2)
+  comentarios     String?
+  pedidos         pedidos   @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: NoAction, map: "fk_pedido")
+  productos       productos @relation(fields: [id_producto], references: [id_producto], onUpdate: NoAction, map: "fk_producto")
+
+  @@id([id_pedido, id_producto])
+}
+
+model negocio_categoria {
+  id_negocio          Int
+  id_categoria_g      Int
+  categorias_globales categorias_globales @relation(fields: [id_categoria_g], references: [id_categoria_g], onDelete: Cascade, onUpdate: NoAction, map: "fk_categoria_global")
+  negocios            negocios            @relation(fields: [id_negocio], references: [id_negocio], onDelete: Cascade, onUpdate: NoAction, map: "fk_negocio")
+
+  @@id([id_negocio, id_categoria_g])
+}
+
+model negocios {
+  id_negocio          Int                   @id @default(autoincrement())
+  nombre              String                @db.VarChar(100)
+  slug                String                @unique @db.VarChar(50)
+  calle               String?               @db.VarChar(100)
+  num_ext             String?               @db.VarChar(10)
+  num_int             String?               @db.VarChar(10)
+  colonia             String?               @db.VarChar(100)
+  cp                  String?               @db.VarChar(10)
+  municipio           String?               @db.VarChar(100)
+  estado              String?               @db.VarChar(100)
+  telefono            String?               @db.VarChar(20)
+  horario             Json?
+  descripcion         String?
+  url_logo            String?               @db.VarChar(255)
+  galeria_fotos       Json?
+  url_redes_sociales  Json?
+  latitud             Decimal?              @db.Decimal(10, 8)
+  longitud            Decimal?              @db.Decimal(11, 8)
+  activo              Boolean?              @default(true)
+  categorias_producto categorias_producto[]
+  negocio_categoria   negocio_categoria[]
+  pedidos             pedidos[]
+  productos           productos[]
+  usuarios            usuarios[]
+  vacantes            vacantes[]
+
+  @@index([slug], map: "idx_negocios_slug")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model pedidos {
+  id_pedido      Int               @id @default(autoincrement())
+  id_usuario     Int
+  id_negocio     Int
+  fecha_hora     DateTime?         @default(now()) @db.Timestamptz(6)
+  comentarios    String?
+  metodo_pago    metodo_pago_tipo?
+  estado         estado_pedido     @default(Recibido)
+  total          Decimal           @db.Decimal(10, 2)
+  detalle_pedido detalle_pedido[]
+  negocios       negocios          @relation(fields: [id_negocio], references: [id_negocio], onDelete: Cascade, onUpdate: NoAction, map: "fk_negocio_pedidos")
+  usuarios       usuarios          @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario")
+
+  @@index([id_negocio], map: "idx_pedidos_id_negocio")
+  @@index([id_usuario], map: "idx_pedidos_id_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model productos {
+  id_producto         Int                  @id @default(autoincrement())
+  id_negocio          Int
+  id_categoria        Int?
+  nombre              String               @db.VarChar(100)
+  descripcion         String?
+  precio              Decimal              @db.Decimal(10, 2)
+  precio_promo        Decimal?             @db.Decimal(10, 2)
+  promo_activa        Boolean?             @default(false)
+  url_foto            String?              @db.VarChar(255)
+  activo              Boolean?             @default(true)
+  detalle_pedido      detalle_pedido[]
+  categorias_producto categorias_producto? @relation(fields: [id_categoria], references: [id_categoria], onUpdate: NoAction, map: "fk_categoria")
+  negocios            negocios             @relation(fields: [id_negocio], references: [id_negocio], onDelete: Cascade, onUpdate: NoAction, map: "fk_negocio_productos")
+
+  @@index([id_negocio], map: "idx_productos_id_negocio")
+}
+
+model usuarios {
+  id_usuario     Int         @id @default(autoincrement())
+  email          String      @unique @db.VarChar(100)
+  password       String      @db.VarChar(255)
+  rol            rol_usuario
+  nombre         String      @db.VarChar(100)
+  telefono       String?     @db.VarChar(20)
+  id_negocio     Int?
+  fecha_registro DateTime?   @default(now()) @db.Timestamptz(6)
+  activo         Boolean?    @default(true)
+  pedidos        pedidos[]
+  negocios       negocios?   @relation(fields: [id_negocio], references: [id_negocio], onUpdate: NoAction, map: "fk_negocio_dueño")
+
+  @@index([id_negocio], map: "idx_usuarios_id_negocio")
+  @@index([rol], map: "idx_usuarios_rol")
+}
+
+model vacantes {
+  id_vacante        Int       @id @default(autoincrement())
+  id_negocio        Int
+  titulo            String    @db.VarChar(100)
+  descripcion       String
+  puesto            String?   @db.VarChar(100)
+  salario           Decimal?  @db.Decimal(10, 2)
+  fecha_publicacion DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  activo            Boolean?  @default(true)
+  negocios          negocios  @relation(fields: [id_negocio], references: [id_negocio], onDelete: Cascade, onUpdate: NoAction, map: "fk_negocio_vacantes")
+
+  @@index([id_negocio], map: "idx_vacantes_id_negocio")
+}
+
+enum estado_pedido {
+  Recibido
+  En_Preparaci_n     @map("En Preparación")
+  Listo_para_recoger @map("Listo para recoger")
+  Entregado
+  Cancelado
+}
+
+enum metodo_pago_tipo {
+  efectivo
+  tarjeta
+  transferencia
+  decidir_al_recoger
+}
+
+enum rol_usuario {
+  admin
+  gestor
+  cliente
+}
