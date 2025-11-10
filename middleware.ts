@@ -11,7 +11,7 @@ export default withAuth(
     const { pathname } = req.nextUrl;
 
     // --- Definimos nuestras rutas protegidas ---
-    const adminPaths = ["/", "/negocios", "/categorias", "/gestores"];
+    const adminPaths = ["/dashboard", "/categorias", "/gestores"];
     const gestorPaths = ["/productos", "/pedidos", "/vacantes", "/configuracion"];
 
     // 1. Comprueba si es una ruta de Admin
@@ -58,6 +58,8 @@ export const config = {
    * - registro (nuestra futura página de registro)
    */
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|login|registro).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|login|registro|router).*)',
+    "/admin/:path*",
+    "/gestor/:path*",
   ],
 };

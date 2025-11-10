@@ -334,6 +334,21 @@ export const deleteGestorYNegocioInDb = async (
 //  las dejamos como plantilla)
 
 /**
+ * Obtiene UN negocio por su ID.
+ * (Esta es la que faltaba para la página de configuración)
+ */
+export const getNegocioById = async (id: number) => {
+  try {
+    return await prisma.negocios.findUnique({
+      where: { id_negocio: id },
+    });
+  } catch (error) {
+    console.error('Error en getNegocioById:', error);
+    return null;
+  }
+};
+
+/**
  * Obtiene todos los productos de UN negocio específico.
  * @param negocioId - El ID del negocio del cual obtener los productos.
  */
@@ -352,6 +367,26 @@ export const getProductosByNegocioId = async (negocioId: number) => {
         console.error('Error en getProductosByNegocioId:', error);
         return [];
     }
+};
+
+/**
+ * Actualiza genéricamente un negocio por su ID.
+ * (Esta es la que faltaba para la Server Action)
+ */
+export const updateNegocio = async (id: number, data: Prisma.negociosUpdateInput) => {
+  try {
+    return await prisma.negocios.update({
+      where: { id_negocio: id },
+      data: data,
+    });
+  } catch (error) {
+    // La Server Action se encargará de atrapar este error
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new Error("Ese slug ya está en uso por otro negocio.");
+    }
+    console.error('Error en updateNegocio:', error);
+    throw new Error("Error de base de datos al actualizar el negocio.");
+  }
 };
 
 // ... Aquí irán getPedidosByNegocioId, getVacantesByNegocioId, etc. ...

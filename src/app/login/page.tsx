@@ -49,7 +49,7 @@ export default function LoginPage() {
         setIsLoading(false);
       } else {
         // 3. Si todo sale bien, redirigimos al dashboard de admin
-        router.push("/negocios"); 
+        router.push("/router"); 
         router.refresh(); // Refresca la sesión en el servidor
       }
     } catch (error) {

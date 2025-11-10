@@ -12,9 +12,9 @@ import { LogoutButton } from "./LogoutButton";
 // Rutas del Gestor
 const routes = [
   {
-    label: "Configuración",
-    href: "/configuracion",
-    iconName: "Settings",
+    label: "Pedidos",
+    href: "/pedidos",
+    iconName: "ShoppingCart",
   },
   {
     label: "Categorías",
@@ -27,14 +27,14 @@ const routes = [
     iconName: "Package",
   },
   {
-    label: "Pedidos",
-    href: "/pedidos",
-    iconName: "ShoppingCart",
-  },
-  {
     label: "Vacantes",
     href: "/vacantes",
     iconName: "Briefcase",
+  },
+  {
+    label: "Configuración",
+    href: "/configuracion",
+    iconName: "Settings",
   },
 ];
 

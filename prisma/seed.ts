@@ -1,50 +1,88 @@
 // prisma/seed.ts
 import { PrismaClient, rol_usuario } from '@prisma/client';
 import bcrypt from 'bcrypt';
-
-// Importamos nuestro cliente singleton
-// (Asegúrate que la ruta sea correcta desde la raíz)
-import { prisma } from '../src/lib/prisma'; 
+import { prisma } from '../src/lib/prisma'; // Importa tu singleton
 
 async function main() {
   console.log('Iniciando el script de seed...');
-
-  const email = 'admin@test.com';
-  const nombre = 'Admin de Plataforma';
-  const password = 'admin123'; // La contraseña en texto plano
-
-  // 1. Hashear la contraseña
-  const hashedPassword = await bcrypt.hash(password, 12);
-
-  // 2. Borrar al usuario si ya existe
+  
+  // --- 1. CREAR ADMIN ---
+  const adminEmail = 'admin@test.com';
+  const adminPass = 'admin123';
+  
+  // Borrar admin si existe
   try {
-    await prisma.usuarios.delete({
-      where: { email: email },
-    });
+    await prisma.usuarios.delete({ where: { email: adminEmail } });
     console.log('Usuario admin anterior eliminado.');
-  } catch (error) {
-    // Ignora el error si el usuario no existía
-  }
+  } catch (e) { /* Ignora si no existe */ }
 
-  // 3. Crear el nuevo usuario admin
+  // Crear admin
+  const hashedAdminPass = await bcrypt.hash(adminPass, 12);
   const adminUser = await prisma.usuarios.create({
     data: {
-      email: email,
-      nombre: nombre,
-      password: hashedPassword,
-      rol: rol_usuario.admin, // ¡Importante!
+      email: adminEmail,
+      nombre: 'Admin de Plataforma',
+      password: hashedAdminPass,
+      rol: rol_usuario.admin,
       activo: true,
-      // id_negocio se deja como null (es un admin de plataforma)
     },
   });
+  console.log('Usuario Admin creado:', adminUser.email);
+  
+  
+  // --- 2. CREAR GESTOR Y NEGOCIO (¡NUEVO!) ---
+  const gestorEmail = 'gestor@test.com';
+  const gestorPass = 'gestor123';
+  const negocioSlug = 'mi-primer-negocio';
 
-  console.log('¡Usuario Admin creado con éxito!');
-  console.log({
-    id: adminUser.id_usuario,
-    email: adminUser.email,
-    rol: adminUser.rol,
+  // Borrar gestor y negocio si existen para evitar conflictos
+  try {
+    // Borramos el gestor (lo que debería borrar el negocio por la transacción)
+    // O borramos el negocio (lo que debería borrar el gestor por 'onDelete: Cascade')
+    // Para estar seguros, borramos por slug (que es 'unique')
+    const existingNegocio = await prisma.negocios.findUnique({
+      where: { slug: negocioSlug },
+    });
+    if (existingNegocio) {
+      // Usamos la misma lógica transaccional de la app
+      await prisma.$transaction(async (tx) => {
+        await tx.usuarios.deleteMany({ where: { id_negocio: existingNegocio.id_negocio }});
+        await tx.negocios.delete({ where: { id_negocio: existingNegocio.id_negocio }});
+      });
+      console.log('Gestor y negocio anteriores eliminados.');
+    }
+  } catch (e) { /* Ignora si no existe */ }
+
+  // Crear el nuevo negocio y gestor en una transacción
+  const hashedGestorPass = await bcrypt.hash(gestorPass, 12);
+  
+  await prisma.$transaction(async (tx) => {
+    const newNegocio = await tx.negocios.create({
+      data: {
+        nombre: 'Mi Primer Negocio',
+        slug: negocioSlug,
+        activo: true,
+      }
+    });
+
+    const newGestor = await tx.usuarios.create({
+      data: {
+        email: gestorEmail,
+        nombre: 'Gestor de Negocio',
+        password: hashedGestorPass,
+        rol: rol_usuario.gestor,
+        id_negocio: newNegocio.id_negocio, // Ligamos el negocio
+        activo: true,
+      }
+    });
+    console.log('Usuario Gestor creado:', newGestor.email);
+    console.log('Negocio asociado creado:', newNegocio.nombre);
   });
-  console.log('Contraseña: admin123');
+  
+  console.log('--- Resumen de Cuentas ---');
+  console.log(`Admin: ${adminEmail} / (Pass: ${adminPass})`);
+  console.log(`Gestor: ${gestorEmail} / (Pass: ${gestorPass})`);
+
 }
 
 main()
@@ -54,5 +92,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    console.log('Seed terminado. Desconectado de la BD.');
+    console.log('Seed terminado.');
   });

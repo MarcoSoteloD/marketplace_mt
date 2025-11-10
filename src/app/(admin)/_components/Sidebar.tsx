@@ -17,7 +17,7 @@ import { LogoutButton } from "./LogoutButton";
 const routes = [
   {
     label: "Dashboard", // El "botón superior" que pediste
-    href: "/",
+    href: "/dashboard",
     iconName: "LayoutDashboard",
   },
   {
@@ -43,7 +43,7 @@ export async function AdminSidebar() {
         
         {/* Encabezado del Sidebar (¡Como lo pediste!) */}
         <div className="flex h-auto flex-col items-start border-b px-4 py-5 lg:px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold mb-2">
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold mb-2">
             <span className="">Panel Administrativo</span>
           </Link>
           {/* Mensaje de Bienvenida */}
