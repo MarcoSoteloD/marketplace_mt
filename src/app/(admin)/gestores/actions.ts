@@ -4,9 +4,14 @@
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { createGestorYNegocioInDb } from '@/lib/db'; // Importamos la función transaccional
+import { redirect } from 'next/navigation';// Importamos la función transaccional
 import { Prisma } from '@prisma/client';
+import { 
+  createGestorYNegocioInDb,
+  updateGestorInfoInDb,
+  toggleGestorStatusInDb,
+  deleteGestorYNegocioInDb
+} from '@/lib/db';
 
 // 1. Esquema de validación para el formulario combinado
 const GestorYNegocioSchema = z.object({
@@ -56,8 +61,9 @@ export async function createGestorYNegocio(prevState: CreateGestorState, formDat
 
   if (!validatedFields.success) {
     return {
-      errors: validatedFields.error.flatten().fieldErrors as NonNullable<CreateGestorState>["errors"],
+      errors: validatedFields.error.flatten().fieldErrors as NonNullable<UpdateGestorState>["errors"],
       message: "Error de validación. Revisa los campos.",
+      success: false,
     };
   }
 
@@ -109,6 +115,115 @@ export async function createGestorYNegocio(prevState: CreateGestorState, formDat
   }
 
   // 8. Éxito: Refrescar la lista y redirigir
+  revalidatePath('/(admin)/gestores');
+  redirect('/gestores');
+}
+
+//================================================================
+// 2. ACCIÓN DE ACTUALIZAR INFO BÁSICA DEL GESTOR
+//================================================================
+
+const UpdateGestorSchema = z.object({
+  gestorNombre: z.string().min(3, "El nombre es requerido"),
+  gestorEmail: z.string().email("Email inválido"),
+  gestorTelefono: z.string().optional(),
+});
+
+export type UpdateGestorState = {
+  errors?: {
+    gestorNombre?: string[];
+    gestorEmail?: string[];
+    gestorTelefono?: string[];
+    gestorPassword?: string[]; // <-- AÑADE ESTA LÍNEA
+    _form?: string[];
+  };
+  message?: string;
+  success?: boolean;
+} | undefined;
+
+export async function updateGestorInfoAction(
+  gestorId: number,
+  prevState: UpdateGestorState, 
+  formData: FormData
+) {
+  
+  const validatedFields = UpdateGestorSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors as NonNullable<UpdateGestorState>["errors"],
+      message: "Error de validación.",
+      success: false,
+    };
+  }
+
+  const data = validatedFields.data;
+  
+  try {
+    // Preparamos los datos para la BD
+    const gestorData: Prisma.usuariosUpdateInput = {
+      nombre: data.gestorNombre,
+      email: data.gestorEmail,
+      telefono: data.gestorTelefono || null,
+    };
+    
+    // Llamamos a la función de db.ts
+    await updateGestorInfoInDb(gestorId, gestorData);
+
+    revalidatePath('/(admin)/gestores');
+    revalidatePath(`/gestores/editar/${gestorId}`);
+    return { message: "Datos del gestor actualizados.", success: true };
+
+  } catch (error) {
+    return {
+      errors: { _form: [(error as Error).message] },
+      message: "Error al actualizar.",
+      success: false,
+    };
+  }
+}
+
+//================================================================
+// 3. ACCIÓN DE ACTIVAR/DESACTIVAR (Tu idea)
+//================================================================
+
+export async function toggleGestorStatusAction(
+  gestorId: number,
+  negocioId: number,
+  newStatus: boolean
+) {
+  try {
+    await toggleGestorStatusInDb(gestorId, negocioId, newStatus);
+    
+    revalidatePath('/(admin)/gestores');
+    revalidatePath(`/gestores/editar/${gestorId}`);
+
+    return { 
+      message: `Gestor y negocio ${newStatus ? 'activados' : 'desactivados'}.`, 
+      success: true 
+    };
+
+  } catch (error) {
+    return { 
+      message: "Error al cambiar el estado.", 
+      success: false 
+    };
+  }
+}
+
+//================================================================
+// 4. ACCIÓN DE ELIMINAR GESTOR Y NEGOCIO
+//================================================================
+
+export async function deleteGestorYNegocioAction(gestorId: number, negocioId: number) {
+  try {
+    await deleteGestorYNegocioInDb(gestorId, negocioId);
+  } catch (error) {
+    // Si falla, redirige de vuelta con un mensaje
+    return redirect(`/gestores/editar/${gestorId}?error=NoSePudoEliminar`);
+  }
+  
+  // Si tiene éxito, redirige a la lista
   revalidatePath('/(admin)/gestores');
   redirect('/gestores');
 }
