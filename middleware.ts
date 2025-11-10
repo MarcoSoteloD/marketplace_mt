@@ -2,48 +2,62 @@
 
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { rol_usuario } from "@prisma/client"; // Importa tu enum
+import { rol_usuario } from "@prisma/client";
 
 export default withAuth(
-  // `withAuth` decodifica el token y lo pone en `req.nextauth.token`
+  // `withAuth` decodifica el token
   function middleware(req) {
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // Proteger rutas de Admin
-    if (pathname.startsWith("/(admin)")) {
+    // --- Definimos nuestras rutas protegidas ---
+    const adminPaths = ["/", "/negocios", "/categorias", "/gestores"];
+    const gestorPaths = ["/productos", "/pedidos", "/vacantes", "/configuracion"];
+
+    // 1. Comprueba si es una ruta de Admin
+    const esRutaAdmin = adminPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+    if (esRutaAdmin) {
       if (token?.rol !== rol_usuario.admin) {
-        // Redirige si no es admin
-        return new NextResponse("Acceso Denegado", { status: 403 });
+        // Si no es admin, lo sacamos
+        return new NextResponse("Acceso No Autorizado", { status: 403 });
       }
     }
 
-    // Proteger rutas de Gestor
-    if (pathname.startsWith("/(gestor)")) {
+    // 2. Comprueba si es una ruta de Gestor
+    const esRutaGestor = gestorPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+    if (esRutaGestor) {
       if (token?.rol !== rol_usuario.gestor) {
-        // Redirige si no es gestor
-        return new NextResponse("Acceso Denegado", { status: 403 });
+        // Si no es gestor, lo sacamos
+        return new NextResponse("Acceso No Autorizado", { status: 403 });
       }
     }
 
-    // Si todo está bien, continúa
+    // 3. Si pasó ambas pruebas (o no es una ruta protegida), déjalo pasar
     return NextResponse.next();
   },
   {
     callbacks: {
-      // Devuelve true si el usuario está autorizado (logueado)
+      // Devuelve true si el usuario está logueado (tiene un token)
       authorized: ({ token }) => !!token,
     },
     pages: {
-      signIn: "/login", // Página a la que se redirige si 'authorized' es false
+      signIn: "/login", // Página a la que se redirige si no está logueado
     },
   }
 );
 
-// El 'matcher' define QUÉ rutas van a pasar por este middleware
+// El NUEVO matcher (más seguro)
 export const config = {
+  /*
+   * Coincide con todas las rutas excepto las que SÍ son públicas:
+   * - api (rutas de API, incluyendo /api/auth/...)
+   * - _next/static (archivos estáticos)
+   * - _next/image (imágenes)
+   * - favicon.ico
+   * - login (nuestra página de login)
+   * - registro (nuestra futura página de registro)
+   */
   matcher: [
-    "/(admin)/:path*", // Todas las rutas dentro de (admin)
-    "/(gestor)/:path*", // Todas las rutas dentro de (gestor)
+    '/((?!api|_next/static|_next/image|favicon.ico|login|registro).*)',
   ],
 };
