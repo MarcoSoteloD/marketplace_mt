@@ -16,6 +16,20 @@ export default async function PaginaEditarConfiguracion() {
     const negocio = await getNegocioById(session.user.negocioId);
     if (!negocio) notFound();
 
+    // 1. Creamos un "objeto plano" (serializable)
+    const plainNegocio = {
+        ...negocio,
+        // 2. Convertimos los 'Decimal' a 'number' simples
+        latitud: negocio.latitud ? Number(negocio.latitud) : null,
+        longitud: negocio.longitud ? Number(negocio.longitud) : null,
+
+        // 3. (Mejor práctica) Convertimos los JSON a strings
+        //    Aunque Next.js suele manejarlos, es más seguro así.
+        horario: JSON.stringify(negocio.horario),
+        galeria_fotos: JSON.stringify(negocio.galeria_fotos),
+        url_redes_sociales: JSON.stringify(negocio.url_redes_sociales),
+    };
+
     return (
         <div className="flex flex-col min-h-screen gap-6 overflow-y-auto">
             <div className="flex justify-between items-center">
@@ -27,7 +41,7 @@ export default async function PaginaEditarConfiguracion() {
                 </Button>
             </div>
 
-            <ConfigForm negocio={negocio} />
+            <ConfigForm negocio={plainNegocio} />
         </div>
     );
 }

@@ -149,22 +149,69 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     return { message: "Error de autenticación.", success: false };
   }
   const negocioId = session.user.negocioId;
-  const gestorId = session.user.id; // Necesitamos el ID del gestor para la carpeta
+  const gestorId = session.user.id;
 
-  // --- OBTENER DATOS DEL FORM ---
-  const formDataObject = Object.fromEntries(formData.entries());
+  const newLogoFile = formData.get('url_logo') as File;
+  const newGalleryFiles = formData.getAll('galeria_fotos_nuevas') as File[];
 
-  // Convertimos lat/lng a números si existen, si no, undefined
+  // --- INICIO DE LA CORRECCIÓN ---
+  // Convertimos 'null' a 'undefined' para que Zod (.optional()) los acepte
   const parsedData = {
-    ...formDataObject,
+    nombre: formData.get('nombre') || undefined,
+    slug: formData.get('slug') || undefined,
+    descripcion: formData.get('descripcion') || undefined,
+    telefono: formData.get('telefono') || undefined,
+    calle: formData.get('calle') || undefined,
+    num_ext: formData.get('num_ext') || undefined,
+    num_int: formData.get('num_int') || undefined,
+    colonia: formData.get('colonia') || undefined,
+    cp: formData.get('cp') || undefined,
+    municipio: formData.get('municipio') || undefined,
+    estado: formData.get('estado') || undefined,
+    
+    // Campos de horario (aquí estaba el error)
+    horario_lunes_cerrado: formData.get('horario_lunes_cerrado') || undefined,
+    horario_lunes_apertura: formData.get('horario_lunes_apertura') || undefined,
+    horario_lunes_cierre: formData.get('horario_lunes_cierre') || undefined,
+    horario_martes_cerrado: formData.get('horario_martes_cerrado') || undefined,
+    horario_martes_apertura: formData.get('horario_martes_apertura') || undefined,
+    horario_martes_cierre: formData.get('horario_martes_cierre') || undefined,
+    horario_miercoles_cerrado: formData.get('horario_miercoles_cerrado') || undefined,
+    horario_miercoles_apertura: formData.get('horario_miercoles_apertura') || undefined,
+    horario_miercoles_cierre: formData.get('horario_miercoles_cierre') || undefined,
+    horario_jueves_cerrado: formData.get('horario_jueves_cerrado') || undefined,
+    horario_jueves_apertura: formData.get('horario_jueves_apertura') || undefined,
+    horario_jueves_cierre: formData.get('horario_jueves_cierre') || undefined,
+    horario_viernes_cerrado: formData.get('horario_viernes_cerrado') || undefined,
+    horario_viernes_apertura: formData.get('horario_viernes_apertura') || undefined,
+    horario_viernes_cierre: formData.get('horario_viernes_cierre') || undefined,
+    horario_sabado_cerrado: formData.get('horario_sabado_cerrado') || undefined,
+    horario_sabado_apertura: formData.get('horario_sabado_apertura') || undefined,
+    horario_sabado_cierre: formData.get('horario_sabado_cierre') || undefined,
+    horario_domingo_cerrado: formData.get('horario_domingo_cerrado') || undefined,
+    horario_domingo_apertura: formData.get('horario_domingo_apertura') || undefined,
+    horario_domingo_cierre: formData.get('horario_domingo_cierre') || undefined,
+    
+    // Campos JSON (string)
+    url_redes_sociales: formData.get('url_redes_sociales') || undefined,
+    galeria_fotos_actuales: formData.get('galeria_fotos_actuales') || undefined,
+    
+    // Campos numéricos
     latitud: formData.get('latitud') ? Number(formData.get('latitud')) : undefined,
     longitud: formData.get('longitud') ? Number(formData.get('longitud')) : undefined,
+    
+    // Campos de Archivos
+    url_logo: (newLogoFile && newLogoFile.size > 0) ? newLogoFile : undefined,
+    galeria_fotos_nuevas: (newGalleryFiles.length > 0 && newGalleryFiles[0].size > 0) ? newGalleryFiles : undefined,
   };
+  // --- FIN DE LA CORRECCIÓN ---
+
 
   // --- VALIDACIÓN CON ZOD ---
   const validatedFields = NegocioConfigSchema.safeParse(parsedData);
 
   if (!validatedFields.success) {
+    // ... (El resto del return de error de Zod se queda igual)
     return {
       errors: validatedFields.error.flatten().fieldErrors as NonNullable<ConfigNegocioState>["errors"],
       message: "Error de validación. Revisa los campos.",
@@ -172,7 +219,12 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     };
   }
 
-  const { url_logo, galeria_fotos_actuales, galeria_fotos_nuevas,
+  // ... (El resto de la función: desestructuración, parseo de JSON, lógica de horario,
+  //      lógica de subida de archivos, y el try/catch de la BD se quedan exactamente igual)
+  const { 
+    url_logo, 
+    galeria_fotos_actuales, 
+    galeria_fotos_nuevas,
     horario_lunes_cerrado, horario_lunes_apertura, horario_lunes_cierre,
     horario_martes_cerrado, horario_martes_apertura, horario_martes_cierre,
     horario_miercoles_cerrado, horario_miercoles_apertura, horario_miercoles_cierre,
@@ -180,24 +232,23 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     horario_viernes_cerrado, horario_viernes_apertura, horario_viernes_cierre,
     horario_sabado_cerrado, horario_sabado_apertura, horario_sabado_cierre,
     horario_domingo_cerrado, horario_domingo_apertura, horario_domingo_cierre,
-    ...data } = validatedFields.data;
+    ...data 
+  } = validatedFields.data;
 
-  // --- PREPARAR DATOS PARA PRISMA ---
-  // (La lógica de parsear JSON que ya tenías)
   const parseJsonField = (jsonString: string | undefined): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput => {
     if (!jsonString || jsonString.trim() === "") return Prisma.JsonNull;
-    try { return JSON.parse(jsonString); }
+    try { return JSON.parse(jsonString); } 
     catch (e) { throw new Error(`El JSON proporcionado no es válido.`); }
   };
 
   const horarioData = {
-    lunes: horario_lunes_cerrado === "on" ? "Cerrado" : `${horario_lunes_apertura} - ${horario_lunes_cierre}`,
-    martes: horario_martes_cerrado === "on" ? "Cerrado" : `${horario_martes_apertura} - ${horario_martes_cierre}`,
-    miercoles: horario_miercoles_cerrado === "on" ? "Cerrado" : `${horario_miercoles_apertura} - ${horario_miercoles_cierre}`,
-    jueves: horario_jueves_cerrado === "on" ? "Cerrado" : `${horario_jueves_apertura} - ${horario_jueves_cierre}`,
-    viernes: horario_viernes_cerrado === "on" ? "Cerrado" : `${horario_viernes_apertura} - ${horario_viernes_cierre}`,
-    sabado: horario_sabado_cerrado === "on" ? "Cerrado" : `${horario_sabado_apertura} - ${horario_sabado_cierre}`,
-    domingo: horario_domingo_cerrado === "on" ? "Cerrado" : `${horario_domingo_apertura} - ${horario_domingo_cierre}`,
+    lunes: horario_lunes_cerrado === "on" ? "Cerrado" : `${horario_lunes_apertura || ''} - ${horario_lunes_cierre || ''}`,
+    martes: horario_martes_cerrado === "on" ? "Cerrado" : `${horario_martes_apertura || ''} - ${horario_martes_cierre || ''}`,
+    miercoles: horario_miercoles_cerrado === "on" ? "Cerrado" : `${horario_miercoles_apertura || ''} - ${horario_miercoles_cierre || ''}`,
+    jueves: horario_jueves_cerrado === "on" ? "Cerrado" : `${horario_jueves_apertura || ''} - ${horario_jueves_cierre || ''}`,
+    viernes: horario_viernes_cerrado === "on" ? "Cerrado" : `${horario_viernes_apertura || ''} - ${horario_viernes_cierre || ''}`,
+    sabado: horario_sabado_cerrado === "on" ? "Cerrado" : `${horario_sabado_apertura || ''} - ${horario_sabado_cierre || ''}`,
+    domingo: horario_domingo_cerrado === "on" ? "Cerrado" : `${horario_domingo_apertura || ''} - ${horario_domingo_cierre || ''}`,
   };
 
   let redesJson;
@@ -208,42 +259,32 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
   }
 
   const negocioData: Prisma.negociosUpdateInput = {
-    ...data, // Asigna todos los campos validados (nombre, slug, direccion, etc.)
+    ...data,
     horario: horarioData,
     url_redes_sociales: redesJson,
   };
 
-  // --- LÓGICA DE SUBIDA DE IMAGEN ---
   try {
-    // --- LÓGICA DE GALERÍA Y LOGO ---
-
-    // 1. Parsear las URLs actuales que el usuario no borró
     let currentGalleryUrls: string[] = [];
     if (galeria_fotos_actuales) {
       currentGalleryUrls = JSON.parse(galeria_fotos_actuales);
     }
 
-    // 2. Subir las NUEVAS imágenes a Cloudinary
     const newGalleryUrls: string[] = [];
     if (galeria_fotos_nuevas && galeria_fotos_nuevas.length > 0) {
-      // Usamos Promise.all para subirlas todas en paralelo
       const uploadPromises = galeria_fotos_nuevas.map(file => {
         return uploadImageToCloudinary(
           file,
-          `negocios/${gestorId}/galeria` // Carpeta: negocios/[id_gestor]/galeria
+          `negocios/${gestorId}/galeria`
         );
       });
       const uploadedUrls = await Promise.all(uploadPromises);
       newGalleryUrls.push(...uploadedUrls);
     }
 
-    // 3. Combinar las galerías
     const finalGallery = [...currentGalleryUrls, ...newGalleryUrls];
-
-    // 4. Asignar la galería al objeto de datos
     negocioData.galeria_fotos = finalGallery.length > 0 ? finalGallery : Prisma.JsonNull;
 
-    // 5. Lógica del Logo (la que ya tenías)
     if (url_logo && url_logo.size > 0) {
       const newLogoUrl = await uploadImageToCloudinary(
         url_logo,
@@ -252,9 +293,6 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
       negocioData.url_logo = newLogoUrl;
     }
 
-    // --- FIN DE LÓGICA DE GALERÍA Y LOGO ---
-
-    // 6. ACTUALIZACIÓN DE BD
     await updateNegocio(negocioId, negocioData);
 
     revalidatePath('/(gestor)/configuracion');
@@ -266,7 +304,6 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     };
 
   } catch (error) {
-    // ... (Tu 'catch' de errores de Prisma se queda igual)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return { errors: { slug: ['Este slug ya está en uso.'] }, message: "Error al guardar.", success: false };
     }
