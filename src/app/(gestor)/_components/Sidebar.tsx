@@ -18,7 +18,7 @@ const routes = [
   },
   {
     label: "Categorías",
-    href: "/categorias-producto",
+    href: "/categorias-productos",
     iconName: "LayoutGrid",
   },
   {

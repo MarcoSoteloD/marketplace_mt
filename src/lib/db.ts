@@ -353,20 +353,23 @@ export const getNegocioById = async (id: number) => {
  * @param negocioId - El ID del negocio del cual obtener los productos.
  */
 export const getProductosByNegocioId = async (negocioId: number) => {
-    try {
-        const productos = await prisma.productos.findMany({
-            where: {
-                id_negocio: negocioId,
-            },
-            orderBy: {
-                nombre: 'asc',
-            },
-        });
-        return productos;
-    } catch (error) {
-        console.error('Error en getProductosByNegocioId:', error);
-        return [];
-    }
+  try {
+    return await prisma.productos.findMany({
+      where: {
+        id_negocio: negocioId,
+      },
+      include: {
+        // Incluimos el modelo 'categorias_producto'
+        categorias_producto: true, 
+      },
+      orderBy: {
+        nombre: 'asc',
+      },
+    });
+  } catch (error) {
+    console.error('Error en getProductosByNegocioId:', error);
+    return [];
+  }
 };
 
 /**
@@ -389,4 +392,91 @@ export const updateNegocio = async (id: number, data: Prisma.negociosUpdateInput
   }
 };
 
-// ... Aquí irán getPedidosByNegocioId, getVacantesByNegocioId, etc. ...
+/**
+ * -----------------------------------------------------------------
+ * 📦 FUNCIONES DEL GESTOR (CATEGORÍAS DE PRODUCTOS)
+ * -----------------------------------------------------------------
+ */
+
+/**
+ * Obtiene todas las categorías de UN negocio específico.
+ */
+export const getCategoriasByNegocioId = async (negocioId: number) => {
+  try {
+    return await prisma.categorias_producto.findMany({
+      where: {
+        id_negocio: negocioId,
+      },
+      orderBy: [
+        { orden: 'asc' }, // Ordena por el campo 'orden'
+        { nombre: 'asc' }, // Luego por nombre
+      ],
+    });
+  } catch (error) {
+    console.error('Error en getCategoriasByNegocioId:', error);
+    return [];
+  }
+};
+
+/**
+ * Crea una nueva categoría de producto para un negocio.
+ */
+export const createCategoriaProducto = async (data: Prisma.categorias_productoCreateInput) => {
+  try {
+    return await prisma.categorias_producto.create({
+      data: data, // El 'id_negocio' debe venir en el objeto 'data'
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      // Manejamos si el nombre ya existe para ese negocio (si tuviéramos un constraint unique)
+      throw new Error("Ya existe una categoría con este nombre.");
+    }
+    throw new Error("Error de base de datos al crear la categoría.");
+  }
+};
+
+/**
+ * Elimina una categoría de producto.
+ * !! Requiere el negocioId para seguridad !!
+ */
+export const deleteCategoriaProducto = async (categoriaId: number, negocioId: number) => {
+  try {
+    // Esta es la clave de seguridad:
+    // Solo borra si el ID de la categoría Y el ID del negocio coinciden.
+    // Un gestor no puede borrar categorías de otro gestor.
+    const result = await prisma.categorias_producto.deleteMany({
+      where: {
+        id_categoria: categoriaId,
+        id_negocio: negocioId, // ¡Seguridad!
+      },
+    });
+
+    if (result.count === 0) {
+      throw new Error("No se encontró la categoría o no tienes permiso para eliminarla.");
+    }
+    return result;
+  } catch (error) {
+    console.error("Error en deleteCategoriaProducto:", error);
+    throw new Error("Error de base de datos al eliminar.");
+  }
+};
+
+/**
+ * -----------------------------------------------------------------
+ * 📦 FUNCIONES DEL GESTOR (PRODUCTOS)
+ * -----------------------------------------------------------------
+ */
+
+/**
+ * Crea un nuevo producto para un negocio.
+ */
+export const createProducto = async (data: Prisma.productosCreateInput) => {
+  try {
+    return await prisma.productos.create({
+      data: data, // El 'id_negocio' y la conexión de categoría deben venir aquí
+    });
+  } catch (error) {
+    console.error('Error en createProducto:', error);
+    throw new Error("Error de base de datos al crear el producto.");
+  }
+};
