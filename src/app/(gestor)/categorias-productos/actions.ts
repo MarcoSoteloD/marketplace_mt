@@ -1,4 +1,4 @@
-// app/(gestor)/categorias-producto/actions.ts
+// app/(gestor)/categorias-productos/actions.ts
 "use server";
 
 import { z } from 'zod';
@@ -10,7 +10,8 @@ import { Prisma } from '@prisma/client';
 // Importamos las nuevas funciones de DB
 import { 
   createCategoriaProducto,
-  deleteCategoriaProducto
+  deleteCategoriaProducto,
+  updateCategoriaProducto
 } from '@/lib/db';
 
 // --- Schema y Estado para CREAR ---
@@ -74,7 +75,7 @@ export async function createCategoriaAction(prevState: CategoriaState, formData:
     
     await createCategoriaProducto(data);
 
-    revalidatePath('/(gestor)/categorias-producto');
+    revalidatePath('/categorias-productos');
     return { message: `Categoría "${data.nombre}" creada.`, success: true };
 
   } catch (error) {
@@ -96,9 +97,57 @@ export async function deleteCategoriaAction(categoriaId: number) {
 
   try {
     await deleteCategoriaProducto(categoriaId, negocioId); // Pasamos ambos IDs por seguridad
-    revalidatePath('/(gestor)/categorias-producto');
+    revalidatePath('/categorias-productos');
     return { success: true, message: "Categoría eliminada." };
   } catch (error) {
     return { success: false, message: (error as Error).message };
+  }
+}
+
+// --- 3. ACCIÓN DE ACTUALIZAR ---
+export async function updateCategoriaAction(
+  categoriaId: number,
+  prevState: CategoriaState, 
+  formData: FormData
+) {
+  
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.negocioId) {
+    return { message: "Error de autenticación.", success: false };
+  }
+  const negocioId = session.user.negocioId;
+
+  // Usamos el mismo schema que 'create'
+  const validatedFields = CategoriaProductoSchema.safeParse({
+    nombre: formData.get('nombre'),
+    descripcion: formData.get('descripcion'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors as NonNullable<CategoriaState>["errors"],
+      message: 'Error de validación.',
+      success: false,
+    };
+  }
+  
+  const data = {
+    nombre: validatedFields.data.nombre,
+    descripcion: validatedFields.data.descripcion,
+  };
+
+  try {
+    await updateCategoriaProducto(categoriaId, negocioId, data);
+
+    revalidatePath('/categorias-productos'); // Refresca la lista
+    revalidatePath(`/categorias-productos/editar/${categoriaId}`); // Refresca esta pág.
+    return { message: `Categoría "${data.nombre}" actualizada.`, success: true };
+
+  } catch (error) {
+    return { 
+      errors: { _form: [(error as Error).message] }, 
+      message: 'Error al actualizar.', 
+      success: false 
+    };
   }
 }

@@ -2,7 +2,7 @@
 "use client";
 
 import { useFormState, useFormStatus } from 'react-dom';
-import { createProductoAction, ProductoState } from './actions'; // Importamos la de crear
+import { createProductoAction, updateProductoAction, ProductoState } from './actions'; // Importamos la de crear
 import type { productos, categorias_producto } from '@prisma/client';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -26,16 +26,16 @@ function SubmitButton({ text }: { text: string }) {
 }
 
 interface ProductoFormProps {
-  // Las categorías son obligatorias (para el dropdown)
   categorias: categorias_producto[];
-  // El producto es opcional (solo existe si estamos 'editando')
-  producto?: productos | null; 
+  producto?: productos | null;
+  // Hacemos la 'action' una prop
+  action: (prevState: ProductoState, formData: FormData) => Promise<ProductoState>;
+  submitText: string; // Texto para el botón (Crear/Actualizar)
 }
 
-export function ProductoForm({ categorias, producto }: ProductoFormProps) {
+export function ProductoForm({ categorias, producto, action, submitText }: ProductoFormProps) {
   
   // TODO: En el futuro, aquí elegiremos entre 'create' y 'update'
-  const action = createProductoAction; 
   const initialState: ProductoState = undefined;
   
   const [state, dispatch] = useFormState(action, initialState);
@@ -139,7 +139,7 @@ export function ProductoForm({ categorias, producto }: ProductoFormProps) {
         <Button variant="outline" type="button" onClick={() => router.back()}>
           Cancelar
         </Button>
-        <SubmitButton text={producto ? "Actualizar Producto" : "Crear Producto"} />
+        <SubmitButton text={submitText} />
       </div>
     </form>
   );

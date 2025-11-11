@@ -1,13 +1,14 @@
-// app/(gestor)/categorias-producto/ListaCategorias.tsx
+// app/(gestor)/categorias-productos/ListaCategorias.tsx
 "use client";
 
 import type { categorias_producto } from '@prisma/client';
+import Link from 'next/link';
 import { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { deleteCategoriaAction } from './actions';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
-import { 
+import { Trash2, Edit } from 'lucide-react';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -61,8 +62,8 @@ export function ListaCategorias({ categorias }: { categorias: categorias_product
   return (
     <ul className="divide-y">
       {categorias.map((cat) => (
-        <li 
-          key={cat.id_categoria} 
+        <li
+          key={cat.id_categoria}
           className="flex justify-between items-center p-3"
         >
           <div>
@@ -71,10 +72,13 @@ export function ListaCategorias({ categorias }: { categorias: categorias_product
               {cat.descripcion || 'Sin descripción'}
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            {/* TODO: Botón de Editar (lo añadiremos después) */}
-            {/* <Button variant="outline" size="sm">Editar</Button> */}
+            <Button variant="outline" size="icon" asChild>
+              <Link href={`/categorias-productos/editar/${cat.id_categoria}`}>
+                <Edit className="h-4 w-4" />
+              </Link>
+            </Button>
 
             <AlertDialog>
               <AlertDialogTrigger asChild>

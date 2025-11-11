@@ -1,4 +1,4 @@
-// app/(gestor)/categorias-producto/page.tsx
+// app/(gestor)/categorias-productos/page.tsx
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";

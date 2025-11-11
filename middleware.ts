@@ -12,13 +12,17 @@ export default withAuth(
 
     // --- Definimos nuestras rutas protegidas ---
     const adminPaths = ["/dashboard", "/categorias", "/gestores"];
-    const gestorPaths = ["/productos", "/pedidos", "/vacantes", "/configuracion"];
+    const gestorPaths = [
+      "/configuracion",
+      "/categorias-productos", // <-- AÑADE ESTA LÍNEA
+      "/productos",
+      "/pedidos",
+      "/vacantes"
+    ];
 
-    // 1. Comprueba si es una ruta de Admin
     const esRutaAdmin = adminPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
     if (esRutaAdmin) {
       if (token?.rol !== rol_usuario.admin) {
-        // Si no es admin, lo sacamos
         return new NextResponse("Acceso No Autorizado", { status: 403 });
       }
     }
@@ -27,7 +31,6 @@ export default withAuth(
     const esRutaGestor = gestorPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
     if (esRutaGestor) {
       if (token?.rol !== rol_usuario.gestor) {
-        // Si no es gestor, lo sacamos
         return new NextResponse("Acceso No Autorizado", { status: 403 });
       }
     }
