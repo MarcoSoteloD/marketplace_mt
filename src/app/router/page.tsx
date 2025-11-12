@@ -23,7 +23,7 @@ export default function RouterPage() {
       if (session?.user?.rol === rol_usuario.admin) {
         router.replace("/dashboard"); // (Tu ruta de admin)
       } else if (session?.user?.rol === rol_usuario.gestor) {
-        router.replace("/configuracion"); // (Tu ruta de gestor)
+        router.replace("/pedidos"); // (Tu ruta de gestor)
       } else {
         router.replace("/"); // Ruta para 'clientes'
       }

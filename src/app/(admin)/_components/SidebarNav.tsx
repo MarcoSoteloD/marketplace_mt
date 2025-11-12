@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
+import { LucideIcon, User } from "lucide-react";
 
 // 1. Importa los iconos que vas a usar
 import {
@@ -52,7 +52,7 @@ export function SidebarNav({ routes }: SidebarNavProps) {
             key={route.href}
             href={route.href}
             className={cn(
-              "flex items-center gap-3 px-6 py-2 text-gray-200 transition-all hover:text-white", // <-- CÓDIGO NUEVO
+              "flex items-center gap-3 px-6 py-2 h-10 text-gray-200 transition-all hover:text-white", // <-- CÓDIGO NUEVO
               pathname === route.href ? "text-white bg-white/10" : ""
             )}
           >

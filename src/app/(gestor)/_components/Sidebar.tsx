@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma"; // Importamos prisma para buscar el negoc
 // Importamos los componentes cliente
 import { SidebarNav } from "./SidebarNav";
 import { LogoutButton } from "./LogoutButton";
+import { User } from "lucide-react";
 
 // Rutas del Gestor
 const routes = [
@@ -40,10 +41,10 @@ const routes = [
 
 // Componente ASÍNCRONO (Server Component)
 export async function GestorSidebar() {
-  
+
   // 1. Obtenemos la sesión en el servidor
   const session = await getServerSession(authOptions);
-  
+
   // 2. Buscamos el nombre del negocio del gestor
   let negocioNombre = "Mi Negocio"; // Valor por defecto
   if (session?.user?.negocioId) {
@@ -59,7 +60,7 @@ export async function GestorSidebar() {
   return (
     <div className="hidden border-r bg-slate-950 md:block w-64"> {/* Tu color slate */}
       <div className="flex h-full max-h-screen flex-col gap-4">
-        
+
         {/* Encabezado del Sidebar */}
         <div className="flex h-auto flex-col items-start border-b border-b-slate-700 px-4 py-5 lg:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold mb-2 text-white">
@@ -77,8 +78,16 @@ export async function GestorSidebar() {
           <SidebarNav routes={routes} />
         </div>
 
-        {/* Botón de Salir (Client Component) */}
-        <div className="mt-auto p-4">
+        {/* Footer del Sidebar con Perfil y Logout */}
+        <div className="mt-auto py-4 space-y-2 border-t border-slate-700">
+          <Link
+            href="/perfil-gestor" // <-- Ruta correcta del gestor
+            className="flex items-center gap-3 px-4 py-2 text-gray-200 transition-all hover:text-white hover:bg-white/10 rounded-none h-10"
+          >
+            <User className="h-4 w-4" />
+            Mi Perfil
+          </Link>
+
           <LogoutButton />
         </div>
 

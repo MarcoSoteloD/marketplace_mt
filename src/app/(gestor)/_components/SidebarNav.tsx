@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
+import { LucideIcon, User } from "lucide-react";
 import {
   Settings,
   LayoutGrid,
@@ -42,7 +42,7 @@ export function SidebarNav({ routes }: SidebarNavProps) {
 
   return (
     // 4. Mapeo (con la corrección que ya hicimos)
-    <nav className="grid items-start text-sm font-medium">
+    <nav className="grid items-start font-medium">
       {routes.map((route) => {
         const Icon = iconMap[route.iconName];
         return (
@@ -50,7 +50,7 @@ export function SidebarNav({ routes }: SidebarNavProps) {
             key={route.href}
             href={route.href}
             className={cn(
-              "flex items-center gap-3 px-4 py-2 text-gray-200 transition-all hover:text-white hover:bg-white/10",
+              "flex items-center gap-3 px-4 py-2 h-10 text-gray-200 transition-all hover:text-white hover:bg-white/10",
               pathname === route.href ? "bg-white/10 text-white" : ""
             )}
           >
