@@ -78,5 +78,6 @@ export const config = {
     '/pedidos',
     '/vacantes',
     '/perfil-gestor',
+    '/perfil'
   ],
 };

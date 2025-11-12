@@ -3,8 +3,8 @@ html, body, #__next {
 }
 body {
   margin: 0;
-  /* evita que body haga scroll si delegas el scroll al main */
-  overflow: hidden;
+  overflow-x: hidden; /* solo oculta el scroll lateral */
+  overflow-y: auto;   /* permite el scroll vertical normal */
 }
 
 @tailwind base;

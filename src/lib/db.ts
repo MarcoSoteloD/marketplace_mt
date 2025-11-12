@@ -6,6 +6,68 @@ import { prisma } from './prisma';
 
 /**
  * -----------------------------------------------------------------
+ * 🌎 FUNCIONES PÚBLICAS (CLIENTE)
+ * -----------------------------------------------------------------
+ */
+
+/**
+ * Obtiene todos los negocios que están marcados como 'activos'
+ * para mostrarlos en la página principal.
+ */
+export const getNegociosActivos = async () => {
+  try {
+    return await prisma.negocios.findMany({
+      where: {
+        activo: true, // ¡La clave! Solo trae negocios activos
+      },
+      orderBy: {
+        nombre: 'asc', // Orden alfabético
+      },
+      // (En el futuro, podríamos añadir 'include' para traer sus categorías globales)
+    });
+  } catch (error) {
+    console.error('Error en getNegociosActivos:', error);
+    return [];
+  }
+};
+
+/**
+ * Busca un usuario por su email.
+ * (Usado para verificar duplicados en el registro)
+ */
+export const getUserByEmail = async (email: string) => {
+  try {
+    return await prisma.usuarios.findUnique({
+      where: { email: email },
+    });
+  } catch (error) {
+    console.error("Error en getUserByEmail:", error);
+    return null;
+  }
+};
+
+/**
+ * Crea un nuevo usuario con rol 'cliente'.
+ */
+export const createClienteUser = async (
+  data: Prisma.usuariosCreateInput
+) => {
+  try {
+    return await prisma.usuarios.create({
+      data: data,
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      // P2002 es error de 'unique constraint' (email duplicado)
+      throw new Error("Este email ya está registrado.");
+    }
+    console.error("Error en createClienteUser:", error);
+    throw new Error("Error de base de datos al crear el cliente.");
+  }
+};
+
+/**
+ * -----------------------------------------------------------------
  * 🔒 FUNCIONES DEL ADMIN (PLATAFORMA)
  * -----------------------------------------------------------------
  */
@@ -33,7 +95,9 @@ export const getNegocios = async () => {
 export const getCategoriasGlobales = async () => {
   try {
     return await prisma.categorias_globales.findMany({
-      orderBy: { nombre: 'asc' },
+      orderBy: {
+        nombre: 'asc',
+      },
     });
   } catch (error) {
     console.error('Error en getCategoriasGlobales:', error);

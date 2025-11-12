@@ -51,6 +51,7 @@ export const authOptions: NextAuthOptions = {
           name: user.nombre,
           rol: user.rol,
           negocioId: user.id_negocio,
+          telefono: user.telefono,
         };
       },
     }),
@@ -70,6 +71,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.rol = user.rol;
         token.negocioId = user.negocioId;
+        token.telefono = user.telefono;
       }
       return token;
     },
@@ -80,6 +82,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.rol = token.rol as rol_usuario;
         session.user.negocioId = token.negocioId;
+        session.user.telefono = token.telefono;
       }
       return session;
     },

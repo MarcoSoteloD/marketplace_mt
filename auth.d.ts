@@ -15,6 +15,7 @@ declare module "next-auth" {
       id: string; // El ID de tu modelo 'usuarios'
       rol: rol_usuario;
       negocioId?: number | null;
+      telefono?: string | null;
     } & DefaultSession["user"]; // Mantiene name, email, image
   }
 
@@ -26,6 +27,7 @@ declare module "next-auth" {
     id: string;
     rol: rol_usuario;
     negocioId?: number | null;
+    telefono?: string | null;
   }
 }
 
@@ -37,5 +39,6 @@ declare module "next-auth/jwt" {
     id: string;
     rol: rol_usuario;
     negocioId?: number | null;
+    telefono?: string | null;
   }
 }
