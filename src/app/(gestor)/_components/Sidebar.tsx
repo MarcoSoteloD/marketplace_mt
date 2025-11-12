@@ -57,7 +57,7 @@ export async function GestorSidebar() {
   }
 
   return (
-    <div className="hidden border-r bg-slate-900 md:block w-64"> {/* Tu color slate */}
+    <div className="hidden border-r bg-slate-950 md:block w-64"> {/* Tu color slate */}
       <div className="flex h-full max-h-screen flex-col gap-4">
         
         {/* Encabezado del Sidebar */}

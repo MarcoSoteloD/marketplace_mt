@@ -1,6 +1,6 @@
 // src/lib/db.ts
 
-import { Prisma, rol_usuario } from '@prisma/client';
+import { Prisma, rol_usuario, estado_pedido } from '@prisma/client';
 // Importamos la instancia ÚNICA de Prisma desde el archivo que creamos
 import { prisma } from './prisma';
 
@@ -597,5 +597,125 @@ export const deleteProducto = async (productoId: number, negocioId: number) => {
     }
     console.error('Error en deleteProducto:', error);
     throw new Error("Error de base de datos al eliminar.");
+  }
+};
+
+/**
+ * -----------------------------------------------------------------
+ * 📦 FUNCIONES DEL GESTOR (PEDIDOS)
+ * -----------------------------------------------------------------
+ */
+
+/**
+ * Obtiene todos los pedidos de UN negocio específico,
+ * incluyendo el nombre del cliente Y los detalles/productos del pedido.
+ */
+export const getPedidosByNegocioId = async (negocioId: number) => {
+  try {
+    return await prisma.pedidos.findMany({
+      where: {
+        id_negocio: negocioId,
+      },
+      include: {
+        // 1. Incluir el usuario (cliente)
+        usuarios: {
+          select: {
+            nombre: true,
+            email: true,
+          }
+        },
+        // --- INICIO DE LA CORRECCIÓN ---
+        // 2. Incluir la lista de productos del pedido
+        detalle_pedido: {
+          include: {
+            // 3. Por cada item, incluir la info del producto
+            productos: {
+              select: {
+                nombre: true,
+                url_foto: true,
+              }
+            }
+          }
+        }
+        // --- FIN DE LA CORRECCIÓN ---
+      },
+      orderBy: {
+        fecha_hora: 'desc', // Los más nuevos primero
+      },
+    });
+  } catch (error) {
+    console.error('Error en getPedidosByNegocioId:', error);
+    return [];
+  }
+};
+
+/**
+ * Obtiene los detalles completos de UN pedido específico.
+ * Incluye el cliente y la lista de productos (detalle_pedido).
+ * Requiere el negocioId para seguridad.
+ */
+export const getPedidoDetailsById = async (pedidoId: number, negocioId: number) => {
+  try {
+    return await prisma.pedidos.findFirst({
+      where: {
+        id_pedido: pedidoId,
+        id_negocio: negocioId, // ¡Seguridad!
+      },
+      include: {
+        // 1. Incluir el usuario (cliente)
+        usuarios: {
+          select: {
+            nombre: true,
+            email: true,
+            telefono: true,
+          }
+        },
+        // 2. Incluir la lista de productos del pedido
+        detalle_pedido: {
+          include: {
+            // 3. Por cada item, incluir la info del producto
+            productos: {
+              select: {
+                nombre: true,
+                url_foto: true,
+              }
+            }
+          }
+        }
+      },
+    });
+  } catch (error) {
+    console.error('Error en getPedidoDetailsById:', error);
+    return null;
+  }
+};
+
+/**
+ * Actualiza el ESTADO de un pedido.
+ * Requiere el negocioId para seguridad.
+ */
+export const updatePedidoEstado = async (
+  pedidoId: number,
+  negocioId: number,
+  nuevoEstado: estado_pedido // Usamos el enum de Prisma
+) => {
+  try {
+    const result = await prisma.pedidos.updateMany({
+      where: {
+        id_pedido: pedidoId,
+        id_negocio: negocioId, // ¡Seguridad!
+      },
+      data: {
+        estado: nuevoEstado,
+      },
+    });
+
+    if (result.count === 0) {
+      throw new Error("No se encontró el pedido o no tienes permiso.");
+    }
+    return result;
+  } catch (error) {
+    console.error('Error en updatePedidoEstado:', error);
+    throw new Error("Error de base de datos al actualizar el estado.");
   }
 };
