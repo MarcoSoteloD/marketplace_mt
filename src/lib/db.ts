@@ -67,6 +67,149 @@ export const createClienteUser = async (
 };
 
 /**
+ * Obtiene todos los pedidos de UN cliente específico,
+ * incluyendo el nombre del negocio donde se hizo el pedido.
+ */
+export const getPedidosByClienteId = async (clienteId: number) => {
+  try {
+    return await prisma.pedidos.findMany({
+      where: {
+        id_usuario: clienteId,
+      },
+      include: {
+        // Incluimos el modelo 'negocios'
+        negocios: {
+          select: {
+            nombre: true, // Solo queremos el nombre del negocio
+            slug: true,   // Y el slug (para el link)
+          }
+        },
+      },
+      orderBy: {
+        fecha_hora: 'desc', // Los más nuevos primero
+      },
+    });
+  } catch (error) {
+    console.error('Error en getPedidosByClienteId:', error);
+    return [];
+  }
+};
+
+/**
+ * Obtiene la información pública de un negocio por su SLUG.
+ * Solo devuelve datos "activos".
+ */
+export const getNegocioPublicoBySlug = async (slug: string) => {
+  try {
+    const negocio = await prisma.negocios.findUnique({
+      where: {
+        slug: slug,
+        activo: true, // 1. El negocio debe estar activo
+      },
+      include: {
+        // 2. Incluimos sus categorías
+        categorias_producto: {
+          where: {
+            activo: true, // 3. Solo categorías activas
+          },
+          orderBy: {
+            orden: 'asc', // (Si implementamos 'orden' después)
+          },
+          include: {
+            // 4. Incluimos los productos de CADA categoría
+            productos: {
+              where: {
+                activo: true, // 5. Solo productos activos
+              },
+              orderBy: {
+                nombre: 'asc',
+              },
+            },
+          },
+        },
+      },
+    });
+    
+    // Si no encontramos el negocio (o no estaba activo), devolvemos null
+    if (!negocio) {
+      return null;
+    }
+    
+    // (Opcional) Filtrar categorías que quedaron vacías
+    // const negocioFiltrado = {
+    //   ...negocio,
+    //   categorias_producto: negocio.categorias_producto.filter(cat => cat.productos.length > 0)
+    // };
+    // return negocioFiltrado;
+    
+    return negocio;
+
+  } catch (error) {
+    console.error('Error en getNegocioPublicoBySlug:', error);
+    return null;
+  }
+};
+
+/**
+ * Obtiene solo la información básica de un negocio por ID.
+ * (Usado por la página del carrito).
+ */
+export const getNegocioBasicoById = async (negocioId: number) => {
+  try {
+    return await prisma.negocios.findUnique({
+      where: {
+        id_negocio: negocioId,
+        activo: true,
+      },
+      select: {
+        nombre: true,
+        slug: true,
+      }
+    });
+  } catch (error) {
+    console.error('Error en getNegocioBasicoById:', error);
+    return null;
+  }
+};
+
+/**
+ * Obtiene los detalles de un pedido SÓLO si le pertenece al cliente.
+ * (Usado para la página de "Pedido Exitoso")
+ */
+export const getPedidoDetailsByClienteId = async (pedidoId: number, clienteId: number) => {
+  try {
+    return await prisma.pedidos.findFirst({
+      where: {
+        id_pedido: pedidoId,
+        id_usuario: clienteId, // ¡Seguridad!
+      },
+      include: {
+        negocios: { // El negocio al que le compró
+          select: {
+            nombre: true,
+            telefono: true,
+            calle: true,
+            colonia: true,
+          }
+        },
+        detalle_pedido: { // Los productos
+          include: {
+            productos: {
+              select: {
+                nombre: true,
+              }
+            }
+          }
+        }
+      },
+    });
+  } catch (error) {
+    console.error('Error en getPedidoDetailsByClienteId:', error);
+    return null;
+  }
+};
+
+/**
  * -----------------------------------------------------------------
  * 🔒 FUNCIONES DEL ADMIN (PLATAFORMA)
  * -----------------------------------------------------------------
