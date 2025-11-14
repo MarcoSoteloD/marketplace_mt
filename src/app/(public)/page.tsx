@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Link from "next/link";
+import { CategoryCarousel } from './CategoryCarousel';
 
 export const dynamic = "force-dynamic";
 
@@ -55,31 +56,20 @@ export default async function HomePage() {
       {/* --- 2. Categorías --- */}
       <section className="container">
         <h2 className="text-2xl font-semibold tracking-tight mb-6">
-          Explorar por Categoría
+          Explora nuestras categorías
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {categorias.map((cat) => {
-            const Icono = getCategoryIcon(cat.nombre);
-            return (
-              <Link
-                href={`/categorias/${encodeURIComponent(cat.nombre.toLowerCase())}`}
-                key={cat.id_categoria_g}
-                className="group"
-              >
-                <div className="flex flex-col items-center justify-center gap-3 p-4 border rounded-lg transition-all hover:shadow-md hover:-translate-y-1 text-center bg-background">
-                  <Icono className="h-8 w-8 text-primary" />
-                  <p className="font-medium">{cat.nombre}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+
+        {/* --- INICIO DEL REEMPLAZO --- */}
+        {/* Borramos el <div className="grid..."> y... */}
+        <CategoryCarousel categorias={categorias} />
+        {/* --- FIN DEL REEMPLAZO --- */}
+
       </section>
 
       {/* --- 3. Negocios --- */}
       <section className="container pb-24">
         <h2 className="text-2xl font-semibold tracking-tight mb-6">
-          Negocios Destacados
+          Explora los negocios
         </h2>
         {negocios.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

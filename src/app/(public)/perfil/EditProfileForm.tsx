@@ -3,13 +3,13 @@
 
 import { useFormState, useFormStatus } from 'react-dom';
 import { updatePerfilAction, PerfilState } from './actions';
-import { useSession } from 'next-auth/react'; // Para los valores por defecto
+import { useSession, signOut } from 'next-auth/react'; // Para los valores por defecto
 import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from '@/components/ui/loader'; // El spinner que ya creamos
 
@@ -24,6 +24,10 @@ export default function PerfilPage() {
   
   const initialState: PerfilState = undefined;
   const [state, dispatch] = useFormState(updatePerfilAction, initialState);
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: '/' }); // Al salir, lo mandamos a la raíz pública
+  };
 
   // Efecto para el toast
   useEffect(() => {
@@ -96,6 +100,23 @@ export default function PerfilPage() {
           </CardFooter>
         </Card>
       </form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Sesión</CardTitle>
+          <CardDescription>
+            Cierra tu sesión en este dispositivo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleLogout}
+          >
+            Cerrar Sesión
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

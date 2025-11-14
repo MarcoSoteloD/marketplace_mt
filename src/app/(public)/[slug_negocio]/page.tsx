@@ -37,6 +37,7 @@ import { type IconType } from "react-icons"; // <-- El NUEVO tipo
 import { SiFacebook, SiInstagram, SiX, SiWhatsapp } from "react-icons/si";
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
+import { checkOpenStatus } from "@/lib/time-helpers";
 
 const DisplayMap = dynamic(
     () => import('./DisplayMap').then(mod => mod.DisplayMap),
@@ -138,6 +139,13 @@ export default async function PaginaNegocio({
     const logoUrl = negocio.url_logo;
     // --- FIN DE LA LÓGICA ---
 
+    const horario = (negocio.horario && typeof negocio.horario === 'object' && !Array.isArray(negocio.horario))
+        ? negocio.horario
+        : null;
+
+    // --- AÑADE ESTA LÍNEA ---
+    const isOpen = checkOpenStatus(horario);
+
     type Redes = Record<string, string>;
     const redes = (negocio.url_redes_sociales && typeof negocio.url_redes_sociales === 'object' && !Array.isArray(negocio.url_redes_sociales))
         ? negocio.url_redes_sociales as Redes
@@ -201,8 +209,29 @@ export default async function PaginaNegocio({
                     {/* --- 2b. TARJETA DE INFO (Debajo del logo) --- */}
                     <Card className="shadow-lg">
                         <CardHeader>
-                            <CardTitle className="text-2xl">{negocio.nombre}</CardTitle>
-                            <CardDescription>{negocio.descripcion || "Sin descripción."}</CardDescription>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">
+                                    {negocio.nombre}
+                                </h1>
+
+                                {/* --- INICIO DE LA CORRECCIÓN --- */}
+                                {/* Primero revisa si el admin lo desactivó ('!negocio.activo') */}
+                                {/* Si está activo, ENTONCES revisa si está abierto ('isOpen') */}
+                                <Badge
+                                    // 1. Usa 'default' (que SÍ existe) en lugar de 'success'
+                                    variant={!negocio.activo ? "destructive" : (isOpen ? "default" : "outline")}
+                                    // 2. Si está abierto, SOBREESCRIBE las clases de 'default' con las de verde
+                                    className={
+                                        isOpen
+                                            ? "bg-green-600 text-white border-transparent hover:bg-green-700"
+                                            : ""
+                                    }
+                                >
+                                    {!negocio.activo ? "Inactivo" : (isOpen ? "Abierto ahora" : "Cerrado")}
+                                </Badge>
+                                {/* --- FIN DE LA CORRECCIÓN --- */}
+
+                            </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <Separator />

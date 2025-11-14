@@ -4,9 +4,17 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Store, User, Loader2, ShoppingCart } from "lucide-react"; // <-- AÑADIDO ShoppingCart
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useCartStore } from "@/store/cart-store"; // <-- AÑADIDO (Importa el store)
 import { useEffect, useState } from "react"; // <-- AÑADIDO (Para la hidratación)
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle, // Importa el estilo de los links
+} from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
 
 export function PublicNavbar() {
   // 1. Obtenemos el estado de la sesión
@@ -26,15 +34,9 @@ export function PublicNavbar() {
   }, []);
   // --- FIN DE LÓGICA DEL CARRITO ---
 
-
-  // 5. Función para cerrar sesión (ya la tenías)
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' }); // Al salir, lo mandamos a la raíz
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-amber-600/50 bg-amber-500 text-black shadow-sm overflow-x-hidden">
-      <div className="mx-auto flex h-14 w-full max-w-screen-xl items-center px-4 sm:px-6 lg:px-8">
+      <div className="container flex h-20 items-center">
         
         {/* Logo y Nombre (sin cambios) */}
         <div className="mr-4 flex">
@@ -43,6 +45,43 @@ export function PublicNavbar() {
             <span>Manos Tonilenses</span>
           </Link>
         </div>
+
+        <NavigationMenu className="hidden md:flex">
+          <NavigationMenuList>
+            {/* Link a Negocios */}
+            <NavigationMenuItem>
+              <Link href="/negocios" legacyBehavior passHref>
+                <NavigationMenuLink 
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black hover:bg-black/10 focus:bg-black/10")}
+                >
+                  Negocios
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            
+            {/* Link a Categorías */}
+            <NavigationMenuItem>
+              <Link href="/categorias" legacyBehavior passHref>
+                <NavigationMenuLink 
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black hover:bg-black/10 focus:bg-black/10")}
+                >
+                  Categorías
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+
+            {/* Link a Vacantes */}
+            <NavigationMenuItem>
+              <Link href="/vacantes" legacyBehavior passHref>
+                <NavigationMenuLink 
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black hover:bg-black/10 focus:bg-black/10")}
+                >
+                  Vacantes
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
 
         {/* 6. Botones Dinámicos (con el carrito añadido) */}
         <div className="flex flex-1 items-center justify-end space-x-2">
@@ -76,18 +115,11 @@ export function PublicNavbar() {
           {/* C. Estado Logeado (sin cambios) */}
           {status === "authenticated" && (
             <>
-              <Button variant="outline" asChild className="border-black/20 hover:bg-black/10">
+              <Button variant="ghost" asChild className="border-black/20 hover:bg-black/10">
                 <Link href="/perfil">
                   <User className="mr-2 h-4 w-4" />
                   Mi Perfil
                 </Link>
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={handleLogout}
-                className="hover:bg-black/10 hover:text-black"
-              >
-                Cerrar Sesión
               </Button>
             </>
           )}
