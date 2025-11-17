@@ -11,7 +11,7 @@ export default function PublicLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <PublicNavbar />
-      <main className="flex-1">
+      <main className="flex-1 bg-gray-50">
         {children}
       </main>
       <PublicFooter />

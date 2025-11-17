@@ -1,4 +1,3 @@
-// app/(gestor)/vacantes/FormularioCrearVacante.tsx
 "use client";
 
 import { useFormState, useFormStatus } from 'react-dom';
@@ -62,6 +61,23 @@ export function FormularioCrearVacante() {
           <p className="text-sm text-red-500">{state.errors.salario[0]}</p>
         )}
       </div>
+
+      {/* --- BLOQUE AÑADIDO --- */}
+      <div className="grid gap-2">
+        <Label htmlFor="contacto">Información de Contacto (Opcional)</Label>
+        <Input 
+          id="contacto" 
+          name="contacto" 
+          placeholder="Ej: 312-555-0199 o empleos@minegocio.com" 
+        />
+        <p className="text-xs text-muted-foreground">
+          El email o teléfono que verán los interesados.
+        </p>
+        {state?.errors?.contacto && (
+          <p className="text-sm text-red-500">{state.errors.contacto[0]}</p>
+        )}
+      </div>
+      {/* --- FIN DEL BLOQUE AÑADIDO --- */}
 
       <div className="grid gap-2">
         <Label htmlFor="descripcion">Descripción</Label>

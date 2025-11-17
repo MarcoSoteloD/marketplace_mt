@@ -1,4 +1,4 @@
-// app/(admin)/categorias/editar/[id]/page.tsx
+// app/(admin)/gestion-categorias/editar/[id]/page.tsx
 
 import { notFound } from 'next/navigation';
 import { getCategoriaGlobalById } from '@/lib/db';

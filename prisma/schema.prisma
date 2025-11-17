@@ -142,6 +142,7 @@ model vacantes {
   salario           Decimal?  @db.Decimal(10, 2)
   fecha_publicacion DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
   activo            Boolean?  @default(true)
+  contacto          String?   @db.VarChar(255)
   negocios          negocios  @relation(fields: [id_negocio], references: [id_negocio], onDelete: Cascade, onUpdate: NoAction, map: "fk_negocio_vacantes")
 
   @@index([id_negocio], map: "idx_vacantes_id_negocio")

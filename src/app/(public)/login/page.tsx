@@ -94,7 +94,7 @@ export default function LoginPage() {
             )}
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-500" disabled={isLoading}>
               {isLoading ? "Cargando..." : "Entrar"}
             </Button>
           </CardFooter>

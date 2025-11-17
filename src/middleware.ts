@@ -5,7 +5,7 @@ import { getToken } from 'next-auth/jwt';
 import { rol_usuario } from '@prisma/client';
 
 // 1. Define tus rutas de cada rol
-const ADMIN_PATHS = ["/dashboard", "/categorias", "/gestores", "/perfil-admin"];
+const ADMIN_PATHS = ["/dashboard", "/gestion-categorias", "/gestores", "/perfil-admin"];
 const GESTOR_PATHS = ["/configuracion", "/categorias-productos", "/productos", "/pedidos", "/vacantes", "/perfil-gestor"];
 // ...
 
@@ -55,7 +55,7 @@ export const config = {
   matcher: [
     // Rutas de Admin
     '/dashboard/:path*',
-    '/categorias/:path*',
+    '/gestion-categorias/:path*',
     '/gestores/:path*',
     '/perfil-admin/:path*',
     
@@ -66,10 +66,15 @@ export const config = {
     '/pedidos/:path*',
     '/vacantes/:path*',
     '/perfil-gestor/:path*',
+
+    // Rutas de Cliente
+    '/perfil/:path*',
+    '/carrito/:path*',
+    '/pedido-exitoso/:path*',
     
     // Las páginas raíz de cada sección
     '/dashboard',
-    '/categorias',
+    '/gestion-categorias',
     '/gestores',
     '/perfil-admin',
     '/configuracion',
@@ -78,6 +83,8 @@ export const config = {
     '/pedidos',
     '/vacantes',
     '/perfil-gestor',
-    '/perfil'
+    '/perfil',
+    '/carrito',
+    '/pedido-exitoso'
   ],
 };

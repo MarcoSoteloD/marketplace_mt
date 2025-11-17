@@ -35,12 +35,12 @@ export function PublicNavbar() {
   // --- FIN DE LÓGICA DEL CARRITO ---
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-amber-600/50 bg-amber-500 text-black shadow-sm overflow-x-hidden">
+    <header className="sticky top-0 z-50 w-full border-b bg-white text-black shadow-sm overflow-x-hidden">
       <div className="container flex h-20 items-center">
         
         {/* Logo y Nombre (sin cambios) */}
         <div className="mr-4 flex">
-          <Link href="/" className="flex items-center gap-2 font-bold">
+          <Link href="/" className="flex items-center gap-2 font-bold text-stone-700">
             <Store className="h-6 w-6" />
             <span>Manos Tonilenses</span>
           </Link>
@@ -52,7 +52,7 @@ export function PublicNavbar() {
             <NavigationMenuItem>
               <Link href="/negocios" legacyBehavior passHref>
                 <NavigationMenuLink 
-                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black hover:bg-black/10 focus:bg-black/10")}
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-black/10 focus:bg-white/10 hover:text-black")}
                 >
                   Negocios
                 </NavigationMenuLink>
@@ -63,7 +63,7 @@ export function PublicNavbar() {
             <NavigationMenuItem>
               <Link href="/categorias" legacyBehavior passHref>
                 <NavigationMenuLink 
-                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black hover:bg-black/10 focus:bg-black/10")}
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-black/10 focus:bg-black/10 hover:text-black")}
                 >
                   Categorías
                 </NavigationMenuLink>
@@ -72,11 +72,11 @@ export function PublicNavbar() {
 
             {/* Link a Vacantes */}
             <NavigationMenuItem>
-              <Link href="/vacantes" legacyBehavior passHref>
+              <Link href="/empleos" legacyBehavior passHref>
                 <NavigationMenuLink 
-                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black hover:bg-black/10 focus:bg-black/10")}
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-black/10 focus:bg-black/10 hover:text-black")}
                 >
-                  Vacantes
+                  Empleos
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
@@ -99,13 +99,13 @@ export function PublicNavbar() {
               <Button 
                 variant="ghost" 
                 asChild 
-                className="hover:bg-black/10 hover:text-black focus-visible:ring-black"
+                className="hover:bg-black/10 hover:text-black focus-visible:ring-black text-stone-700"
               >
                 <Link href="/login">Iniciar Sesión</Link>
               </Button>
               <Button 
                 asChild 
-                className="bg-amber-700 text-white hover:bg-amber-800 focus-visible:ring-amber-300"
+                className="bg-orange-600 text-white hover:bg-orange-500"
               >
                 <Link href="/registro">Registrarse</Link>
               </Button>
@@ -115,7 +115,7 @@ export function PublicNavbar() {
           {/* C. Estado Logeado (sin cambios) */}
           {status === "authenticated" && (
             <>
-              <Button variant="ghost" asChild className="border-black/20 hover:bg-black/10">
+              <Button variant="ghost" asChild className="border-black/20 hover:bg-black/10 text-stone-700">
                 <Link href="/perfil">
                   <User className="mr-2 h-4 w-4" />
                   Mi Perfil
@@ -126,18 +126,18 @@ export function PublicNavbar() {
 
           {/* --- D. BOTÓN DE CARRITO (AÑADIDO) --- */}
           {/* Solo se muestra si estamos en el cliente y el 'status' NO es 'loading' */}
-          {isClient && status !== "loading" && (
+          {isClient && status === "authenticated" && (
             <Button 
               variant="ghost" 
               size="icon" 
               asChild 
-              className="relative hover:bg-black/10 hover:text-black focus-visible:ring-black"
+              className="relative hover:bg-black/10 hover:text-black text-stone-700"
             >
               <Link href="/carrito">
                 <ShoppingCart className="h-5 w-5" />
                 {/* Contador (solo se muestra si hay items) */}
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white">
                     {totalItems}
                   </span>
                 )}

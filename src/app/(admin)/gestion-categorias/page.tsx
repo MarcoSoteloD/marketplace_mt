@@ -1,4 +1,4 @@
-// app/(admin)/categorias/page.tsx
+// app/(admin)/gestion-categorias/page.tsx
 
 import Link from 'next/link';
 import { getCategoriasGlobales } from '@/lib/db'; // Importamos la función
@@ -79,7 +79,7 @@ export default async function PaginaCategorias() {
                           </div>
                         </div>
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/categorias/editar/${cat.id_categoria_g}`}>
+                          <Link href={`/gestion-categorias/editar/${cat.id_categoria_g}`}>
                             Editar
                           </Link>
                         </Button>

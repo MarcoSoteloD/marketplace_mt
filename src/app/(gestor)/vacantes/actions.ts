@@ -1,4 +1,3 @@
-// app/(gestor)/vacantes/actions.ts
 "use server";
 
 import { z } from 'zod';
@@ -8,7 +7,7 @@ import { Prisma } from '@prisma/client';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Importamos las funciones de DB que acabamos de crear
+// Importamos las funciones de DB
 import {
     createVacante,
     deleteVacante,
@@ -20,16 +19,14 @@ const VacanteSchema = z.object({
     titulo: z.string().min(3, "El título es requerido"),
     descripcion: z.string().min(10, "La descripción debe ser más detallada"),
     puesto: z.string().optional(),
-    // 'coerce' convierte el string vacío "" a NaN, 
-    // que Zod (correctamente) falla al validar como número.
-    // Usamos 'transform' para convertir "" a 'undefined' antes de validar.
     salario: z.preprocess(
         (val) => (val === "" ? undefined : val),
-        z.coerce.number() // <-- SIN ARGUMENTOS
+        z.coerce.number()
             .positive("El salario debe ser un número positivo")
             .optional()
     ),
-    activo: z.string().optional(), // El checkbox envía "on" o nada
+    activo: z.string().optional(),
+    contacto: z.string().optional(), // + AÑADIDO
 });
 
 // --- Tipo de Estado del Formulario ---
@@ -40,6 +37,7 @@ export type VacanteState = {
         puesto?: string[];
         salario?: string[];
         activo?: string[];
+        contacto?: string[]; // + AÑADIDO
         _form?: string[];
     };
     message?: string;
@@ -62,6 +60,7 @@ export async function createVacanteAction(prevState: VacanteState, formData: For
         puesto: formData.get('puesto'),
         salario: formData.get('salario'),
         activo: formData.get('activo'),
+        contacto: formData.get('contacto'), // + AÑADIDO
     };
 
     const validatedFields = VacanteSchema.safeParse(parsedData);
@@ -74,7 +73,8 @@ export async function createVacanteAction(prevState: VacanteState, formData: For
         };
     }
 
-    const { titulo, descripcion, puesto, salario } = validatedFields.data;
+    // + AÑADIDO 'contacto' a la desestructuración
+    const { titulo, descripcion, puesto, salario, contacto } = validatedFields.data;
 
     try {
         // Preparamos el objeto para Prisma
@@ -82,10 +82,10 @@ export async function createVacanteAction(prevState: VacanteState, formData: For
             titulo,
             descripcion,
             puesto,
-            // Convertimos el 'number' de Zod a 'Decimal' de Prisma
             salario: salario ? new Prisma.Decimal(salario) : null,
-            activo: formData.get('activo') === "on", // El checkbox
-            fecha_publicacion: new Date(), // Asignamos la fecha actual
+            activo: formData.get('activo') === "on",
+            fecha_publicacion: new Date(),
+            contacto, // + AÑADIDO
 
             // Conectamos con el negocio
             negocios: {
@@ -109,6 +109,7 @@ export async function createVacanteAction(prevState: VacanteState, formData: For
 
 
 // --- 2. Server Action: ELIMINAR VACANTE ---
+// (No se necesitan cambios en 'deleteVacanteAction')
 export async function deleteVacanteAction(vacanteId: number) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.negocioId) {
@@ -117,7 +118,7 @@ export async function deleteVacanteAction(vacanteId: number) {
     const negocioId = session.user.negocioId;
 
     try {
-        await deleteVacante(vacanteId, negocioId); // Pasamos ambos IDs por seguridad
+        await deleteVacante(vacanteId, negocioId);
         revalidatePath('/(gestor)/vacantes');
         return { success: true, message: "Vacante eliminada." };
     } catch (error) {
@@ -138,26 +139,27 @@ export async function updateVacanteAction(
   }
   const negocioId = session.user.negocioId;
 
-  // Reutilizamos el mismo schema de 'create'
   const parsedData = {
     titulo: formData.get('titulo'),
     descripcion: formData.get('descripcion'),
     puesto: formData.get('puesto'),
     salario: formData.get('salario'),
     activo: formData.get('activo'),
+    contacto: formData.get('contacto'), // + AÑADIDO
   };
 
   const validatedFields = VacanteSchema.safeParse(parsedData);
 
   if (!validatedFields.success) {
     return {
-      errors: validatedFields.error.flatten().fieldErrors as NonNullable<VacanteState>["errors"],
-      message: "Error de validación. Revisa los campos.",
-      success: false,
+        errors: validatedFields.error.flatten().fieldErrors as NonNullable<VacanteState>["errors"],
+        message: "Error de validación. Revisa los campos.",
+        success: false,
     };
   }
   
-  const { titulo, descripcion, puesto, salario } = validatedFields.data;
+  // + AÑADIDO 'contacto' a la desestructuración
+  const { titulo, descripcion, puesto, salario, contacto } = validatedFields.data;
 
   try {
     // Preparamos el objeto para Prisma
@@ -166,11 +168,10 @@ export async function updateVacanteAction(
       descripcion,
       puesto,
       salario: salario ? new Prisma.Decimal(salario) : null,
-      activo: formData.get('activo') === "on", // El checkbox
-      // No actualizamos la fecha_publicacion
+      activo: formData.get('activo') === "on",
+      contacto, // + AÑADIDO
     };
 
-    // Llamamos a la función de db.ts (que ya creamos)
     await updateVacante(vacanteId, negocioId, data);
 
     revalidatePath('/(gestor)/vacantes');

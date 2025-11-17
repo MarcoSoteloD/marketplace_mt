@@ -1,4 +1,4 @@
-// app/(admin)/categorias/editar/[id]/FormularioEditarCategoria.tsx
+// app/(admin)/gestion-categorias/editar/[id]/FormularioEditarCategoria.tsx
 
 "use client";
 
@@ -72,7 +72,7 @@ export function FormularioEditarCategoria({
             // 3. Si fue exitoso, inicia el timer para redirigir
             if (state.success) {
                 const timer = setTimeout(() => {
-                    router.push('/categorias');
+                    router.push('/gestion-categorias');
                 }, 1500);
 
                 // Limpia el timer si el componente se desmonta

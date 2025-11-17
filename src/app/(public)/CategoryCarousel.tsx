@@ -36,6 +36,10 @@ export function CategoryCarousel({ categorias }: { categorias: Categoria[] }) {
       className="w-full"
       onMouseEnter={() => plugin.current.stop()} // <-- CORREGIDO
       onMouseLeave={() => plugin.current.play()} // <-- CORREGIDO
+      opts={{
+        align: "start", // Alinea el scroll al inicio (evita que queden mochas)
+        loop: true,     // Asegura que el autoplay sea un bucle infinito
+      }}
     >
       <CarouselContent>
         {categorias.map((cat) => {
@@ -50,20 +54,17 @@ export function CategoryCarousel({ categorias }: { categorias: Categoria[] }) {
                 href={`/categorias/${encodeURIComponent(cat.nombre.toLowerCase())}`}
                 className="group"
               >
-                <div className="flex flex-col items-center justify-center gap-3 p-4 border rounded-lg h-full transition-all hover:shadow-md hover:-translate-y-1 text-center bg-background">
-                  <Icono className="h-8 w-8 text-primary" />
-                  <p className="font-medium">{cat.nombre}</p>
+                <div className="flex flex-col items-center justify-center gap-3 p-4 border rounded-3xl h-full transition-all hover:shadow-md hover:-translate-y-1 text-center bg-background">
+                  <Icono className="h-8 w-8 text-primary text-stone-700" />
+                  <p className="font-medium text-stone-700">{cat.nombre}</p>
                 </div>
               </Link>
             </CarouselItem>
           );
         })}
       </CarouselContent>
-      {/* Para un look más limpio de "autoplay", ocultamos las flechas.
-        Si las quieres de vuelta, solo descomenta estas líneas:
-      <CarouselPrevious className="ml-12" />
-      <CarouselNext className="mr-12" />
-      */}
+      <CarouselPrevious className="ml-3" />
+      <CarouselNext className="mr-3" />
     </Carousel>
   );
 }

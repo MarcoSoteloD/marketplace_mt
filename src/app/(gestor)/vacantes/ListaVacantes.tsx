@@ -1,4 +1,3 @@
-// app/(gestor)/vacantes/ListaVacantes.tsx
 "use client";
 
 import type { vacantes } from '@prisma/client';
@@ -8,7 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { deleteVacanteAction } from './actions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, DollarSign, Calendar } from 'lucide-react';
+// + Añadimos Phone y Mail
+import { Trash2, Edit, DollarSign, Calendar, Phone, Mail } from 'lucide-react'; 
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -85,6 +85,21 @@ export function ListaVacantes({ vacantes }: { vacantes: vacantes[] }) {
                   <Calendar className="h-4 w-4" /> Publicado: {formatDate(vacante.fecha_publicacion)}
                 </span>
               )}
+
+              {/* --- BLOQUE AÑADIDO --- */}
+              {vacante.contacto && (
+                <span className="flex items-center gap-1">
+                  {/* Detecta si es email o teléfono */}
+                  {vacante.contacto.includes('@') ? (
+                    <Mail className="h-4 w-4" />
+                  ) : (
+                    <Phone className="h-4 w-4" />
+                  )}
+                  {vacante.contacto}
+                </span>
+              )}
+              {/* --- FIN DEL BLOQUE AÑADIDO --- */}
+
             </div>
           </div>
           
@@ -102,6 +117,7 @@ export function ListaVacantes({ vacantes }: { vacantes: vacantes[] }) {
               </Button>
               
               <AlertDialog>
+                {/* ... (Tu <AlertDialog> se queda exactamente igual) ... */}
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="icon" disabled={isPending} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" />

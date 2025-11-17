@@ -1,4 +1,4 @@
-// app/(admin)/categorias/actions.ts
+// app/(admin)/gestion-categorias/actions.ts
 
 "use server";
 
@@ -51,7 +51,7 @@ export async function createCategoriaGlobal(prevState: State, formData: FormData
     // Llama a la función de db.ts
     await createCategoriaInDb(validatedFields.data);
 
-    revalidatePath('/(admin)/categorias');
+    revalidatePath('/(admin)/gestion-categorias');
     return { message: `Categoría "${validatedFields.data.nombre}" creada.`, success: true };
 
   } catch (error) {
@@ -84,8 +84,8 @@ export async function updateCategoriaGlobal(id: number, prevState: State, formDa
     // Llama a la función de db.ts
     await updateCategoriaInDb(id, validatedFields.data);
 
-    revalidatePath('/(admin)/categorias');
-    revalidatePath(`/categorias/editar/${id}`);
+    revalidatePath('/(admin)/gestion-categorias');
+    revalidatePath(`/gestion-categorias/editar/${id}`);
     return { message: `Categoría "${validatedFields.data.nombre}" actualizada.`, success: true };
 
   } catch (error) {
@@ -104,7 +104,7 @@ export async function deleteCategoriaGlobal(id: number) {
     // Llama a la función de db.ts
     await deleteCategoriaInDb(id);
     
-    revalidatePath('/(admin)/categorias');
+    revalidatePath('/(admin)/gestion-categorias');
     
   } catch (error) {
     // Si algo sale mal (ej. la categoría está en uso), 
@@ -114,5 +114,5 @@ export async function deleteCategoriaGlobal(id: number) {
   }
   
   // Redirigimos a la lista principal pase lo que pase
-  redirect('/categorias');
+  redirect('/gestion-categorias');
 }

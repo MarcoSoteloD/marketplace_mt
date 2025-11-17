@@ -29,7 +29,7 @@ export default async function HomePage() {
       {/* --- 1. Hero --- */}
       <section className="bg-muted/40 py-16 md:py-24">
         <div className="container flex flex-col items-center text-center gap-4">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+          <h1 className="text-4xl md:text-5xl text-stone-700 font-bold tracking-tight">
             Descubre lo mejor de Tonila
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
@@ -46,7 +46,7 @@ export default async function HomePage() {
               placeholder="¿Qué estás buscando? (Ej. tacos, peluquería...)"
               className="h-12 text-base flex-1"
             />
-            <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0">
+            <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0 bg-orange-600 hover:bg-orange-500">
               <Search className="h-5 w-5" />
             </Button>
           </form>
@@ -55,8 +55,8 @@ export default async function HomePage() {
 
       {/* --- 2. Categorías --- */}
       <section className="container">
-        <h2 className="text-2xl font-semibold tracking-tight mb-6">
-          Explora nuestras categorías
+        <h2 className="text-2xl text-stone-700 font-semibold tracking-tight mb-6">
+          Explora nuestras Categorías
         </h2>
 
         {/* --- INICIO DEL REEMPLAZO --- */}
@@ -68,8 +68,8 @@ export default async function HomePage() {
 
       {/* --- 3. Negocios --- */}
       <section className="container pb-24">
-        <h2 className="text-2xl font-semibold tracking-tight mb-6">
-          Explora los negocios
+        <h2 className="text-2xl text-stone-700 font-semibold tracking-tight mb-6">
+          Explora los Negocios
         </h2>
         {negocios.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

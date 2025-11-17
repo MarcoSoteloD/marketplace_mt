@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import type { negocios } from '@prisma/client';
-import { CldImage } from 'next-cloudinary';
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Store, MapPin } from 'lucide-react';
@@ -25,12 +25,11 @@ export function NegocioCard({ negocio }: NegocioCardProps) {
         {/* --- IMAGEN --- */}
         <div className="relative h-48 w-full">
           {negocio.url_logo ? (
-            <CldImage
+            <CloudinaryImage
               src={negocio.url_logo}
               alt={`Logo de ${negocio.nombre}`}
               fill // 'fill' hace que llene el div padre
               className="object-cover transition-transform duration-300 group-hover:scale-105"
-              crop={{ type: "fill", source: true }}
             />
           ) : (
             // Placeholder si no hay logo
@@ -44,7 +43,7 @@ export function NegocioCard({ negocio }: NegocioCardProps) {
         <CardContent className="p-4 space-y-2">
           {/* Nombre y Badge de Activo (aunque siempre será true) */}
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold truncate" title={negocio.nombre}>
+            <h3 className="text-lg text-stone-700 font-semibold truncate" title={negocio.nombre}>
               {negocio.nombre}
             </h3>
             {negocio.activo && (

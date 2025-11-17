@@ -210,6 +210,117 @@ export const getPedidoDetailsByClienteId = async (pedidoId: number, clienteId: n
 };
 
 /**
+ * Obtiene todos los negocios activos asociados a una categoría global específica.
+ * @param nombreCategoria El nombre de la categoría (ej. "Restaurantes")
+ */
+export async function getNegociosByCategoriaGlobal(nombreCategoria: string) {
+  try {
+    const negocios = await prisma.negocios.findMany({
+      where: {
+        // Solo mostrar negocios que estén marcados como activos
+        activo: true,
+        
+        // Aquí filtramos por la relación en la tabla pivote
+        negocio_categoria: {
+          some: {
+            categorias_globales: {
+              // Comparamos el nombre, ignorando mayúsculas/minúsculas
+              nombre: {
+                equals: nombreCategoria,
+                mode: 'insensitive', 
+              },
+            },
+          },
+        },
+      },
+      // Al no tener un 'select', Prisma trae TODOS los campos del modelo 'negocios',
+      // que es lo que tu NegocioCard espera.
+    });
+
+    return negocios;
+  } catch (error) {
+    console.error('Error al obtener negocios por categoría:', error);
+    return []; // Devolver un array vacío en caso de error
+  }
+}
+
+/**
+ * Obtiene todos los negocios activos, opcionalmente filtrados por categoría.
+ * @param categoriaNombre (Opcional) El nombre de la categoría global.
+ */
+export async function getActiveNegocios(categoriaNombre?: string) {
+  try {
+    // Construimos el 'where' dinámicamente
+    const whereClause: Prisma.negociosWhereInput = {
+      activo: true, // Siempre mostrar solo negocios activos
+    };
+
+    // Si nos pasan una categoría, la añadimos al filtro
+    if (categoriaNombre) {
+      whereClause.negocio_categoria = {
+        some: {
+          categorias_globales: {
+            nombre: {
+              equals: categoriaNombre,
+              mode: 'insensitive',
+            },
+          },
+        },
+      };
+    }
+
+    const negocios = await prisma.negocios.findMany({
+      where: whereClause,
+      // No necesitamos 'include' porque tu NegocioCard
+      // (según el error que me pasaste) espera el objeto 'negocios' completo.
+      // Si esto es muy pesado, podemos añadir un 'select' con todos los campos.
+      orderBy: {
+        nombre: 'asc',
+      },
+    });
+
+    return negocios;
+
+  } catch (error) {
+    console.error("Error en getActiveNegocios:", error);
+    return [];
+  }
+}
+
+/**
+ * Obtiene TODAS las vacantes activas de TODOS los negocios activos.
+ * Para la página pública de /empleos
+ */
+export async function getAllActiveVacantes() {
+  try {
+    const vacantes = await prisma.vacantes.findMany({
+      where: {
+        activo: true, // La vacante debe estar activa
+        negocios: {  // El negocio que la publicó debe estar activo
+          activo: true,
+        },
+      },
+      include: {
+        negocios: {
+          select: {
+            nombre: true,
+            url_logo: true,
+            slug: true, // Útil si queremos enlazar al negocio
+          },
+        },
+      },
+      orderBy: {
+        fecha_publicacion: 'desc', // Las más nuevas primero
+      },
+    });
+    return vacantes;
+  } catch (error) {
+    console.error('Error en getAllActiveVacantes:', error);
+    return [];
+  }
+}
+
+/**
  * -----------------------------------------------------------------
  * 🔒 FUNCIONES DEL ADMIN (PLATAFORMA)
  * -----------------------------------------------------------------
@@ -548,6 +659,12 @@ export const getNegocioById = async (id: number) => {
   try {
     return await prisma.negocios.findUnique({
       where: { id_negocio: id },
+      // + AÑADE ESTE 'include'
+      include: {
+        negocio_categoria: {
+          select: { id_categoria_g: true }, // Solo necesitamos los IDs
+        },
+      },
     });
   } catch (error) {
     console.error('Error en getNegocioById:', error);

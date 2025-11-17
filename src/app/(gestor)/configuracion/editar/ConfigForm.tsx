@@ -3,7 +3,7 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { updateNegocioConfig, ConfigNegocioState } from "../actions";
-import type { negocios as PrismaNegocios } from "@prisma/client";
+import type { negocios as PrismaNegocios, categorias_globales } from "@prisma/client";
 import { useEffect, useState, useMemo } from "react"; // 'useMemo' no se usa, pero no estorba
 import { CldImage } from "next-cloudinary";
 import { useToast } from "@/hooks/use-toast";
@@ -35,9 +35,9 @@ type PlainNegocio = Omit<PrismaNegocios, 'latitud' | 'longitud' | 'horario' | 'g
 // 2. Carga dinámica del mapa
 const MapSelector = dynamic(
   () => import('./MapSelector').then(mod => mod.MapSelector),
-  { 
-    ssr: false, 
-    loading: () => <p className="text-center">Cargando mapa...</p> 
+  {
+    ssr: false,
+    loading: () => <p className="text-center">Cargando mapa...</p>
   }
 );
 
@@ -158,7 +158,15 @@ const parseGalleryDefault = (gallery: any): string[] => {
 };
 
 // --- Componente Principal: El Formulario ---
-export function ConfigForm({ negocio }: { negocio: PlainNegocio }) {
+export function ConfigForm({
+  negocio,
+  categoriasGlobales,
+  categoriasActualesIds
+}: {
+  negocio: PlainNegocio,
+  categoriasGlobales: categorias_globales[], // + PROP NUEVO
+  categoriasActualesIds: number[]            // + PROP NUEVO
+}) {
   const initialState: ConfigNegocioState = undefined;
   const [state, dispatch] = useFormState(updateNegocioConfig, initialState);
   const { toast } = useToast();
@@ -166,6 +174,8 @@ export function ConfigForm({ negocio }: { negocio: PlainNegocio }) {
   const [defaultHorarios] = useState(() => parseHorarioDefault(JSON.parse(negocio.horario || "null")));
   const [redes, setRedes] = useState(() => parseRedesSocialesDefault(JSON.parse(negocio.url_redes_sociales || "null")));
   const [gallery, setGallery] = useState(() => parseGalleryDefault(JSON.parse(negocio.galeria_fotos || "null")));
+
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>(categoriasActualesIds);
 
   const getRedesJsonString = () => {
     const jsonObject = redes.reduce((acc, red) => {
@@ -193,6 +203,14 @@ export function ConfigForm({ negocio }: { negocio: PlainNegocio }) {
 
   const removeGalleryImage = (urlToRemove: string) => {
     setGallery(gallery.filter(url => url !== urlToRemove));
+  };
+
+  const handleCategoryChange = (categoryId: number, checked: boolean) => {
+    setSelectedCategoryIds((prevIds) =>
+      checked
+        ? [...prevIds, categoryId] // Añadir ID
+        : prevIds.filter((id) => id !== categoryId) // Quitar ID
+    );
   };
 
   useEffect(() => {
@@ -232,6 +250,44 @@ export function ConfigForm({ negocio }: { negocio: PlainNegocio }) {
             <Label htmlFor="telefono">Teléfono</Label>
             <Input id="telefono" name="telefono" type="tel" defaultValue={negocio.telefono || ""} />
           </div>
+
+          <CardTitle className="pt-4">Categorías</CardTitle>
+          <CardDescription>
+            Selecciona las categorías que mejor describen tu negocio.
+            Esto ayuda a los clientes a encontrarte.
+          </CardDescription>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4 border rounded-md">
+            {categoriasGlobales.map((categoria) => (
+              <div
+                key={categoria.id_categoria_g}
+                className="flex items-center space-x-2"
+              >
+                <Checkbox
+                  id={`cat-${categoria.id_categoria_g}`}
+                  // Comprobamos si el ID está en nuestro state
+                  checked={selectedCategoryIds.includes(categoria.id_categoria_g)}
+                  // Usamos el handler para actualizar el state
+                  onCheckedChange={(checked) => {
+                    handleCategoryChange(categoria.id_categoria_g, checked as boolean);
+                  }}
+                />
+                <Label
+                  htmlFor={`cat-${categoria.id_categoria_g}`}
+                  className="font-normal"
+                >
+                  {categoria.nombre}
+                </Label>
+              </div>
+            ))}
+          </div>
+          {/* Guardamos el state en un input oculto, igual que haces con redes y galería */}
+          <input
+            type="hidden"
+            name="categorias_ids"
+            value={JSON.stringify(selectedCategoryIds)}
+          />
+          {state?.errors?.categorias_ids && (<p className="text-sm text-red-500">{state.errors.categorias_ids[0]}</p>)}
 
           {/* --- DIRECCIÓN --- */}
           <CardTitle className="pt-4">Dirección</CardTitle>
@@ -280,7 +336,7 @@ export function ConfigForm({ negocio }: { negocio: PlainNegocio }) {
             defaultLat={negocio.latitud}
             defaultLng={negocio.longitud}
           />
-          
+
           {/* --- MEDIA Y JSON --- */}
           <CardTitle className="pt-4">Media y Enlaces</CardTitle>
           {/* ... (Input de Logo) ... */}

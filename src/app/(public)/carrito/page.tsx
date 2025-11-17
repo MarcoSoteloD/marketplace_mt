@@ -19,7 +19,7 @@ import {
     CardFooter,
     CardDescription
 } from '@/components/ui/card';
-import { CldImage } from 'next-cloudinary';
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Loader } from '@/components/ui/loader'; // El spinner
@@ -147,13 +147,12 @@ export default function CarritoPage() {
                         <CardContent className="divide-y">
                             {items.map(item => (
                                 <div key={item.id_producto} className="flex items-center gap-4 py-4">
-                                    <CldImage
+                                    <CloudinaryImage
                                         src={item.url_foto || 'v1621532000/placeholder_image'}
                                         width="80"
                                         height="80"
                                         alt={item.nombre}
                                         className="rounded-md object-cover aspect-square bg-muted"
-                                        crop={{ type: "fill", source: true }}
                                     />
                                     <div className="flex-1 space-y-1">
                                         <p className="font-medium">{item.nombre}</p>

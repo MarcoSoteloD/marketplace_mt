@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma'; // Importamos prisma solo para los tipos
-import { Prisma } from '@prisma/client';
+import { Prisma, categorias_globales } from '@prisma/client';
 
 // Importamos las funciones de DB
 import { updateNegocio } from '@/lib/db';
@@ -78,6 +78,7 @@ const NegocioConfigSchema = z.object({
   // Campos de Mapa (opcionales, convertidos a Decimal)
   latitud: z.coerce.number().optional(), // z.coerce.number() convierte el string del form a número
   longitud: z.coerce.number().optional(),
+  categorias_ids: z.string().optional(),
 })
 
   // --- Validación de Horas (¡Tu idea!) ---
@@ -134,6 +135,7 @@ export type ConfigNegocioState = {
     url_redes_sociales?: string[];
     latitud?: string[];
     longitud?: string[];
+    categorias_ids?: string[];
     _form?: string[]; // Errores generales
   };
   message?: string;
@@ -203,6 +205,7 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     // Campos de Archivos
     url_logo: (newLogoFile && newLogoFile.size > 0) ? newLogoFile : undefined,
     galeria_fotos_nuevas: (newGalleryFiles.length > 0 && newGalleryFiles[0].size > 0) ? newGalleryFiles : undefined,
+    categorias_ids: formData.get('categorias_ids') || undefined,
   };
   // --- FIN DE LA CORRECCIÓN ---
 
@@ -232,6 +235,7 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     horario_viernes_cerrado, horario_viernes_apertura, horario_viernes_cierre,
     horario_sabado_cerrado, horario_sabado_apertura, horario_sabado_cierre,
     horario_domingo_cerrado, horario_domingo_apertura, horario_domingo_cierre,
+    categorias_ids,
     ...data 
   } = validatedFields.data;
 
@@ -263,6 +267,23 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     horario: horarioData,
     url_redes_sociales: redesJson,
   };
+
+  try {
+    // Parseamos el array de IDs que viene del hidden input
+    const categoriaIdsArray: number[] = categorias_ids ? JSON.parse(categorias_ids) : [];
+
+    // Añadimos la operación anidada de M-N a 'negocioData'
+    // Esto se ejecutará dentro de la misma transacción de 'update'
+    negocioData.negocio_categoria = {
+      deleteMany: {}, // Borra todas las relaciones existentes
+      create: categoriaIdsArray.map(id_g => ({ // Crea las nuevas
+        id_categoria_g: id_g,
+      })),
+    };
+
+  } catch (error) {
+    return { errors: { _form: ['Error al procesar las categorías.'] }, message: "Error de JSON.", success: false };
+  }
 
   try {
     let currentGalleryUrls: string[] = [];
@@ -297,6 +318,7 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
 
     revalidatePath('/(gestor)/configuracion');
     revalidatePath('/(gestor)/configuracion/editar');
+    revalidatePath('/(public)/categorias', 'layout');
 
     return {
       message: "¡Configuración guardada con éxito!",

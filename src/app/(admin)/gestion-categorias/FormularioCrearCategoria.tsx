@@ -1,4 +1,4 @@
-// app/(admin)/categorias/FormularioCrearCategoria.tsx
+// app/(admin)/gestion-categorias/FormularioCrearCategoria.tsx
 
 "use client";
 

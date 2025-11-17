@@ -1,8 +1,9 @@
-// prisma/seed.ts
-import { PrismaClient, rol_usuario } from '@prisma/client';
+// 1. Importamos el Cliente de Prisma y los tipos
+import { PrismaClient, rol_usuario, Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { prisma } from '../src/lib/prisma';
-import { Prisma } from '@prisma/client';
+
+// 2. Creamos una NUEVA instancia de Prisma, solo para este script
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Iniciando el script de seed...');
@@ -37,7 +38,6 @@ async function main() {
   console.log('Usuario Admin creado:', adminUser.email);
   
   // --- 3. INICIAR TRANSACCIÓN PRINCIPAL ---
-  // (Crearemos Gestor, Negocio, Cliente, Productos y Pedidos todos juntos)
   console.log('Iniciando transacción para datos de prueba...');
   
   try {
@@ -58,7 +58,7 @@ async function main() {
           telefono: '3121234567',
           calle: 'Av. Siempre Viva 123',
           colonia: 'Centro',
-          municipio: 'Colima',
+          municipio: 'Colima', // (Cambiado de 'Tonila' para el ejemplo)
           estado: 'Colima',
           cp: '28000',
         }
@@ -144,12 +144,14 @@ async function main() {
   }
 }
 
+// 3. Esta es tu lógica exacta, que está perfecta
 main()
   .catch((e) => {
     console.error(e);
     process.exit(1);
   })
   .finally(async () => {
+    // 4. Cerramos la conexión LOCAL que abrimos
     await prisma.$disconnect();
     console.log('Seed terminado.');
   });
