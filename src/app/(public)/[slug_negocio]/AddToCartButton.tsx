@@ -33,7 +33,7 @@ export function AddToCartButton({ producto, negocioId }: AddToCartButtonProps) {
   return (
     <Button 
       size="icon" 
-      className="absolute bg-orange-600 hover:bg-orange-500 bottom-2 right-2 h-8 w-8" // Posición y tamaño
+      className="absolute bg-orange-600 hover:bg-orange-500 bottom-2 right-2 h-10 w-10 rounded-full" // Posición y tamaño
       onClick={handleAddToCart}
       aria-label="Añadir al carrito"
     >

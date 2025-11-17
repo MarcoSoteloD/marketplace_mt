@@ -24,7 +24,7 @@ import { useToast } from '@/hooks/use-toast'; // Usando tu ruta de hooks
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="w-full" aria-disabled={pending} disabled={pending}>
+    <Button type="submit" className="w-full rounded-full bg-orange-600 hover:bg-orange-500" aria-disabled={pending} disabled={pending}>
       {pending ? 'Creando cuenta...' : 'Crear Cuenta'}
     </Button>
   );
@@ -50,10 +50,10 @@ export default function PaginaRegistro() {
     <main className="flex min-h-[calc(100vh-112px)] items-center justify-center py-12 px-4">
       {/* 112px = h-14 (navbar) + h-24 (footer-md) approx. */}
       
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md rounded-3xl">
         <form action={dispatch}>
           <CardHeader>
-            <CardTitle className="text-2xl">Crear una cuenta nueva</CardTitle>
+            <CardTitle className="text-2xl text-stone-700">Registrarse</CardTitle>
             <CardDescription>
               Ingresa tus datos para registrarte en la plataforma.
             </CardDescription>
@@ -62,8 +62,8 @@ export default function PaginaRegistro() {
             
             {/* Campo Nombre */}
             <div className="grid gap-2">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input id="nombre" name="nombre" placeholder="Tu nombre" required />
+              <Label htmlFor="nombre" className="text-stone-700">Nombre</Label>
+              <Input id="nombre" name="nombre" placeholder="Tu nombre" className="rounded-full" required />
               {state?.errors?.nombre && (
                 <p className="text-sm text-red-500">{state.errors.nombre[0]}</p>
               )}
@@ -71,8 +71,8 @@ export default function PaginaRegistro() {
 
             {/* Campo Email */}
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="tu@email.com" required />
+              <Label htmlFor="email" className="text-stone-700">Email</Label>
+              <Input id="email" name="email" type="email" placeholder="tu@email.com" className="rounded-full" required />
               {state?.errors?.email && (
                 <p className="text-sm text-red-500">{state.errors.email[0]}</p>
               )}
@@ -80,8 +80,8 @@ export default function PaginaRegistro() {
 
             {/* Campo Contraseña */}
             <div className="grid gap-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" name="password" type="password" required minLength={8} />
+              <Label htmlFor="password" className="text-stone-700">Contraseña</Label>
+              <Input id="password" name="password" type="password" className="rounded-full" required minLength={8} />
               {state?.errors?.password && (
                 <p className="text-sm text-red-500">{state.errors.password[0]}</p>
               )}
@@ -89,8 +89,8 @@ export default function PaginaRegistro() {
 
             {/* Campo Confirmar Contraseña */}
             <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required />
+              <Label htmlFor="confirmPassword" className="text-stone-700">Confirmar Contraseña</Label>
+              <Input id="confirmPassword" name="confirmPassword" type="password" className="rounded-full" required />
               {state?.errors?.confirmPassword && (
                 <p className="text-sm text-red-500">{state.errors.confirmPassword[0]}</p>
               )}

@@ -29,7 +29,7 @@ export function DisplayMap({ lat, lng, popupText }: MapDisplayProps) {
       center={position}
       zoom={15} // Un zoom más cercano para ver la ubicación
       scrollWheelZoom={false}
-      className="h-[250px] w-full rounded-md z-0" // Buena altura para el sidebar
+      className="h-[250px] w-full rounded-3xl z-0 overflow-hidden" // Buena altura para el sidebar
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

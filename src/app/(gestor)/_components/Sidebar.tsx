@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma"; // Importamos prisma para buscar el negoc
 
 // Importamos los componentes cliente
 import { SidebarNav } from "./SidebarNav";
-import { LogoutButton } from "./LogoutButton";
+import { LogoutButton } from "../../../components/layout/LogoutButton";
 import { User } from "lucide-react";
 
 // Rutas del Gestor

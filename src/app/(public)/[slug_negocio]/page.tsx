@@ -4,8 +4,6 @@ import { getNegocioPublicoBySlug } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { Prisma } from '@prisma/client';
 import CloudinaryImage from "@/components/ui/cloudinary-image";
-import Link from "next/link";
-
 // Componentes UI
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -24,10 +22,6 @@ import {
     Store,
     MapPin,
     Phone,
-    Clock,
-    Globe,
-    Pencil,
-    Camera,
     ExternalLink,
     Image as ImageIcon,
     Link as LinkIcon, // El icono 'default'
@@ -36,8 +30,8 @@ import {
 import { type IconType } from "react-icons"; // <-- El NUEVO tipo
 import { SiFacebook, SiInstagram, SiX, SiWhatsapp } from "react-icons/si";
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
 import { checkOpenStatus } from "@/lib/time-helpers";
+import { GoogleMapsButton } from './GoogleMapsButton';
 
 const DisplayMap = dynamic(
     () => import('./DisplayMap').then(mod => mod.DisplayMap),
@@ -212,7 +206,7 @@ export default async function PaginaNegocio({
                     </div>
 
                     {/* --- 2b. TARJETA DE INFO (Debajo del logo) --- */}
-                    <Card className="shadow-lg">
+                    <Card className="shadow-lg rounded-3xl">
                         <CardHeader>
                             <div>
                                 <h1 className="text-3xl text-stone-700  font-bold tracking-tight">
@@ -228,8 +222,8 @@ export default async function PaginaNegocio({
                                     // 2. Si está abierto, SOBREESCRIBE las clases de 'default' con las de verde
                                     className={
                                         isOpen
-                                            ? "bg-green-600 text-white border-transparent hover:bg-green-700"
-                                            : ""
+                                            ? "bg-green-600 text-white border-transparent hover:bg-green-700 rounded-full"
+                                            : "rounded-full"
                                     }
                                 >
                                     {!negocio.activo ? "Inactivo" : (isOpen ? "Abierto ahora" : "Cerrado")}
@@ -255,7 +249,7 @@ export default async function PaginaNegocio({
                                         {Object.entries(redes).map(([plataforma, url]) => {
                                             const Icono = getSocialIcon(plataforma);
                                             return (
-                                                <Button key={plataforma} variant="ghost" size="icon" asChild>
+                                                <Button key={plataforma} variant="ghost" size="icon" className="rounded-full" asChild>
                                                     <a href={url} target="_blank" rel="noopener noreferrer" aria-label={plataforma}>
                                                         <Icono className="h-4 w-4 text-stone-700" />
                                                     </a>
@@ -276,16 +270,11 @@ export default async function PaginaNegocio({
                                     />
 
                                     {/* --- BOTÓN AÑADIDO --- */}
-                                    <Button asChild className="w-full mt-4">
-                                        <a
-                                            href={`https://maps.google.com/?q=LAT,LNG(${encodeURIComponent(negocio.nombre)})@${Number(negocio.latitud)},${Number(negocio.longitud)}`}
-                                            target="_blank" // Abre en una nueva pestaña
-                                            rel="noopener noreferrer"
-                                        >
-                                            <ExternalLink className="mr-2 h-4 w-4" />
-                                            Cómo llegar
-                                        </a>
-                                    </Button>
+                                    <GoogleMapsButton
+                                        lat={Number(negocio.latitud)}
+                                        lng={Number(negocio.longitud)}
+                                        nombre={negocio.nombre}
+                                    />
                                     {/* --- FIN DEL BOTÓN --- */}
                                 </>
                             )}
@@ -294,7 +283,7 @@ export default async function PaginaNegocio({
                     </Card>
 
                     {/* Tarjeta de Horario */}
-                    <Card className="sticky top-20 text-stone-700 shadow-lg">
+                    <Card className="sticky top-20 text-stone-700 shadow-lg rounded-3xl">
                         <CardHeader><CardTitle>Horario</CardTitle></CardHeader>
                         <CardContent>
                             <DisplayHorario horario={negocio.horario} />
@@ -314,8 +303,8 @@ export default async function PaginaNegocio({
 
                                 <div className="grid grid-cols-1 gap-6">
                                     {categoria.productos.map(producto => (
-                                        <Card key={producto.id_producto} className="flex flex-row overflow-hidden">
-                                            <div className="flex-1 p-4 space-y-1">
+                                        <Card key={producto.id_producto} className="flex flex-row overflow-hidden rounded-3xl">
+                                            <div className="flex-1 p-4 space-y-1 ">
                                                 <h4 className="text-stone-700 font-semibold">{producto.nombre}</h4>
                                                 <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">
                                                     {producto.descripcion || ''}

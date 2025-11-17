@@ -1,29 +1,18 @@
-// app/(public)/carrito/page.tsx
 "use client";
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useTransition } from 'react';
-import { useCartStore, CartItem } from '@/store/cart-store';
+import { useCartStore } from '@/store/cart-store';
 import { getNegocioDelCarritoAction, createPedidoAction } from './actions';
 import useSWR from 'swr';
 import { Prisma } from '@prisma/client';
-
-// Componentes UI
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-    CardFooter,
-    CardDescription
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Loader } from '@/components/ui/loader'; // El spinner
-import { Trash2, ShoppingCart, ArrowLeft, Loader2 } from 'lucide-react';
+import { Trash2, ShoppingCart, Loader2, ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Helper para formatear el precio
@@ -37,7 +26,7 @@ function formatCurrency(amount: Prisma.Decimal | number | null | undefined) {
 
 export default function CarritoPage() {
     const router = useRouter();
-    const searchParams = useSearchParams(); // Para leer errores de la URL
+    const searchParams = useSearchParams(); 
     const { toast } = useToast();
 
     // --- Estado del Carrito (Zustand) ---
@@ -52,37 +41,27 @@ export default function CarritoPage() {
     }, [items]);
 
     // --- Obtener Info del Negocio (SWR) ---
-    // Llama a la Server Action 'getNegocioDelCarritoAction'
     const { data: negocio, isLoading: isLoadingNegocio } = useSWR(
-        negocioId ? `negocio-${negocioId}` : null, // Key única (solo se ejecuta si hay negocioId)
+        negocioId ? `negocio-${negocioId}` : null, 
         () => getNegocioDelCarritoAction(negocioId!)
     );
 
     // --- Manejador de Checkout ---
     const handleCheckout = () => {
         startTransition(async () => {
-
-            // 1. Llamamos a la action
             const result = await createPedidoAction(items, negocioId!, subtotal);
-
-            // 2. Verificamos la respuesta
             if (result.success) {
-                // ¡ÉXITO!
                 toast({
                     variant: "success",
                     title: "¡Pedido Realizado!",
                     description: "Tu pedido ha sido enviado al negocio.",
                 });
-                clearCart(); // <-- 3. Limpiamos el carrito
-                router.push(`/pedido-exitoso/${result.pedidoId}`); // <-- 4. Redirigimos
-
+                clearCart(); 
+                router.push(`/pedido-exitoso/${result.pedidoId}`);
             } else {
-                // FALLO
                 if (result.message === "Usuario no autenticado") {
-                    // Si no está logueado, lo mandamos al login
                     router.push('/login?callbackUrl=/carrito');
                 } else {
-                    // Otro error (ej. base de datos)
                     toast({
                         variant: "destructive",
                         title: "Error Inesperado",
@@ -105,19 +84,17 @@ export default function CarritoPage() {
         }
     }, [searchParams, toast]);
 
-    // --- Renderizado ---
-
     // Estado 1: Carrito Vacío
     if (items.length === 0 && !isPending) {
         return (
             <div className="container flex flex-col items-center justify-center py-24 text-center">
-                <ShoppingCart className="h-16 w-16 text-muted-foreground" />
-                <h1 className="mt-4 text-2xl font-semibold">Tu carrito está vacío</h1>
+                <ShoppingCart className="h-16 w-16 text-stone-700" />
+                <h1 className="mt-4 text-2xl text-stone-700 font-semibold">Tu carrito está vacío</h1>
                 <p className="mt-2 text-muted-foreground">
                     Parece que aún no has añadido ningún producto.
                 </p>
-                <Button asChild className="mt-6">
-                    <Link href="/">Volver a la tienda</Link>
+                <Button asChild className="mt-6 rounded-full bg-orange-600 hover:bg-orange-500">
+                    <Link href="/">Volver a la plataforma</Link>
                 </Button>
             </div>
         );
@@ -126,19 +103,17 @@ export default function CarritoPage() {
     // Estado 2: Carrito Lleno
     return (
         <div className="container py-12">
-            <h1 className="text-3xl font-bold tracking-tight mb-8">Tu Carrito</h1>
-
+            <h1 className="text-3xl font-bold tracking-tight mb-8 text-stone-700">Tu Carrito</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
                 {/* --- Columna Izquierda: Lista de Productos --- */}
                 <div className="md:col-span-2">
-                    <Card>
+                    <Card className="rounded-2xl"> 
                         <CardHeader>
                             <CardTitle>
                                 {isLoadingNegocio ? (
                                     <span className="h-6 w-1/2 bg-muted animate-pulse rounded-md" />
                                 ) : (
-                                    <Link href={`/${negocio?.slug || ''}`} className="hover:underline">
+                                    <Link href={`/${negocio?.slug || ''}`} className="hover:underline text-stone-700">
                                         Pedido de: {negocio?.nombre || 'Tu Negocio'}
                                     </Link>
                                 )}
@@ -147,15 +122,22 @@ export default function CarritoPage() {
                         <CardContent className="divide-y">
                             {items.map(item => (
                                 <div key={item.id_producto} className="flex items-center gap-4 py-4">
-                                    <CloudinaryImage
-                                        src={item.url_foto || 'v1621532000/placeholder_image'}
-                                        width="80"
-                                        height="80"
-                                        alt={item.nombre}
-                                        className="rounded-md object-cover aspect-square bg-muted"
-                                    />
+                                    {item.url_foto ? (
+                                        <CloudinaryImage
+                                            src={item.url_foto}
+                                            width="80"
+                                            height="80"
+                                            alt={item.nombre}
+                                            className="rounded-xl object-cover aspect-square bg-muted"
+                                        />
+                                    ) : (
+                                        <div className="flex h-[80px] w-[80px] items-center justify-center rounded-xl bg-muted aspect-square flex-shrink-0">
+                                            <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                                        </div>
+                                    )}
+                                    
                                     <div className="flex-1 space-y-1">
-                                        <p className="font-medium">{item.nombre}</p>
+                                        <p className="font-medium text-stone-700">{item.nombre}</p>
                                         <p className="text-sm text-muted-foreground">{formatCurrency(item.precio)}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
@@ -164,7 +146,7 @@ export default function CarritoPage() {
                                             min="1"
                                             value={item.quantity}
                                             onChange={(e) => updateItemQuantity(item.id_producto, parseInt(e.target.value))}
-                                            className="w-20"
+                                            className="w-20 rounded-full text-stone-700"
                                             aria-label="Cantidad"
                                         />
                                         <Button
@@ -172,6 +154,7 @@ export default function CarritoPage() {
                                             size="icon"
                                             onClick={() => removeItem(item.id_producto)}
                                             aria-label="Eliminar item"
+                                            className="rounded-full"
                                         >
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
@@ -184,28 +167,28 @@ export default function CarritoPage() {
 
                 {/* --- Columna Derecha: Resumen del Pedido --- */}
                 <div className="md:col-span-1">
-                    <Card className="sticky top-20"> {/* Se queda fijo al hacer scroll */}
+                    <Card className="sticky top-20 rounded-2xl">
                         <CardHeader>
-                            <CardTitle>Resumen del Pedido</CardTitle>
+                            <CardTitle className="text-stone-700">Resumen del Pedido</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Subtotal</span>
-                                <span className="font-medium">{formatCurrency(subtotal)}</span>
+                                <span className="font-medium text-stone-700">{formatCurrency(subtotal)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Envío / Servicio</span>
-                                <span className="font-medium">Gratis</span>
+                                <span className="font-medium text-stone-700">Gratis</span>
                             </div>
                             <Separator />
-                            <div className="flex justify-between text-lg font-bold">
+                            <div className="flex justify-between text-lg text-stone-700 font-bold">
                                 <span>Total</span>
                                 <span>{formatCurrency(subtotal)}</span>
                             </div>
                         </CardContent>
                         <CardFooter className="flex flex-col gap-3">
                             <Button
-                                className="w-full"
+                                className="w-full rounded-full bg-orange-600 hover:bg-orange-500"
                                 onClick={handleCheckout}
                                 disabled={isPending}
                             >
@@ -213,7 +196,7 @@ export default function CarritoPage() {
                             </Button>
                             <Button
                                 variant="outline"
-                                className="w-full"
+                                className="w-full rounded-full text-stone-700 hover:text-red-500"
                                 onClick={clearCart}
                                 disabled={isPending}
                             >

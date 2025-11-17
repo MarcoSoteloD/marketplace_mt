@@ -12,7 +12,7 @@ import {
 
 // Importamos los nuevos componentes cliente
 import { SidebarNav } from "./SidebarNav";
-import { LogoutButton } from "./LogoutButton";
+import { LogoutButton } from "../../../components/layout/LogoutButton";
 
 // Definimos las rutas aquí, en el servidor
 const routes = [

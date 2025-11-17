@@ -21,7 +21,7 @@ export function NegocioCard({ negocio }: NegocioCardProps) {
 
   return (
     <Link href={`/${negocio.slug}`} className="group">
-      <Card className="w-full overflow-hidden transition-all duration-200 hover:shadow-lg">
+      <Card className="w-full overflow-hidden transition-all duration-200 hover:shadow-lg rounded-3xl">
         {/* --- IMAGEN --- */}
         <div className="relative h-48 w-full">
           {negocio.url_logo ? (
@@ -47,7 +47,7 @@ export function NegocioCard({ negocio }: NegocioCardProps) {
               {negocio.nombre}
             </h3>
             {negocio.activo && (
-              <Badge variant="secondary" className="bg-green-100 text-green-800">Abierto</Badge>
+              <Badge variant="secondary" className="bg-green-100 text-green-800 rounded-full">Abierto</Badge>
             )}
           </div>
 

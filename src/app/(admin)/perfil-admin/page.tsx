@@ -1,4 +1,4 @@
-// app/(admin)/perfil/page.tsx
+// app/(admin)/perfil-admin/page.tsx
 "use client";
 
 import { useFormState, useFormStatus } from 'react-dom';

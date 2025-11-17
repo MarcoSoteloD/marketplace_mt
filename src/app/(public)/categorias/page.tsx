@@ -40,7 +40,7 @@ export default async function PaginaCategoriasPublicas() {
                   pero con un padding (p-6) e ícono (h-10) más grandes 
                   para que se vean mejor en una página dedicada.
                 */}
-                <div className="flex flex-col items-center justify-center gap-3 p-6 border rounded-xl h-full transition-all hover:shadow-lg hover:-translate-y-1 text-center bg-background">
+                <div className="flex flex-col items-center justify-center gap-3 p-6 border rounded-full h-full transition-all hover:shadow-lg hover:-translate-y-1 text-center bg-background">
                   <Icono className="h-10 w-10 text-stone-700" /> 
                   <p className="font-semibold text-stone-700 text-lg">{cat.nombre}</p>
                 </div>

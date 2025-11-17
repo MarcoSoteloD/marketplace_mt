@@ -56,7 +56,7 @@ export default async function PaginaEmpleos() {
           Bolsa de Empleo
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mt-4">
-          Encuentra oportunidades laborales en negocios de Tonila.
+          Encuentra oportunidades laborales en nuestros negocios de Tonila.
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export default async function PaginaEmpleos() {
           {vacantes.map((vacante) => (
             <Card 
               key={vacante.id_vacante} 
-              className="h-full flex flex-col"
+              className="h-full flex flex-col rounded-3xl"
             >
               <CardHeader className="flex flex-row items-start gap-4">
                 

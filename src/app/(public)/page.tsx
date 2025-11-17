@@ -5,7 +5,6 @@ import { NegocioCard } from "@/components/NegocioCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
-import Link from "next/link";
 import { CategoryCarousel } from './CategoryCarousel';
 
 export const dynamic = "force-dynamic";
@@ -36,7 +35,7 @@ export default async function HomePage() {
             Encuentra restaurantes, tiendas y servicios locales. Todo en un solo lugar.
           </p>
           <form
-            className="mt-4 flex w-full max-w-lg items-center space-x-2"
+            className="mt-4 flex w-full max-w-lg items-center space-x-2 "
             action="/buscar"
             method="GET"
           >
@@ -44,10 +43,10 @@ export default async function HomePage() {
               type="search"
               name="q"
               placeholder="¿Qué estás buscando? (Ej. tacos, peluquería...)"
-              className="h-12 text-base flex-1"
+              className="h-12 text-base flex-1 rounded-full"
             />
-            <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0 bg-orange-600 hover:bg-orange-500">
-              <Search className="h-5 w-5" />
+            <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0 bg-orange-600 hover:bg-orange-500 rounded-full">
+              <Search className="h-5 w-5 " />
             </Button>
           </form>
         </div>

@@ -47,7 +47,7 @@ export default async function PerfilPage() {
 
   return (
     <div className="container py-12">
-      <h1 className="text-3xl font-bold tracking-tight mb-8">
+      <h1 className="text-3xl font-bold text-stone-700 tracking-tight mb-8">
         Mi Perfil
       </h1>
 
@@ -63,7 +63,7 @@ export default async function PerfilPage() {
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Historial de Pedidos</CardTitle>
+              <CardTitle className="text-stone-700">Historial de Pedidos</CardTitle>
               <CardDescription>
                 Aquí puedes ver todos los pedidos que has realizado.
               </CardDescription>
@@ -72,15 +72,15 @@ export default async function PerfilPage() {
               {pedidos.length > 0 ? (
                 <ul className="divide-y">
                   {pedidos.map((pedido: PedidoConNegocio) => (
-                    <li key={pedido.id_pedido} className="flex items-center justify-between p-3">
+                    <li key={pedido.id_pedido} className="flex text-stone-700 items-center justify-between p-3">
                       <div>
-                        <p className="font-medium">
-                          Pedido a <span className="text-primary">{pedido.negocios?.nombre || 'Negocio eliminado'}</span>
+                        <p className="font-medium text-stone-700">
+                          Pedido a <span className="text-stone-700">{pedido.negocios?.nombre || 'Negocio eliminado'}</span>
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {formatDate(pedido.fecha_hora)}
                         </p>
-                        <Badge variant="secondary" className="mt-1">
+                        <Badge variant="secondary" className="mt-1 rounded-full text-stone-700">
                           {formatEstado(pedido.estado)}
                         </Badge>
                       </div>
