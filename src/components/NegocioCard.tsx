@@ -46,9 +46,9 @@ export function NegocioCard({ negocio }: NegocioCardProps) {
             <h3 className="text-lg text-stone-700 font-semibold truncate" title={negocio.nombre}>
               {negocio.nombre}
             </h3>
-            {negocio.activo && (
+            {/*{negocio.activo && (
               <Badge variant="secondary" className="bg-green-100 text-green-800 rounded-full">Abierto</Badge>
-            )}
+            )}*/}
           </div>
 
           {/* Descripción (corta) */}
