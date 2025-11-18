@@ -225,7 +225,7 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
 
                 {/* --- INICIO DEL REFACTOR DE CATÁLOGO --- */}
                 <section className="space-y-10">
-                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Nuestros Productos</h2>
+                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Qué ofrecemos</h2>
 
                     {negocio.categorias_producto.length > 0 ? (
                         negocio.categorias_producto.map(categoria => (
