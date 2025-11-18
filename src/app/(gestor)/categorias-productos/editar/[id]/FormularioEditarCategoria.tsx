@@ -46,7 +46,7 @@ export function FormularioEditarCategoria({
 
       if (state.success) {
         const timer = setTimeout(() => {
-          router.push('/categorias-producto');
+          router.push('/categorias-productos');
         }, 1500);
         return () => clearTimeout(timer);
       }

@@ -1,6 +1,5 @@
 // app/(public)/page.tsx
 import { getNegociosActivos, getCategoriasGlobales } from "@/lib/db";
-import { getCategoryIcon } from "@/lib/icon-map";
 import { NegocioCard } from "@/components/NegocioCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,16 +21,29 @@ export default async function HomePage() {
     console.error("Error cargando datos de inicio:", err);
   }
 
+  // URL de imagen de fondo para el Hero
+  const heroImageUrl = "/images/hero-tonila.jpg";
+
   return (
     <div className="flex flex-col gap-16 md:gap-20">
-      
+
       {/* --- 1. Hero --- */}
-      <section className="bg-muted/40 py-16 md:py-24">
-        <div className="container flex flex-col items-center text-center gap-4">
-          <h1 className="text-4xl md:text-5xl text-stone-700 font-bold tracking-tight">
+      <section
+        className="relative bg-muted/40 py-16 md:py-24 min-h-[500px] overflow-hidden flex flex-col justify-center"
+        style={{
+          backgroundImage: `url('${heroImageUrl}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {/* Capa de superposición para mejorar la legibilidad del texto */}
+        <div className="absolute inset-0 bg-black/40 z-0"></div> {/* Oscurece la imagen un poco */}
+        <div className="container relative z-10 flex flex-col items-center text-center text gap-4 text-white"> {/* Texto blanco para contraste */}
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
             Descubre lo mejor de Tonila
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
+          <p className="text-lg max-w-2xl">
             Encuentra restaurantes, tiendas y servicios locales. Todo en un solo lugar.
           </p>
           <form
@@ -43,7 +55,7 @@ export default async function HomePage() {
               type="search"
               name="q"
               placeholder="¿Qué estás buscando? (Ej. tacos, peluquería...)"
-              className="h-12 text-base flex-1 rounded-full"
+              className="h-12 text-base flex-1 rounded-full bg-white" // Asegura que el texto de búsqueda sea legible
             />
             <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0 bg-orange-600 hover:bg-orange-500 rounded-full">
               <Search className="h-5 w-5 " />
@@ -57,12 +69,7 @@ export default async function HomePage() {
         <h2 className="text-2xl text-stone-700 font-semibold tracking-tight mb-6">
           Explora nuestras Categorías
         </h2>
-
-        {/* --- INICIO DEL REEMPLAZO --- */}
-        {/* Borramos el <div className="grid..."> y... */}
         <CategoryCarousel categorias={categorias} />
-        {/* --- FIN DEL REEMPLAZO --- */}
-
       </section>
 
       {/* --- 3. Negocios --- */}

@@ -3,7 +3,6 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -112,8 +111,11 @@ export async function createProductoAction(prevState: ProductoState, formData: F
     };
   }
 
-  revalidatePath('/(gestor)/productos');
-  redirect('/productos');
+  revalidatePath('/productos');
+  return {
+    success: true,
+    message: "Producto creado correctamente."
+  };
 }
 
 // --- Server Action: ACTUALIZAR PRODUCTO ---

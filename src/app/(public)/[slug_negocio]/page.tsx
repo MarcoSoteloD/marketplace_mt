@@ -1,53 +1,42 @@
-// app/(public)/[slug_negocio]/page.tsx
-
 import { getNegocioPublicoBySlug } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { Prisma } from '@prisma/client';
 import CloudinaryImage from "@/components/ui/cloudinary-image";
-// Componentes UI
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AddToCartButton } from "./AddToCartButton";
 import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
-// Iconos
-import {
-    Store,
     MapPin,
     Phone,
-    ExternalLink,
     Image as ImageIcon,
-    Link as LinkIcon, // El icono 'default'
-    type LucideIcon // <-- ARREGLA EL ERROR DE 'LucideIcon'
+    Link as LinkIcon,
+    type LucideIcon
 } from "lucide-react";
-import { type IconType } from "react-icons"; // <-- El NUEVO tipo
+import { type IconType } from "react-icons";
 import { SiFacebook, SiInstagram, SiX, SiWhatsapp } from "react-icons/si";
 import dynamic from 'next/dynamic';
 import { checkOpenStatus } from "@/lib/time-helpers";
 import { GoogleMapsButton } from './GoogleMapsButton';
+import { NegocioGallery } from "./NegocioGallery";
+import { NegocioLogo } from "./NegocioLogo";
 
 const DisplayMap = dynamic(
     () => import('./DisplayMap').then(mod => mod.DisplayMap),
     {
         ssr: false,
-        loading: () => <div className="h-[250px] w-full bg-muted animate-pulse rounded-md" />
+        loading: () => <div className="h-[250px] w-full bg-muted animate-pulse rounded-2xl" />
     }
 );
 
-// --- Helper para Iconos de Redes ---
+// Helpers
 const socialIconMap: Record<string, IconType | LucideIcon> = {
-    facebook: SiFacebook,     // <-- Icono nuevo
-    instagram: SiInstagram,   // <-- Icono nuevo
-    twitter: SiX,     // <-- Icono nuevo
-    whatsapp: SiWhatsapp,   // <-- Icono nuevo
-    default: LinkIcon,        // <-- Usa el icono 'LinkIcon' importado de lucide
+    facebook: SiFacebook,
+    instagram: SiInstagram,
+    twitter: SiX,
+    whatsapp: SiWhatsapp,
+    default: LinkIcon,
 };
 
 const getSocialIcon = (plataforma: string): IconType | LucideIcon => {
@@ -57,7 +46,7 @@ const getSocialIcon = (plataforma: string): IconType | LucideIcon => {
 
 function InfoItem({ label, value, icon: Icon }: {
     label: string,
-    value: React.ReactNode, // <-- Tipo cambiado a ReactNode (más flexible)
+    value: React.ReactNode,
     icon?: LucideIcon
 }) {
     const displayValue = value || <span className="text-sm text-gray-400">No definido</span>;
@@ -72,19 +61,11 @@ function InfoItem({ label, value, icon: Icon }: {
     );
 }
 
-// --- Definimos los tipos (la solución que recordamos) ---
-type NegocioPublico = Prisma.PromiseReturnType<typeof getNegocioPublicoBySlug>;
-// ---
-
-// --- Helpers (formatCurrency, DisplayHorario) se quedan igual ---
 function formatCurrency(amount: Prisma.Decimal | number | null | undefined) {
     if (!amount) return "$0.00";
-    return new Intl.NumberFormat('es-MX', {
-        style: 'currency',
-        currency: 'MXN',
-    }).format(Number(amount));
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' })
+        .format(Number(amount));
 }
-type Horario = Record<string, string>;
 
 function DisplayHorario({ horario }: { horario: any }) {
     const diasOrdenados = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
@@ -102,247 +83,198 @@ function DisplayHorario({ horario }: { horario: any }) {
         </ul>
     );
 }
-// --- Fin Helpers ---
 
-
-export default async function PaginaNegocio({
-    params
-}: {
-    params: { slug_negocio: string }
-}) {
+export default async function PaginaNegocio({ params }: { params: { slug_negocio: string } }) {
 
     const slug = params.slug_negocio;
     const negocio = await getNegocioPublicoBySlug(slug);
+    if (!negocio) notFound();
 
-    if (!negocio) {
-        notFound();
-    }
-
-    // Construimos la dirección
     const direccion = [
         negocio.calle, negocio.num_ext, negocio.colonia, negocio.cp, negocio.municipio
     ].filter(Boolean).join(', ');
 
-    // --- 1. LÓGICA DE IMÁGENES (CORREGIDA) ---
-    // La galería SÓLO usa la galería de fotos
-    const parseGalleryData = (jsonValue: any): string[] => {
-        if (jsonValue && Array.isArray(jsonValue)) {
-            // Si es un array, lo mapeamos a string[]
-            return jsonValue.filter((item) => typeof item === 'string') as string[];
-        }
-        return [];
-    };
+    const galeria = Array.isArray(negocio.galeria_fotos)
+        ? negocio.galeria_fotos.filter(x => typeof x === "string")
+        : [];
 
-    // La galería SÓLO usa la galería de fotos
-    const galeria = parseGalleryData(negocio.galeria_fotos);
-
-    // El logo se guarda por separado
     const logoUrl = negocio.url_logo;
-    // --- FIN DE LA LÓGICA ---
 
-    const horario = (negocio.horario && typeof negocio.horario === 'object' && !Array.isArray(negocio.horario))
-        ? negocio.horario
-        : null;
-
-    // --- AÑADE ESTA LÍNEA ---
-    const isOpen = checkOpenStatus(horario);
-
-    type Redes = Record<string, string>;
-    const redes = (negocio.url_redes_sociales && typeof negocio.url_redes_sociales === 'object' && !Array.isArray(negocio.url_redes_sociales))
-        ? negocio.url_redes_sociales as Redes
+    const isOpen = checkOpenStatus(negocio.horario);
+    const redes = negocio.url_redes_sociales && typeof negocio.url_redes_sociales === "object"
+        ? negocio.url_redes_sociales
         : null;
 
     return (
-        <div className="flex flex-col">
+        <div className="container py-10 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-10">
 
-            {/* --- 1. FOTO DE PORTADA (El Carrusel de la Galería) --- */}
-            <section className="relative h-[35vh] w-full bg-muted">
-                {galeria.length > 0 ? (
-                    <Carousel className="w-full h-full" opts={{ loop: true }}>
-                        <CarouselContent className="h-full">
-                            {galeria.map((url, index) => (
-                                <CarouselItem key={index} className="h-full">
-                                    <CloudinaryImage
-                                        src={url}
-                                        alt={`Foto de ${negocio.nombre} ${index + 1}`}
-                                        fill
-                                        className="object-cover"
-                                        priority={index === 0}
-                                    />
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="absolute left-4" />
-                        <CarouselNext className="absolute right-4" />
-                    </Carousel>
-                ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                        <Store className="h-32 w-32 text-muted-foreground/30" />
-                    </div>
-                )}
-            </section>
+            {/* Columna Izquierda (LOGO + INFO + HORARIO) */}
+            <aside className="md:col-span-1 lg:col-span-1 space-y-6">
 
-            {/* --- 2. Contenido Principal (Info y Menú) --- */}
-            {/* Este contenedor se jala hacia arriba -mt-20 para superponerse */}
-            <div className="container relative z-10 -mt-20 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-24">
+                <NegocioLogo
+                    logoUrl={logoUrl}
+                    nombreNegocio={negocio.nombre}
+                />
 
-                {/* --- Columna Lateral (Izquierda): Info del Negocio --- */}
-                <aside className="md:col-span-1 lg:col-span-1 space-y-6">
+                {/* Info */}
+                <Card className="shadow-lg rounded-3xl">
+                    <CardHeader>
+                        <div className="flex flex-col gap-4 items-start">
+                            <h1 className="text-3xl font-bold text-stone-700 tracking-tight leading-none"> {/* Añadí leading-none para quitar espacio extra de la fuente si es necesario */}
+                                {negocio.nombre}
+                            </h1>
+                            <Badge
+                                variant={!negocio.activo ? "destructive" : (isOpen ? "default" : "outline")}
+                                className={
+                                    isOpen
+                                        ? "bg-green-600 text-white border-transparent hover:bg-green-700 rounded-full"
+                                        : "rounded-full"
+                                }
+                            >
+                                {!negocio.activo ? "Inactivo" : (isOpen ? "Abierto ahora" : "Cerrado ahora")}
+                            </Badge>
+                        </div>
+                    </CardHeader>
 
-                    {/* --- 2a. EL LOGO (FOTO DE PERFIL) --- */}
-                    <div className="relative h-32 w-32 md:h-40 md:w-40 bg-muted rounded-full border-4 border-background shadow-lg overflow-hidden">
-                        {logoUrl ? (
-                            <CloudinaryImage
-                                src={logoUrl}
-                                alt={`Logo de ${negocio.nombre}`}
-                                fill
-                                className="object-cover"
-                            />
-                        ) : (
-                            <div className="flex h-full w-full items-center justify-center">
-                                <Store className="h-16 w-16 text-muted-foreground/50" />
-                            </div>
-                        )}
-                    </div>
+                    <CardContent className="space-y-4">
+                        <Separator />
 
-                    {/* --- 2b. TARJETA DE INFO (Debajo del logo) --- */}
-                    <Card className="shadow-lg rounded-3xl">
-                        <CardHeader>
-                            <div>
-                                <h1 className="text-3xl text-stone-700  font-bold tracking-tight">
-                                    {negocio.nombre}
-                                </h1>
+                        <div className="flex items-start gap-3">
+                            <MapPin className="h-5 w-5 text-stone-700" />
+                            <p className="font-medium text-stone-700">{direccion || "Sin dirección"}</p>
+                        </div>
 
-                                {/* --- INICIO DE LA CORRECCIÓN --- */}
-                                {/* Primero revisa si el admin lo desactivó ('!negocio.activo') */}
-                                {/* Si está activo, ENTONCES revisa si está abierto ('isOpen') */}
-                                <Badge
-                                    // 1. Usa 'default' (que SÍ existe) en lugar de 'success'
-                                    variant={!negocio.activo ? "destructive" : (isOpen ? "default" : "outline")}
-                                    // 2. Si está abierto, SOBREESCRIBE las clases de 'default' con las de verde
-                                    className={
-                                        isOpen
-                                            ? "bg-green-600 text-white border-transparent hover:bg-green-700 rounded-full"
-                                            : "rounded-full"
-                                    }
-                                >
-                                    {!negocio.activo ? "Inactivo" : (isOpen ? "Abierto ahora" : "Cerrado")}
-                                </Badge>
-                                {/* --- FIN DE LA CORRECCIÓN --- */}
+                        <div className="flex items-start gap-3">
+                            <Phone className="h-5 w-5 text-stone-700" />
+                            <p className="font-medium text-stone-700">{negocio.telefono || "Sin teléfono"}</p>
+                        </div>
 
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <Separator />
-                            <div className="flex items-start gap-3">
-                                <MapPin className="h-5 w-5 text-stone-700 flex-shrink-0 mt-0.5" />
-                                <p className="text-stone-700 font-medium">{direccion || "Dirección no disponible."}</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <Phone className="h-5 w-5 text-stone-700 flex-shrink-0" />
-                                <p className="text-stone-700 font-medium">{negocio.telefono || "Teléfono no disponible."}</p>
-                            </div>
-                            {redes && Object.keys(redes).length > 0 && (
-                                <>
-                                    <Separator />
-                                    <div className="flex items-center gap-3">
-                                        {Object.entries(redes).map(([plataforma, url]) => {
-                                            const Icono = getSocialIcon(plataforma);
-                                            return (
-                                                <Button key={plataforma} variant="ghost" size="icon" className="rounded-full" asChild>
-                                                    <a href={url} target="_blank" rel="noopener noreferrer" aria-label={plataforma}>
-                                                        <Icono className="h-4 w-4 text-stone-700" />
-                                                    </a>
-                                                </Button>
-                                            );
-                                        })}
-                                    </div>
-                                </>
-                            )}
-                            {/* Solo muestra el mapa SI tenemos latitud y longitud */}
-                            {negocio.latitud && negocio.longitud && (
-                                <>
-                                    <Separator />
-                                    <DisplayMap
-                                        lat={Number(negocio.latitud)}
-                                        lng={Number(negocio.longitud)}
-                                        popupText={negocio.nombre}
-                                    />
-
-                                    {/* --- BOTÓN AÑADIDO --- */}
-                                    <GoogleMapsButton
-                                        lat={Number(negocio.latitud)}
-                                        lng={Number(negocio.longitud)}
-                                        nombre={negocio.nombre}
-                                    />
-                                    {/* --- FIN DEL BOTÓN --- */}
-                                </>
-                            )}
-                            {/* --- FIN DEL MAPA AÑADIDO --- */}
-                        </CardContent>
-                    </Card>
-
-                    {/* Tarjeta de Horario */}
-                    <Card className="sticky top-20 text-stone-700 shadow-lg rounded-3xl">
-                        <CardHeader><CardTitle>Horario</CardTitle></CardHeader>
-                        <CardContent>
-                            <DisplayHorario horario={negocio.horario} />
-                        </CardContent>
-                    </Card>
-                </aside>
-
-                {/* --- Columna Principal (Derecha): Menú/Productos --- */}
-                {/* Le damos un padding-top para que inicie debajo del logo/info */}
-                <main className="md:col-span-2 lg:col-span-3 space-y-8 md:pt-44 text-stone-700">
-                    <h2 className="text-3xl font-bold tracking-tight">Catálogo de Productos</h2>
-
-                    {negocio.categorias_producto.length > 0 ? (
-                        negocio.categorias_producto.map(categoria => (
-                            <section key={categoria.id_categoria} className="scroll-mt-20" id={categoria.nombre}>
-                                <h3 className="text-2xl font-semibold mb-4">{categoria.nombre}</h3>
-
-                                <div className="grid grid-cols-1 gap-6">
-                                    {categoria.productos.map(producto => (
-                                        <Card key={producto.id_producto} className="flex flex-row overflow-hidden rounded-3xl">
-                                            <div className="flex-1 p-4 space-y-1 ">
-                                                <h4 className="text-stone-700 font-semibold">{producto.nombre}</h4>
-                                                <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">
-                                                    {producto.descripcion || ''}
-                                                </p>
-                                                <p className="text-stone-700 font-bold pt-2">{formatCurrency(producto.precio)}</p>
-                                            </div>
-
-                                            <div className="relative h-32 w-32 flex-shrink-0">
-                                                {producto.url_foto ? (
-                                                    <CloudinaryImage
-                                                        src={producto.url_foto}
-                                                        alt={producto.nombre}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="h-full w-full flex items-center justify-center bg-muted">
-                                                        <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
-                                                    </div>
-                                                )}
-                                                <AddToCartButton
-                                                    producto={producto}
-                                                    negocioId={negocio.id_negocio}
-                                                />
-                                            </div>
-                                        </Card>
-                                    ))}
+                        {redes && Object.keys(redes).length > 0 && (
+                            <>
+                                <Separator />
+                                <div className="flex items-center gap-3">
+                                    {Object.entries(redes).map(([plataforma, url]) => {
+                                        // Normaliza y valida: solo seguimos si es string y no está vacío
+                                        if (!url || typeof url !== "string") return null;
+                                        const Icono = getSocialIcon(plataforma);
+                                        return (
+                                            <Button
+                                                key={plataforma}
+                                                variant="ghost"
+                                                size="icon"
+                                                className="rounded-full"
+                                                asChild
+                                            >
+                                                <a
+                                                    href={url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    aria-label={plataforma}
+                                                >
+                                                    <Icono className="h-4 w-4 text-stone-700" />
+                                                </a>
+                                            </Button>
+                                        );
+                                    })}
                                 </div>
-                                <Separator className="my-8" />
-                            </section>
-                        ))
-                    ) : (
-                        <p className="text-muted-foreground">Este negocio aún no tiene productos para mostrar.</p>
-                    )}
+                            </>
+                        )}
 
-                </main>
-            </div>
+                        {negocio.latitud && negocio.longitud && (
+                            <>
+                                <Separator />
+                                <DisplayMap
+                                    lat={Number(negocio.latitud)}
+                                    lng={Number(negocio.longitud)}
+                                    popupText={negocio.nombre}
+                                />
+                                <GoogleMapsButton
+                                    lat={Number(negocio.latitud)}
+                                    lng={Number(negocio.longitud)}
+                                    nombre={negocio.nombre}
+                                />
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
 
+                {/* Horario */}
+                <Card className="sticky top-20 shadow-lg rounded-3xl text-stone-700">
+                    <CardHeader><CardTitle>Horario</CardTitle></CardHeader>
+                    <CardContent>
+                        <DisplayHorario horario={negocio.horario} />
+                    </CardContent>
+                </Card>
+            </aside>
+
+            {/* Columna Derecha (GALERÍA + CATÁLOGO) */}
+            <main className="md:col-span-2 lg:col-span-3 space-y-10">
+
+                {/* Agrupamos Título + Galería para controlar el espaciado entre ellos */}
+                <section className="space-y-6">
+                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">
+                        Conoce de nosotros
+                    </h2>
+
+                    <NegocioGallery
+                        galeria={galeria}
+                        nombreNegocio={negocio.nombre}
+                    />
+                </section>
+
+                {/* Catálogo */}
+                <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Nuestros Productos</h2>
+
+                {negocio.categorias_producto.length > 0 ? (
+                    negocio.categorias_producto.map(categoria => (
+                        <section key={categoria.id_categoria} id={categoria.nombre} className="scroll-mt-20 text-stone-700">
+
+                            <h3 className="text-2xl font-semibold mb-4">{categoria.nombre}</h3>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                {categoria.productos.map(producto => (
+                                    <Card key={producto.id_producto} className="flex flex-row overflow-hidden rounded-3xl">
+                                        <div className="flex-1 p-4 space-y-1">
+                                            <h4 className="font-semibold text-stone-700">{producto.nombre}</h4>
+                                            <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">
+                                                {producto.descripcion || ''}
+                                            </p>
+                                            <p className="font-bold text-stone-700 pt-2">
+                                                {formatCurrency(producto.precio)}
+                                            </p>
+                                        </div>
+
+                                        <div className="relative h-32 w-32 flex-shrink-0">
+                                            {producto.url_foto ? (
+                                                <CloudinaryImage
+                                                    src={producto.url_foto}
+                                                    alt={producto.nombre}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="128px"
+                                                />
+                                            ) : (
+                                                <div className="h-full w-full flex items-center justify-center bg-muted">
+                                                    <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                                                </div>
+                                            )}
+
+                                            <AddToCartButton
+                                                producto={producto}
+                                                negocioId={negocio.id_negocio}
+                                            />
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+
+                            <Separator className="my-8" />
+                        </section>
+                    ))
+                ) : (
+                    <p className="text-muted-foreground">Este negocio aún no tiene productos.</p>
+                )}
+            </main>
         </div>
     );
 }
