@@ -55,7 +55,7 @@ export default async function HomePage() {
               type="search"
               name="q"
               placeholder="¿Qué estás buscando? (Ej. tacos, peluquería...)"
-              className="h-12 text-base flex-1 rounded-full bg-white" // Asegura que el texto de búsqueda sea legible
+              className="h-12 text-base text-stone-700 flex-1 rounded-full bg-white" // Asegura que el texto de búsqueda sea legible
             />
             <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0 bg-orange-600 hover:bg-orange-500 rounded-full">
               <Search className="h-5 w-5 " />

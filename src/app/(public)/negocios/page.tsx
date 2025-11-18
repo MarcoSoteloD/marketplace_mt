@@ -1,7 +1,7 @@
 // En: src/app/(public)/negocios/page.tsx
 
 import { getActiveNegocios } from '@/lib/db';
-import { NegocioCard } from '@/components/NegocioCard'; // Ajusta la ruta si es necesario
+import { NegocioCard } from '@/components/NegocioCard';
 import { AlertTriangle } from 'lucide-react';
 
 // Definimos la interfaz para los searchParams
@@ -14,15 +14,15 @@ interface NegociosPageProps {
 
 export default async function PaginaNegocios({ searchParams }: NegociosPageProps) {
   
-  // 1. Obtenemos la categoría de la URL (si existe)
+  // Obtenemos la categoría de la URL (si existe)
   const categoria = searchParams.categoria 
     ? decodeURIComponent(searchParams.categoria) 
     : undefined;
 
-  // 2. Obtenemos los datos filtrados (o todos)
+  // Obtenemos los datos filtrados (o todos)
   const negocios = await getActiveNegocios(categoria);
 
-  // 3. Preparamos el título (dinámico)
+  // Preparamos el título (dinámico)
   const titulo = categoria 
     ? `Negocios en "${categoria}"` 
     : "Todos los Negocios";
@@ -33,7 +33,7 @@ export default async function PaginaNegocios({ searchParams }: NegociosPageProps
 
   return (
     <div className="container py-12 md:py-16">
-      
+
       {/* --- Encabezado --- */}
       <div className="flex flex-col items-center text-center mb-12">
         <h1 className="text-4xl md:text-5xl text-stone-700 font-bold tracking-tight">
@@ -46,7 +46,7 @@ export default async function PaginaNegocios({ searchParams }: NegociosPageProps
 
       {/* --- Cuadrícula de Negocios --- */}
       {negocios.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           
           {/* Reutilizamos el mismo NegocioCard que usamos en el homepage */}
           {negocios.map((negocio) => (

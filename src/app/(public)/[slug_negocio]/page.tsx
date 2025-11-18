@@ -1,3 +1,4 @@
+//app/(public)/[slug_negocio]/page.tsx
 import { getNegocioPublicoBySlug } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { Prisma } from '@prisma/client';
@@ -222,58 +223,79 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
                     />
                 </section>
 
-                {/* Catálogo */}
-                <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Nuestros Productos</h2>
+                {/* --- INICIO DEL REFACTOR DE CATÁLOGO --- */}
+                <section className="space-y-10">
+                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Nuestros Productos</h2>
 
-                {negocio.categorias_producto.length > 0 ? (
-                    negocio.categorias_producto.map(categoria => (
-                        <section key={categoria.id_categoria} id={categoria.nombre} className="scroll-mt-20 text-stone-700">
+                    {negocio.categorias_producto.length > 0 ? (
+                        negocio.categorias_producto.map(categoria => (
+                            <section key={categoria.id_categoria} id={categoria.nombre} className="scroll-mt-20 text-stone-700">
 
-                            <h3 className="text-2xl font-semibold mb-4">{categoria.nombre}</h3>
+                                <h3 className="text-2xl font-semibold mb-4">{categoria.nombre}</h3>
 
-                            <div className="grid grid-cols-1 gap-6">
-                                {categoria.productos.map(producto => (
-                                    <Card key={producto.id_producto} className="flex flex-row overflow-hidden rounded-3xl">
-                                        <div className="flex-1 p-4 space-y-1">
-                                            <h4 className="font-semibold text-stone-700">{producto.nombre}</h4>
-                                            <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">
-                                                {producto.descripcion || ''}
-                                            </p>
-                                            <p className="font-bold text-stone-700 pt-2">
-                                                {formatCurrency(producto.precio)}
-                                            </p>
-                                        </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {categoria.productos.map(producto => (
 
-                                        <div className="relative h-32 w-32 flex-shrink-0">
-                                            {producto.url_foto ? (
-                                                <CloudinaryImage
-                                                    src={producto.url_foto}
-                                                    alt={producto.nombre}
-                                                    fill
-                                                    className="object-cover"
-                                                    sizes="128px"
+                                        <Card
+                                            key={producto.id_producto}
+                                            className="relative flex flex-col rounded-3xl h-full shadow-lg group transition-all duration-300 hover:shadow-xl"
+                                        >
+
+                                            {/* 1. Contenedor de Imagen (SIN CAMBIOS, sigue 'overflow-hidden') */}
+                                            <div className="relative h-48 w-full overflow-hidden rounded-t-3xl bg-white">
+                                                {producto.url_foto ? (
+                                                    <CloudinaryImage
+                                                        src={producto.url_foto}
+                                                        alt={producto.nombre}
+                                                        fill
+                                                        // 1. CAMBIO DE 'object-cover' A 'object-contain'
+                                                        className="object-contain group-hover:scale-105 transition-transform duration-300"
+                                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                    />
+                                                ) : (
+                                                    <div className="h-full w-full flex items-center justify-center bg-muted">
+                                                        <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* 2. El botón: Tu lógica estaba perfecta. */}
+                                            {/* 'top-48' (12rem) lo alinea con el div de la imagen (h-48) */}
+                                            {/* '-translate-y-1/2' lo centra en la línea. */}
+                                            <div className="absolute z-10 top-48 right-1 -translate-y-0">
+                                                <AddToCartButton
+                                                    producto={producto}
+                                                    negocioId={negocio.id_negocio}
                                                 />
-                                            ) : (
-                                                <div className="h-full w-full flex items-center justify-center bg-muted">
-                                                    <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                                            </div>
+
+                                            {/* 3. El contenido: Tu lógica estaba perfecta. */}
+                                            <div className="p-4 pt-8 flex flex-col flex-1">
+                                                <div className="flex-1 space-y-1">
+                                                    <h4 className="font-semibold text-stone-700 text-lg">{producto.nombre}</h4>
+                                                    <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">
+                                                        {producto.descripcion || ''}
+                                                    </p>
                                                 </div>
-                                            )}
 
-                                            <AddToCartButton
-                                                producto={producto}
-                                                negocioId={negocio.id_negocio}
-                                            />
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
+                                                <div className="flex items-center justify-between pt-4 mt-2">
+                                                    <p className="font-bold text-stone-700 text-lg">
+                                                        {formatCurrency(producto.precio)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
 
-                            <Separator className="my-8" />
-                        </section>
-                    ))
-                ) : (
-                    <p className="text-muted-foreground">Este negocio aún no tiene productos.</p>
-                )}
+                                <Separator className="my-8" />
+                            </section>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground">Este negocio aún no tiene productos.</p>
+                    )}
+                </section>
+                {/* --- FIN DEL REFACTOR --- */}
             </main>
         </div>
     );

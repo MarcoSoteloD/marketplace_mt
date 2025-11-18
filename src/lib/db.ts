@@ -321,6 +321,71 @@ export async function getAllActiveVacantes() {
 }
 
 /**
+ * Busca negocios y productos en la plataforma.
+ * @param query El término de búsqueda del usuario.
+ */
+export async function searchPlataforma(query: string) {
+  // 1. Buscar Negocios
+  // Seleccionamos los campos que NegocioCard necesita
+  const negociosPromise = prisma.negocios.findMany({
+    where: {
+      activo: true, // Solo negocios activos
+      OR: [
+        { nombre: { contains: query, mode: "insensitive" } },
+        // CORREGIDO: Buscamos en 'descripcion' en lugar de 'descripcion_corta'
+        { descripcion: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    // CORREGIDO: Ajustamos el 'select' para que coincida 100% con NegocioCard
+    select: {
+      id_negocio: true,
+      nombre: true,
+      descripcion: true, // <-- CORREGIDO
+      url_logo: true,
+      slug: true, // <-- CORREGIDO (antes 'slug_negocio')
+      colonia: true, // <-- AÑADIDO
+      municipio: true, // <-- AÑADIDO
+      activo: true, // <-- AÑADIDO
+    },
+  });
+
+  // 2. Buscar Productos
+  // Incluimos el slug y nombre del negocio al que pertenecen
+  const productosPromise = prisma.productos.findMany({
+    where: {
+      negocios: {
+        activo: true, // Solo de negocios activos
+      },
+      OR: [
+        { nombre: { contains: query, mode: "insensitive" } },
+        { descripcion: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    include: {
+      negocios: {
+        select: {
+          slug: true, // Este está bien, lo usa ProductoSearchResultCard
+          nombre: true,
+        },
+      },
+    },
+    take: 50, // Limitar resultados para no sobrecargar
+  });
+
+  // 3. Ejecutar ambas búsquedas en paralelo
+  try {
+    const [negocios, productos] = await Promise.all([
+      negociosPromise,
+      productosPromise,
+    ]);
+    return { negocios, productos };
+  } catch (error) {
+    console.error("Error en searchPlataforma:", error);
+    return { negocios: [], productos: [] };
+  }
+}
+
+/**
  * -----------------------------------------------------------------
  * 🔒 FUNCIONES DEL ADMIN (PLATAFORMA)
  * -----------------------------------------------------------------
