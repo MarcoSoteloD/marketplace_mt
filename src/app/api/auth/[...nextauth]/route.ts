@@ -1,9 +1,7 @@
-// src/app/api/auth/[...nextauth]/route.ts
-
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/prisma"; // Asegúrate que la ruta a tu instancia de prisma es correcta
+import { prisma } from "@/lib/prisma"; 
 import bcrypt from "bcrypt";
 import { rol_usuario } from "@prisma/client";
 
@@ -24,7 +22,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // 1. Buscar al usuario en la base de datos
+        // Buscar al usuario en la base de datos
         const user = await prisma.usuarios.findUnique({
           where: { email: credentials.email },
         });
@@ -33,7 +31,12 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // 2. Verificar la contraseña
+        // --- SEGURIDAD: Verificar si el usuario está activo ---
+        if (user.activo === false) {
+             return null; 
+        }
+
+        // Verificar la contraseña
         const passwordMatch = await bcrypt.compare(
           credentials.password,
           user.password
@@ -43,7 +46,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // 3. Devolver el objeto de usuario (sin la contraseña)
+        // Devolver el objeto de usuario (sin la contraseña)
         // Lo que se devuelve aquí pasa al callback 'jwt'
         return {
           id: user.id_usuario.toString(),
@@ -57,9 +60,11 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
-  // Estrategia de sesión: JWT
+  // Estrategia de sesión: JWT con Caducidad
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 días (en segundos)
+    // updateAge: 24 * 60 * 60, // Opcional: Con qué frecuencia actualizar la sesión en la BD (diario)
   },
 
   // Callbacks para enriquecer el token y la sesión
@@ -88,7 +93,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  // Páginas personalizadas (opcional, pero recomendado)
+  // Páginas personalizadas
   pages: {
     signIn: "/login",
     error: "/login", // Redirigir a login en caso de error

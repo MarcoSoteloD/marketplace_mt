@@ -1,33 +1,29 @@
-// app/login/page.tsx
-"use client"; // Esta página DEBE ser un Client Component
+"use client";
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-// Asumiendo que ya instalaste shadcn-ui
-// Si no: npx shadcn-ui@latest add button input label card
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
+import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Vemos si NextAuth nos mandó un error en la URL
   const authError = searchParams.get("error");
+  const registroExitoso = searchParams.get("registro");
+  const callbackUrl = searchParams.get("callbackUrl") || "/"; 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,22 +31,19 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // 1. Llamamos a la función signIn de NextAuth
       const result = await signIn("credentials", {
-        redirect: false, // No redirigimos automáticamente
+        redirect: false,
         email: email,
         password: password,
       });
 
       if (result?.error) {
-        // 2. Si hay un error (ej. contraseña mal), lo mostramos
         console.error("Error de signIn:", result.error);
-        setError("Credenciales incorrectas. Intenta de nuevo.");
+        setError("Credenciales incorrectas. Verifica tu correo y contraseña.");
         setIsLoading(false);
       } else {
-        // 3. Si todo sale bien, redirigimos al dashboard de admin
-        router.push("/router"); 
-        router.refresh(); // Refresca la sesión en el servidor
+        router.push(callbackUrl !== "/" ? callbackUrl : "/router"); 
+        router.refresh();
       }
     } catch (error) {
       console.error("Error en handleSubmit:", error);
@@ -60,13 +53,25 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-sm rounded-3xl">
+    <main className="flex min-h-screen flex-col items-center justify-start pt-24 md:pt-32 px-4 pb-12 bg-stone-50">
+      <Card className="w-full max-w-sm rounded-3xl shadow-xl bg-white border-stone-100">
         <form onSubmit={handleSubmit}>
-          <CardHeader>
-            <CardTitle className="text-2xl text-stone-700">Iniciar Sesión</CardTitle>
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-2xl text-stone-700">¡Hola de nuevo!</CardTitle>
+            
+            {registroExitoso === 'exitoso' && (
+                <div className="flex items-center gap-2 justify-center text-sm text-green-600 bg-green-50 p-2 rounded-lg mt-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Cuenta creada con éxito. Inicia sesión.</span>
+                </div>
+            )}
+            
+            {!registroExitoso && (
+                <CardDescription>Ingresa a tu cuenta para continuar</CardDescription>
+            )}
           </CardHeader>
-          <CardContent className="grid gap-4 ">
+          
+          <CardContent className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-stone-700">Email</Label>
               <Input
@@ -75,30 +80,54 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                placeholder="tu@email.com"
                 className="rounded-full"
               />
             </div>
+            
             <div className="grid gap-2">
-              <Label htmlFor="password" className="text-stone-700">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="rounded-full"
-              />
+              <div className="flex justify-between items-center">
+                  <Label htmlFor="password" className="text-stone-700">Contraseña</Label>
+              </div>
+              <div className="relative">
+                <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="rounded-full pr-10"
+                />
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                >
+                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                </Button>
+              </div>
             </div>
+
             {(error || authError) && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-red-600 text-center bg-red-50 p-2 rounded-md">
                 {error || "Error de autenticación"}
               </p>
             )}
           </CardContent>
-          <CardFooter>
+          
+          <CardFooter className="flex flex-col gap-4 pt-0">
             <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 rounded-full" disabled={isLoading}>
-              {isLoading ? "Cargando..." : "Entrar"}
+              {isLoading ? "Verificando..." : "Entrar"}
             </Button>
+            
+            <p className="text-center text-sm text-muted-foreground">
+              ¿No tienes cuenta?{" "}
+              <Link href="/registro" className="font-medium text-orange-600 hover:underline">
+                Regístrate gratis
+              </Link>
+            </p>
           </CardFooter>
         </form>
       </Card>

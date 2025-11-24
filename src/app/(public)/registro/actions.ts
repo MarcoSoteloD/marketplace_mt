@@ -1,28 +1,30 @@
-// app/(public)/registro/actions.ts
 "use server";
 
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { Prisma, rol_usuario } from '@prisma/client';
-
-// Importamos las nuevas funciones de DB
 import { createClienteUser, getUserByEmail } from '@/lib/db';
 
-// --- Esquema de Validación de Zod ---
-// Añadimos 'confirmPassword' y un 'refine' para validarlos
+// --- Schema de Contraseña Robusta ---
+const PasswordSchema = z.string()
+  .min(8, "La contraseña debe tener al menos 8 caracteres")
+  .regex(/[A-Z]/, "Debe contener al menos una letra mayúscula")
+  .regex(/[a-z]/, "Debe contener al menos una letra minúscula")
+  .regex(/[0-9]/, "Debe contener al menos un número")
+  .regex(/[^a-zA-Z0-9]/, "Debe contener al menos un carácter especial (ej. @, #, $)");
+
 const RegistroSchema = z.object({
   nombre: z.string().min(3, "El nombre es requerido"),
   email: z.string().email("Debe ser un email válido"),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+  password: PasswordSchema,
   confirmPassword: z.string(),
 })
 .refine(data => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden",
-  path: ["confirmPassword"], // Asigna el error al campo de confirmación
+  path: ["confirmPassword"],
 });
 
-// --- Tipo de Estado del Formulario ---
 export type RegistroState = {
   errors?: {
     nombre?: string[];
@@ -39,13 +41,13 @@ export type RegistroState = {
 // --- Server Action: CREAR CLIENTE ---
 export async function createClienteAction(prevState: RegistroState, formData: FormData) {
   
-  // 1. Validar los datos del formulario con Zod
+  // Validar los datos del formulario con Zod
   const validatedFields = RegistroSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors as NonNullable<RegistroState>["errors"],
-      message: "Error de validación. Revisa los campos.",
+      message: "Revisa los requisitos de la contraseña.",
       success: false,
     };
   }
@@ -53,8 +55,9 @@ export async function createClienteAction(prevState: RegistroState, formData: Fo
   const { nombre, email, password } = validatedFields.data;
 
   try {
-    // 2. Verificar si el email ya existe
+    // Verificar si el email ya existe
     const existingUser = await getUserByEmail(email);
+    
     if (existingUser) {
       return {
         errors: { email: ["Este email ya está registrado."] },
@@ -63,19 +66,18 @@ export async function createClienteAction(prevState: RegistroState, formData: Fo
       };
     }
 
-    // 3. Hashear la contraseña
+    // Hashear la contraseña (12 rondas es el estándar actual seguro)
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // 4. Preparar datos para Prisma
+    // Preparar datos para Prisma
     const data: Prisma.usuariosCreateInput = {
       nombre,
       email,
       password: passwordHash,
-      rol: rol_usuario.cliente, // <-- AÑADE ESTA LÍNEA
-      activo: true,             // <-- AÑADE ESTA LÍNEA
+      rol: rol_usuario.cliente,
+      activo: true,
     };
 
-    // 5. Crear el usuario
     await createClienteUser(data);
 
   } catch (error) {
@@ -86,6 +88,6 @@ export async function createClienteAction(prevState: RegistroState, formData: Fo
     };
   }
 
-  // 6. ¡Éxito! Redirigir al login
-  redirect('/login?registro=exitoso'); // Añadimos un param para mostrar un mensaje
+  // ¡Éxito! Redirigir al login
+  redirect('/login?registro=exitoso');
 }
