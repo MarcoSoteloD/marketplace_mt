@@ -1,16 +1,10 @@
 import { getNegocioPublicoBySlug } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { Prisma } from '@prisma/client';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-    MapPin,
-    Phone,
-    Link as LinkIcon,
-    type LucideIcon 
-} from "lucide-react";
+import { MapPin, Phone, Link as LinkIcon, type LucideIcon } from "lucide-react";
 import { type IconType } from "react-icons";
 import { SiFacebook, SiInstagram, SiX, SiWhatsapp } from "react-icons/si";
 import dynamic from 'next/dynamic';
@@ -18,7 +12,7 @@ import { checkOpenStatus } from "@/lib/time-helpers";
 import { GoogleMapsButton } from './GoogleMapsButton';
 import { NegocioGallery } from "./NegocioGallery";
 import { NegocioLogo } from "./NegocioLogo";
-import { ProductCard } from "@/components/ProductCard"; // Importamos tu componente refactorizado
+import { ProductCard } from "@/components/ProductCard";
 
 const DisplayMap = dynamic(
     () => import('./DisplayMap').then(mod => mod.DisplayMap),
@@ -63,12 +57,12 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
 
     const slug = params.slug_negocio;
     
-    // 1. Obtenemos los datos "crudos" de la DB (vienen con Decimal)
+    // Obtenemos los datos "crudos" de la DB (vienen con Decimal)
     const negocioRaw = await getNegocioPublicoBySlug(slug); 
     
     if (!negocioRaw) notFound();
 
-    // 2. TRANSFORMACIÓN DE DATOS (Solución a los Warnings de Decimal)
+    // TRANSFORMACIÓN DE DATOS
     // Convertimos los objetos Decimal de Prisma a números de JS
     const negocio = {
         ...negocioRaw,
@@ -183,10 +177,6 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {categoria.productos.map(producto => (
-                                        /* USO DEL NUEVO COMPONENTE:
-                                           Pasamos el 'producto' ya transformado (precios son number).
-                                           Esto elimina warnings y encapsula la lógica del modal.
-                                        */
                                         <ProductCard 
                                             key={producto.id_producto}
                                             producto={producto}
