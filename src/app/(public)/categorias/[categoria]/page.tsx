@@ -1,8 +1,6 @@
-// En: src/app/(public)/categorias/[categoria]/page.tsx
-
 import { getNegociosByCategoriaGlobal } from '@/lib/db';
-import { NegocioCard } from '@/components/NegocioCard'; // 👈 Ajusta esta ruta
-import { AlertTriangle } from 'lucide-react'; // Para el estado vacío
+import { NegocioCard } from '@/components/NegocioCard';
+import { AlertTriangle } from 'lucide-react';
 
 // Definimos la interfaz para los props
 interface CategoriaDetallePageProps {
@@ -26,7 +24,6 @@ export default async function CategoriaDetallePage({
 }: CategoriaDetallePageProps) {
   
   // 1. Decodificamos el nombre de la URL (ej. "restaurantes" -> "Restaurantes")
-  // Usamos una función simple para capitalizar la primera letra para el título
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const nombreCategoriaDecodificado = decodeURIComponent(params.categoria);
   const nombreCategoriaTitulo = capitalize(nombreCategoriaDecodificado);
@@ -49,25 +46,28 @@ export default async function CategoriaDetallePage({
 
       {/* --- Cuadrícula de Negocios --- */}
       {negocios.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {/* Aquí reutilizamos el mismo NegocioCard que usamos en el homepage.
-            El componente 'horario' se pasará a la tarjeta
-            para calcular si está abierto o cerrado.
-          */}
+        // MEJORA: Usamos 'xl:grid-cols-4' para consistencia con la Home
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {negocios.map((negocio) => (
             <NegocioCard key={negocio.id_negocio} negocio={negocio} />
           ))}
         </div>
       ) : (
-        // --- Estado Vacío ---
-        <div className="flex flex-col items-center justify-center text-center gap-4 py-16 max-w-lg mx-auto border bg-background rounded-lg shadow-sm">
-          <AlertTriangle className="h-12 w-12 text-muted-foreground" />
-          <h2 className="text-2xl font-semibold text-stone-700">
+        // --- Estado Vacío Mejorado ---
+        // 1. rounded-3xl: Bordes muy redondeados (estilo bubbly).
+        // 2. p-8 md:p-12: Mucho espacio interno para que el texto no toque los bordes.
+        // 3. border-dashed: Un toque visual sutil para indicar "aquí falta algo".
+        <div className="flex flex-col items-center justify-center text-center gap-4 py-16 px-4 max-w-lg mx-auto border-2 border-dashed border-stone-200 bg-stone-50/50 rounded-3xl">
+          <div className="bg-white p-4 rounded-full shadow-sm mb-2">
+            <AlertTriangle className="h-10 w-10 text-orange-400" />
+          </div>
+          
+          <h2 className="text-2xl font-bold text-stone-700">
             Sin resultados
           </h2>
-          <p className="text-muted-foreground">
-            No se encontraron negocios activos en la categoría "
-            {nombreCategoriaTitulo}".
+          
+          <p className="text-muted-foreground max-w-xs mx-auto">
+            No encontramos negocios activos en la categoría <span className="font-medium text-stone-600">"{nombreCategoriaTitulo}"</span> por ahora.
           </p>
         </div>
       )}
