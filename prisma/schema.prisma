@@ -127,6 +127,7 @@ model usuarios {
   id_negocio     Int?
   fecha_registro DateTime?   @default(now()) @db.Timestamptz(6)
   activo         Boolean?    @default(true)
+  carrito_persistente Json?
   pedidos        pedidos[]
   negocios       negocios?   @relation(fields: [id_negocio], references: [id_negocio], onUpdate: NoAction, map: "fk_negocio_dueño")
 

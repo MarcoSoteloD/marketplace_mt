@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import NextAuthProvider from "./providers";
+import { CartSynchronizer } from "@/components/CartSynchronizer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
         className={`${inter.className} min-h-screen bg-background text-foreground antialiased overflow-x-hidden`}
       >
         <NextAuthProvider>
+          <CartSynchronizer />
           {children}
         </NextAuthProvider>
       </body>

@@ -1,36 +1,17 @@
-// app/(gestor)/pedidos/KanbanBoard.tsx
 "use client";
 
-import { useState, useMemo, useEffect, useTransition } from 'react';
-import type { PedidoConCliente } from './actions'; // Importamos el tipo FIJO
+import { useState, useMemo, useEffect } from 'react';
+import type { PedidoConCliente } from './actions';
 import { getPedidosAction, updatePedidoEstadoAction } from './actions';
-import { estado_pedido } from '@prisma/client'; // <-- ¡IMPORTANTE!
+import { estado_pedido } from '@prisma/client';
 import useSWR from 'swr';
-import {
-    DndContext,
-    DragEndEvent,
-    DragStartEvent,
-    PointerSensor,
-    useSensor,
-    useSensors
-} from '@dnd-kit/core';
-import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { createPortal } from 'react-dom';
-import { CldImage } from 'next-cloudinary';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription
-} from '@/components/ui/dialog';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Package, Truck, Eye, Image as ImageIcon, CheckCircle, XCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { Package, Truck, Eye } from 'lucide-react';
+import { PedidoGestorModal } from './PedidoGestorModal';
 
 // --- Columnas del Tablero ---
 const COLUMNAS = [
@@ -38,10 +19,10 @@ const COLUMNAS = [
     { id: estado_pedido.En_Preparaci_n, titulo: "En Preparación", icon: <Package className="h-5 w-5" /> },
     { id: estado_pedido.Listo_para_recoger, titulo: "Listo para Recoger", icon: <Truck className="h-5 w-5" /> },
 ];
-// --- CORRECCIÓN DE TIPO ---
+
 type ColumnaId = estado_pedido;
 
-// --- Helpers (con corrección de 'Number()') ---
+// --- Helpers ---
 function formatCurrency(amount: number | null | undefined) {
     if (!amount) return "$0.00";
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(amount));
@@ -69,7 +50,6 @@ function OrderCard({ pedido }: { pedido: PedidoConCliente }) {
         transform: CSS.Transform.toString(transform),
     };
 
-    // --- CORRECCIÓN (Ahora 'detalle_pedido' existe) ---
     const totalItems = pedido.detalle_pedido.reduce((sum, item) => sum + item.cantidad, 0);
 
     return (
@@ -78,18 +58,26 @@ function OrderCard({ pedido }: { pedido: PedidoConCliente }) {
             style={style}
             {...attributes}
             {...listeners}
-            className="mb-3 touch-none"
+            className="mb-3 touch-none cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
         >
             <CardHeader className="p-4">
                 <CardTitle className="text-md flex justify-between items-center">
-                    <span>Pedido #{pedido.id_pedido}</span>
-                    {/* --- CORRECCIÓN (Añadido Number()) --- */}
-                    <span className="text-lg font-bold">{formatCurrency(Number(pedido.total))}</span>
+                    <span className="text-stone-700">#{pedido.id_pedido}</span>
+                    <span className="text-lg font-bold text-primary">{formatCurrency(Number(pedido.total))}</span>
                 </CardTitle>
-                <div className="text-sm text-muted-foreground pt-1">
-                    <p>Cliente: <span className="font-medium text-foreground">{pedido.usuarios?.nombre || 'N/A'}</span></p>
-                    <p>Hora: <span className="font-medium text-foreground">{formatDate(pedido.fecha_hora)}</span></p>
-                    <p>Artículos: <span className="font-medium text-foreground">{totalItems}</span></p>
+                <div className="text-sm text-muted-foreground pt-1 space-y-1">
+                    <p className="flex justify-between">
+                        <span>Cliente:</span>
+                        <span className="font-medium text-stone-800">{pedido.usuarios?.nombre || 'N/A'}</span>
+                    </p>
+                    <p className="flex justify-between">
+                        <span>Hora:</span>
+                        <span className="font-medium text-stone-800">{formatDate(pedido.fecha_hora)}</span>
+                    </p>
+                    <p className="flex justify-between">
+                        <span>Artículos:</span>
+                        <span className="font-medium text-stone-800">{totalItems}</span>
+                    </p>
                 </div>
             </CardHeader>
         </Card>
@@ -116,22 +104,24 @@ function KanbanColumn({
     return (
         <div
             ref={setNodeRef}
-            className="w-full md:w-1/3 flex-shrink-0"
+            className="flex-1 min-w-[300px] md:min-w-0 flex flex-col h-full"
         >
-            <Card className="bg-muted/50 h-full">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b p-4">
-                    <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        {columna.icon}
-                        {columna.titulo}
+            <Card className="bg-stone-50/80 h-full border-stone-200 flex flex-col">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b p-4 bg-white/50 rounded-t-xl">
+                    <CardTitle className="text-lg font-semibold flex items-center gap-2 text-stone-700 truncate">
+                        <div className="p-1.5 bg-white rounded-md border shadow-sm text-orange-600 shrink-0">
+                            {columna.icon}
+                        </div>
+                        <span className="truncate">{columna.titulo}</span>
                     </CardTitle>
-                    <Badge variant="secondary" className="text-lg">{pedidos.length}</Badge>
+                    <Badge variant="secondary" className="text-sm font-bold bg-stone-200 text-stone-700 shrink-0">{pedidos.length}</Badge>
                 </CardHeader>
-                <CardContent className="p-4 h-full overflow-y-auto">
+                <CardContent className="p-3 flex-1 overflow-y-auto scrollbar-hide">
                     <SortableContext items={pedidosIds}>
                         {pedidos.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center pt-10">
-                                Sin pedidos en esta columna.
-                            </p>
+                            <div className="h-32 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg m-2">
+                                <p className="text-sm">Sin pedidos</p>
+                            </div>
                         ) : (
                             pedidos.map(pedido => (
                                 <div key={pedido.id_pedido} onClick={() => onCardClick(pedido)}>
@@ -150,11 +140,7 @@ function KanbanColumn({
 export function KanbanBoard({ initialPedidos }: { initialPedidos: PedidoConCliente[] }) {
 
     const [pedidos, setPedidos] = useState(initialPedidos);
-    const [activePedido, setActivePedido] = useState<PedidoConCliente | null>(null);
     const [selectedPedido, setSelectedPedido] = useState<PedidoConCliente | null>(null);
-
-    const { toast } = useToast();
-    const [isPending, startTransition] = useTransition();
 
     const sensors = useSensors(useSensor(PointerSensor, {
         activationConstraint: { distance: 10 },
@@ -172,19 +158,17 @@ export function KanbanBoard({ initialPedidos }: { initialPedidos: PedidoConClien
         }
     }, [polledData]);
 
-    // --- LÓGICA DE DND (CORREGIDA) ---
+    // --- LÓGICA DE DND ---
     const pedidosPorColumna = useMemo(() => {
-        // 1. Inicializa el 'grouped' con TODAS las keys del enum
         const grouped: Record<ColumnaId, PedidoConCliente[]> = {
             Recibido: [],
             En_Preparaci_n: [],
             Listo_para_recoger: [],
-            Entregado: [], // <-- Ahora es una key válida
-            Cancelado: [], // <-- Ahora es una key válida
+            Entregado: [],
+            Cancelado: [],
         };
 
         pedidos.forEach(p => {
-            // 2. 'p.estado' ahora puede indexar 'grouped' sin error
             if (grouped[p.estado] !== undefined) {
                 grouped[p.estado].push(p);
             }
@@ -192,14 +176,7 @@ export function KanbanBoard({ initialPedidos }: { initialPedidos: PedidoConClien
         return grouped;
     }, [pedidos]);
 
-    function onDragStart(event: DragStartEvent) {
-        if (event.active.data.current?.type === "Order") {
-            setActivePedido(event.active.data.current.pedido);
-        }
-    }
-
     function onDragEnd(event: DragEndEvent) {
-        setActivePedido(null);
         const { active, over } = event;
         if (!over || !active.data.current?.pedido) return;
 
@@ -217,115 +194,28 @@ export function KanbanBoard({ initialPedidos }: { initialPedidos: PedidoConClien
     }
 
     return (
-        <DndContext
-            sensors={sensors}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-        >
-            <div className="flex-1 flex gap-4 h-full pb-4">
-                <SortableContext items={COLUMNAS.map(c => c.id)}>
-                    {COLUMNAS.map(col => (
-                        <KanbanColumn
-                            key={col.id}
-                            columna={col}
-                            pedidos={pedidosPorColumna[col.id]}
-                            onCardClick={(pedido) => setSelectedPedido(pedido)}
-                        />
-                    ))}
-                </SortableContext>
-            </div>
+        <div className="h-full flex flex-col">
+            <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+                {/* overflow-x-auto se mantiene para móviles, pero en desktop ya no se activará */}
+                <div className="flex-1 flex gap-4 h-full overflow-x-auto pb-4">
+                    <SortableContext items={COLUMNAS.map(c => c.id)}>
+                        {COLUMNAS.map(col => (
+                            <KanbanColumn
+                                key={col.id}
+                                columna={col}
+                                pedidos={pedidosPorColumna[col.id]}
+                                onCardClick={(pedido) => setSelectedPedido(pedido)}
+                            />
+                        ))}
+                    </SortableContext>
+                </div>
+            </DndContext>
 
-            {/* --- EL MODAL (CORREGIDO) --- */}
-            <Dialog
-                open={!!selectedPedido}
-                onOpenChange={(isOpen) => !isOpen && setSelectedPedido(null)}
-            >
-                <DialogContent className="max-w-xl">
-                    <DialogHeader>
-                        <DialogTitle>Detalle del Pedido #{selectedPedido?.id_pedido}</DialogTitle>
-                        <DialogDescription>
-                            Cliente: {selectedPedido?.usuarios?.nombre || 'N/A'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="max-h-[60vh] overflow-y-auto pr-4 space-y-4">
-                        <h4 className="font-semibold">Resumen del Pedido</h4>
-                        <ul className="divide-y">
-                            {/* 3. 'detalle_pedido' ahora existe */}
-                            {selectedPedido?.detalle_pedido.map(item => (
-                                <li key={item.id_producto} className="flex items-center gap-4 py-3">
-                                    {item.productos?.url_foto ? (
-                                        <CldImage
-                                            src={item.productos.url_foto}
-                                            width="48" height="48" alt={item.productos.nombre}
-                                            className="rounded-md object-cover aspect-square bg-muted"
-                                            crop={{ type: "fill", source: true }}
-                                        />
-                                    ) : (
-                                        <div className="h-12 w-12 flex items-center justify-center bg-gray-100 rounded-md">
-                                            <ImageIcon className="h-6 w-6 text-gray-400" />
-                                        </div>
-                                    )}
-                                    <div className="flex-1">
-                                        <p className="font-medium">{item.productos?.nombre || "N/A"}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {item.cantidad} x {formatCurrency(Number(item.precio_unitario))} {/* 4. Añadido Number() */}
-                                        </p>
-                                        {item.comentarios && (
-                                            <p className="text-sm text-primary italic">"{item.comentarios}"</p>
-                                        )}
-                                    </div>
-                                    <p className="font-semibold">
-                                        {formatCurrency(Number(item.precio_unitario) * item.cantidad)} {/* 4. Añadido Number() */}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
-                        <Separator />
-                        <div className="grid grid-cols-2 gap-3">
-                            {/* Botón de Cancelar Pedido */}
-                            <Button
-                                variant="destructive"
-                                className="w-full"
-                                disabled={isPending}
-                                onClick={() => {
-                                    if (window.confirm("¿Seguro que deseas CANCELAR este pedido? Esta acción no se puede deshacer.")) {
-                                        startTransition(async () => {
-                                            const result = await updatePedidoEstadoAction(selectedPedido!.id_pedido, estado_pedido.Cancelado);
-                                            toast({ variant: "default", title: "Pedido Cancelado" });
-                                            setSelectedPedido(null); // Cierra el modal
-                                        });
-                                    }
-                                }}
-                            >
-                                <XCircle className="mr-2 h-4 w-4" />
-                                Cancelar Pedido
-                            </Button>
-
-                            {/* Botón de Marcar como Entregado */}
-                            <Button
-                                variant="default" // (Necesitarás añadir esta variante a tu shadcn/button, o usa "default")
-                                className="w-full bg-green-600 hover:bg-green-700 text-white" // <-- O usa esto
-                                disabled={isPending}
-                                onClick={() => {
-                                    startTransition(async () => {
-                                        const result = await updatePedidoEstadoAction(selectedPedido!.id_pedido, estado_pedido.Entregado);
-                                        toast({ variant: "success", title: "¡Pedido Entregado!" });
-                                        setSelectedPedido(null); // Cierra el modal
-                                    });
-                                }}
-                            >
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Marcar como Entregado
-                            </Button>
-                        </div>
-                        <div className="flex justify-end items-center gap-4 text-lg">
-                            <span className="font-medium">Total:</span>
-                            {/* 4. Añadido Number() */}
-                            <span className="text-2xl font-bold">{formatCurrency(Number(selectedPedido?.total))}</span>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </DndContext>
+            <PedidoGestorModal 
+                pedido={selectedPedido} 
+                isOpen={!!selectedPedido} 
+                onClose={() => setSelectedPedido(null)} 
+            />
+        </div>
     );
 }

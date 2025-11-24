@@ -1,5 +1,3 @@
-// app/(public)/pedido-exitoso/[id]/page.tsx
-
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getPedidoDetailsByClienteId } from '@/lib/db';
@@ -28,14 +26,12 @@ export default async function PaginaPedidoExitoso({
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    // Si no está logueado, no puede ver esta página
     redirect("/login");
   }
 
   const pedidoId = Number(params.id);
   const clienteId = Number(session.user.id);
 
-  // Obtenemos el pedido (solo si es de este cliente)
   const pedido = await getPedidoDetailsByClienteId(pedidoId, clienteId);
 
   if (!pedido) {
@@ -67,11 +63,21 @@ export default async function PaginaPedidoExitoso({
             <ul className="divide-y rounded-md border">
               {pedido.detalle_pedido.map(item => (
                 <li key={item.id_producto} className="flex items-center justify-between p-3 text-stone-700">
-                  <div>
-                    <span className="font-medium">{item.productos?.nombre || "Producto"}</span>
-                    <span className="text-sm text-muted-foreground ml-2">x {item.cantidad}</span>
+                  <div className="flex-1 pr-4">
+                    <div>
+                        <span className="font-medium">{item.productos?.nombre || "Producto"}</span>
+                        <span className="text-sm text-muted-foreground ml-2">x {item.cantidad}</span>
+                    </div>
+                    
+                    {/* --- AQUÍ MOSTRAMOS EL COMENTARIO --- */}
+                    {item.comentarios && (
+                        <p className="text-xs text-stone-500 italic mt-1">
+                            Nota: {item.comentarios}
+                        </p>
+                    )}
                   </div>
-                  <span className="font-medium">
+                  
+                  <span className="font-medium whitespace-nowrap">
                     {formatCurrency(Number(item.precio_unitario) * item.cantidad)}
                   </span>
                 </li>

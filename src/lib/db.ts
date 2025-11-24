@@ -811,14 +811,33 @@ export const getCategoriasByNegocioId = async (negocioId: number) => {
         id_negocio: negocioId,
       },
       orderBy: [
-        { orden: 'asc' }, // Ordena por el campo 'orden'
-        { nombre: 'asc' }, // Luego por nombre
+        { orden: 'asc' }, // Primero por el orden manual
+        { nombre: 'asc' }, // Luego alfabéticamente
       ],
     });
   } catch (error) {
     console.error('Error en getCategoriasByNegocioId:', error);
     return [];
   }
+};
+
+/**
+ * Reordena las categorías en una transacción atómica.
+ * Esta función recibe el array de cambios y los aplica todos juntos.
+ */
+export const reorderCategorias = async (items: { id_categoria: number; orden: number }[], negocioId: number) => {
+    // Usamos $transaction para asegurar que todos los cambios de orden se apliquen o ninguno
+    return await prisma.$transaction(
+        items.map((item) =>
+            prisma.categorias_producto.update({
+                where: { 
+                    id_categoria: item.id_categoria, 
+                    id_negocio: negocioId // Candado de seguridad: solo si pertenece al negocio
+                },
+                data: { orden: item.orden },
+            })
+        )
+    );
 };
 
 /**
@@ -1120,6 +1139,42 @@ export const getPedidoDetailsById = async (pedidoId: number, negocioId: number) 
     console.error('Error en getPedidoDetailsById:', error);
     return null;
   }
+};
+
+/**
+ * Obtiene los pedidos activos para el tablero Kanban.
+ * Filtra por estados relevantes y ordena por fecha (FIFO).
+ */
+export const getKanbanPedidos = async (negocioId: number) => {
+  return await prisma.pedidos.findMany({
+    where: {
+      id_negocio: negocioId,
+      estado: {
+        in: [estado_pedido.Recibido, estado_pedido.En_Preparaci_n, estado_pedido.Listo_para_recoger]
+      }
+    },
+    include: {
+      usuarios: {
+        select: {
+          nombre: true,
+          email: true,
+        }
+      },
+      detalle_pedido: {
+        include: {
+          productos: {
+            select: {
+              nombre: true,
+              url_foto: true,
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      fecha_hora: 'asc', // Los más viejos primero (FIFO)
+    }
+  });
 };
 
 /**

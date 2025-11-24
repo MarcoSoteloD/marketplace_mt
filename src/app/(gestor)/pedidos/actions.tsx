@@ -1,27 +1,12 @@
-// app/(gestor)/pedidos/actions.ts
 "use server";
 
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { estado_pedido, Prisma, usuarios, detalle_pedido, productos } from '@prisma/client';
-
-// Importamos las funciones de DB
-import { 
-  updatePedidoEstado,
-  getPedidosByNegocioId // ¡La usaremos para el polling!
-} from '@/lib/db';
+import { estado_pedido, Prisma } from '@prisma/client';
+import { updatePedidoEstado, getKanbanPedidos } from '@/lib/db';
 
 // Definimos el tipo de Pedido que el cliente espera
-// (la solución que ya encontramos para el 'include')
-type PedidosArray = Prisma.PromiseReturnType<typeof getPedidosByNegocioId>;
-type DetalleConProducto = (detalle_pedido & {
-  productos: {
-    nombre: string;
-    url_foto: string | null;
-  } | null;
-});
-
 export type PedidoConCliente = Prisma.pedidosGetPayload<{
   include: {
     usuarios: {
@@ -78,17 +63,12 @@ export async function getPedidosAction(): Promise<PedidoConCliente[]> {
   }
 
   try {
-    const pedidos = await getPedidosByNegocioId(session.user.negocioId);
-    
-    // Filtramos los que ya no son relevantes para el tablero
-    return pedidos.filter(p => 
-      p.estado === 'Recibido' || 
-      p.estado === 'En_Preparaci_n' || 
-      p.estado === 'Listo_para_recoger'
-    );
+    // Usamos la función encapsulada en db.ts
+    const pedidos = await getKanbanPedidos(session.user.negocioId);
+    return pedidos;
     
   } catch (error) {
     console.error("Error en getPedidosAction:", error);
-    return []; // Devuelve vacío si hay error
+    return [];
   }
 }
