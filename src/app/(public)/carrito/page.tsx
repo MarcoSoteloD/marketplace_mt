@@ -1,3 +1,5 @@
+//src/app/public/carrito/page.tsx
+
 "use client";
 
 import Link from 'next/link';
@@ -100,11 +102,18 @@ export default function CarritoPage() {
         );
     }
 
-    // Estado 2: Carrito Lleno
+    // Estado 2: Carrito con productos
     return (
         <div className="container py-12">
-            <h1 className="text-3xl font-bold tracking-tight mb-8 text-stone-700">Tu Carrito</h1>
+            <div className="flex items-center gap-4 mb-8">
+                <h1 className="text-3xl font-bold tracking-tight text-stone-700">Tu Carrito</h1>
+                <div className="p-3 rounded-full">
+                    <ShoppingCart className="h-8 w-8 text-stone-700" strokeWidth={3} />
+                </div>
+                
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
                 {/* --- Columna Izquierda: Lista de Productos --- */}
                 <div className="md:col-span-2">
                     <Card className="rounded-2xl"> 
@@ -177,7 +186,7 @@ export default function CarritoPage() {
                                 <span className="font-medium text-stone-700">{formatCurrency(subtotal)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Envío / Servicio</span>
+                                <span className="text-muted-foreground">Servicio</span>
                                 <span className="font-medium text-stone-700">Gratis</span>
                             </div>
                             <Separator />
@@ -205,7 +214,6 @@ export default function CarritoPage() {
                         </CardFooter>
                     </Card>
                 </div>
-
             </div>
         </div>
     );

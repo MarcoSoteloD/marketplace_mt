@@ -1,10 +1,9 @@
-// app/(gestor)/configuracion/editar/ConfigForm.tsx
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
 import { updateNegocioConfig, ConfigNegocioState } from "../actions";
 import type { negocios as PrismaNegocios, categorias_globales } from "@prisma/client";
-import { useEffect, useState, useMemo } from "react"; // 'useMemo' no se usa, pero no estorba
+import { useEffect, useState } from "react";
 import { CldImage } from "next-cloudinary";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -12,41 +11,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, PlusCircle, X } from "lucide-react";
+import { PlusCircle, X, Store, MapPin, Clock, Share2, Image as ImageIcon, Save } from "lucide-react";
 import dynamic from 'next/dynamic';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardTitle, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+import { Separator } from "@/components/ui/separator";
 
-// 1. Definimos el "tipo" del objeto plano que nos pasa el servidor
+// Definimos el "tipo" del objeto plano que nos pasa el servidor
 type PlainNegocio = Omit<PrismaNegocios, 'latitud' | 'longitud' | 'horario' | 'galeria_fotos' | 'url_redes_sociales'> & {
   latitud: number | null;
   longitud: number | null;
-  horario: string | null; // Ahora es un string JSON
-  galeria_fotos: string | null; // Ahora es un string JSON
-  url_redes_sociales: string | null; // Ahora es un string JSON
+  horario: string | null;
+  galeria_fotos: string | null;
+  url_redes_sociales: string | null;
 }
 
-// 2. Carga dinámica del mapa
+// Carga dinámica del mapa
 const MapSelector = dynamic(
   () => import('./MapSelector').then(mod => mod.MapSelector),
   {
     ssr: false,
-    loading: () => <p className="text-center">Cargando mapa...</p>
+    loading: () => <div className="h-[300px] w-full bg-muted animate-pulse rounded-xl flex items-center justify-center">Cargando mapa...</div>
   }
 );
 
 // --- Helper: Parsear Horario Guardado ---
 const parseHorarioDefault = (horario: any) => {
-  const dias = [
-    "lunes", "martes", "miercoles", "jueves",
-    "viernes", "sabado", "domingo"
-  ];
+  const dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
   const initialState: Record<string, { apertura: string; cierre: string; cerrado: boolean }> = {};
 
   dias.forEach((dia) => {
@@ -63,20 +54,18 @@ const parseHorarioDefault = (horario: any) => {
   return initialState;
 };
 
-// --- Helper: Formatear JSON para Textarea (¡Eliminado! Ya no se usa) ---
-// function formatJsonForDisplay(value: any): string { ... }
-
-// --- Componente: Botón de Submit ---
+// --- Componente: Botón de Submit (Flotante o fijo) ---
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" aria-disabled={pending} disabled={pending}>
+    <Button type="submit" aria-disabled={pending} disabled={pending} className="w-full md:w-auto rounded-full bg-orange-600 hover:bg-orange-500 min-w-[150px]">
+      <Save className="w-4 h-4 mr-2" />
       {pending ? "Guardando..." : "Guardar Cambios"}
     </Button>
   );
 }
 
-// --- Componente: Fila de Horario (Separado) ---
+// --- Componente: Fila de Horario (Compactado) ---
 function HorarioDiaInput({
   dia,
   label,
@@ -91,128 +80,105 @@ function HorarioDiaInput({
   const [isCerrado, setIsCerrado] = useState(defaultState.cerrado);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center p-3 border rounded-md">
-      <Label className="md:col-span-1 font-semibold">{label}</Label>
-      <div className="md:col-span-2 grid grid-cols-2 gap-3">
-        <div className="grid gap-1.5">
-          <Label htmlFor={`horario_${dia}_apertura`} className="text-xs">Apertura</Label>
-          <Input
-            id={`horario_${dia}_apertura`}
-            name={`horario_${dia}_apertura`}
-            type="time"
-            defaultValue={defaultState.apertura}
-            disabled={isCerrado}
-          />
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor={`horario_${dia}_cierre`} className="text-xs">Cierre</Label>
-          <Input
-            id={`horario_${dia}_cierre`}
-            name={`horario_${dia}_cierre`}
-            type="time"
-            defaultValue={defaultState.cierre}
-            disabled={isCerrado}
-          />
+    <div className="space-y-2 pb-3 border-b last:border-0">
+      <div className="flex items-center justify-between">
+        <Label className="font-semibold capitalize text-sm">{label}</Label>
+        <div className="flex items-center space-x-2">
+            <Checkbox
+                id={`horario_${dia}_cerrado`}
+                name={`horario_${dia}_cerrado`}
+                checked={isCerrado}
+                onCheckedChange={(checked) => setIsCerrado(checked as boolean)}
+            />
+            <Label htmlFor={`horario_${dia}_cerrado`} className="text-xs text-muted-foreground cursor-pointer">Cerrado</Label>
         </div>
       </div>
-      <div className="md:col-span-1 flex items-center justify-end space-x-2 pt-5">
-        <Checkbox
-          id={`horario_${dia}_cerrado`}
-          name={`horario_${dia}_cerrado`}
-          checked={isCerrado}
-          onCheckedChange={(checked) => setIsCerrado(checked as boolean)}
-        />
-        <Label htmlFor={`horario_${dia}_cerrado`} className="text-sm">Cerrado</Label>
-      </div>
-      {error && (
-        <p className="text-sm text-red-500 md:col-span-4">{error[0]}</p>
+      
+      {!isCerrado && (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="relative">
+                <Input
+                    id={`horario_${dia}_apertura`}
+                    name={`horario_${dia}_apertura`}
+                    type="time"
+                    defaultValue={defaultState.apertura}
+                    className="h-8 text-xs"
+                />
+            </div>
+            <div className="relative">
+                <Input
+                    id={`horario_${dia}_cierre`}
+                    name={`horario_${dia}_cierre`}
+                    type="time"
+                    defaultValue={defaultState.cierre}
+                    className="h-8 text-xs"
+                />
+            </div>
+          </div>
       )}
+      {error && <p className="text-xs text-red-500">{error[0]}</p>}
     </div>
   );
 }
 
-// --- Tipo y Helper para Redes Sociales ---
-type RedSocial = {
-  id: number;
-  plataforma: string;
-  url: string;
-};
+// --- Helpers Redes y Galería ---
+type RedSocial = { id: number; plataforma: string; url: string; };
 
 const parseRedesSocialesDefault = (redes: any): RedSocial[] => {
-  if (!redes || typeof redes !== 'object' || Array.isArray(redes)) {
-    return [];
-  }
+  if (!redes || typeof redes !== 'object' || Array.isArray(redes)) return [];
   return Object.entries(redes).map(([plataforma, url], index) => ({
-    id: index,
-    plataforma: plataforma,
-    url: url as string,
+    id: index, plataforma: plataforma, url: url as string,
   }));
 };
 
-// --- Helper para Galería ---
 const parseGalleryDefault = (gallery: any): string[] => {
-  if (Array.isArray(gallery)) {
-    return gallery.filter(item => typeof item === 'string');
-  }
+  if (Array.isArray(gallery)) return gallery.filter(item => typeof item === 'string');
   return [];
 };
 
-// --- Componente Principal: El Formulario ---
+// --- Componente Principal ---
 export function ConfigForm({
   negocio,
   categoriasGlobales,
   categoriasActualesIds
 }: {
   negocio: PlainNegocio,
-  categoriasGlobales: categorias_globales[], // + PROP NUEVO
-  categoriasActualesIds: number[]            // + PROP NUEVO
+  categoriasGlobales: categorias_globales[],
+  categoriasActualesIds: number[]
 }) {
   const initialState: ConfigNegocioState = undefined;
   const [state, dispatch] = useFormState(updateNegocioConfig, initialState);
   const { toast } = useToast();
+  const router = useRouter(); // Para redirigir
 
   const [defaultHorarios] = useState(() => parseHorarioDefault(JSON.parse(negocio.horario || "null")));
   const [redes, setRedes] = useState(() => parseRedesSocialesDefault(JSON.parse(negocio.url_redes_sociales || "null")));
   const [gallery, setGallery] = useState(() => parseGalleryDefault(JSON.parse(negocio.galeria_fotos || "null")));
-
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>(categoriasActualesIds);
 
   const getRedesJsonString = () => {
     const jsonObject = redes.reduce((acc, red) => {
-      if (red.plataforma && red.url) {
-        acc[red.plataforma.toLowerCase()] = red.url;
-      }
+      if (red.plataforma && red.url) acc[red.plataforma.toLowerCase()] = red.url;
       return acc;
     }, {} as Record<string, string>);
     return JSON.stringify(jsonObject, null, 2);
   };
 
-  const addRedSocial = () => {
-    setRedes([...redes, { id: Date.now(), plataforma: '', url: '' }]);
-  };
-
-  const removeRedSocial = (id: number) => {
-    setRedes(redes.filter(red => red.id !== id));
-  };
-
+  const addRedSocial = () => setRedes([...redes, { id: Date.now(), plataforma: '', url: '' }]);
+  const removeRedSocial = (id: number) => setRedes(redes.filter(red => red.id !== id));
   const updateRedSocial = (id: number, field: 'plataforma' | 'url', value: string) => {
-    setRedes(redes.map(red =>
-      red.id === id ? { ...red, [field]: value } : red
-    ));
+    setRedes(redes.map(red => red.id === id ? { ...red, [field]: value } : red));
   };
 
-  const removeGalleryImage = (urlToRemove: string) => {
-    setGallery(gallery.filter(url => url !== urlToRemove));
-  };
+  const removeGalleryImage = (urlToRemove: string) => setGallery(gallery.filter(url => url !== urlToRemove));
 
   const handleCategoryChange = (categoryId: number, checked: boolean) => {
     setSelectedCategoryIds((prevIds) =>
-      checked
-        ? [...prevIds, categoryId] // Añadir ID
-        : prevIds.filter((id) => id !== categoryId) // Quitar ID
+      checked ? [...prevIds, categoryId] : prevIds.filter((id) => id !== categoryId)
     );
   };
 
+  // --- EFECTO: Manejo de Éxito y Redirección ---
   useEffect(() => {
     if (state?.message) {
       toast({
@@ -220,221 +186,263 @@ export function ConfigForm({
         title: state.success ? "¡Éxito!" : "Error",
         description: state.message,
       });
+
+      // Si todo salió bien, redirigimos a la vista principal de configuración
+      if (state.success) {
+        const timer = setTimeout(() => {
+            router.push('/configuracion');
+            router.refresh(); // Actualizamos los datos de la página destino
+        }, 500); // Pequeño delay para ver el toast
+        return () => clearTimeout(timer);
+      }
     }
-  }, [state, toast]);
+  }, [state, toast, router]);
 
   return (
-    <form action={dispatch}>
-      <Card>
-        <CardContent className="pt-6 space-y-6">
-          {/* --- INFO BÁSICA --- */}
-          <CardTitle>Información Básica</CardTitle>
-          {/* ... (inputs de nombre, slug, descripcion, telefono) ... */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="nombre">Nombre del Negocio</Label>
-              <Input id="nombre" name="nombre" defaultValue={negocio.nombre} required />
-              {state?.errors?.nombre && (<p className="text-sm text-red-500">{state.errors.nombre[0]}</p>)}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="slug">Slug (URL)</Label>
-              <Input id="slug" name="slug" defaultValue={negocio.slug} required />
-              {state?.errors?.slug && (<p className="text-sm text-red-500">{state.errors.slug[0]}</p>)}
-            </div>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="descripcion">Descripción</Label>
-            <Textarea id="descripcion" name="descripcion" defaultValue={negocio.descripcion || ""} placeholder="Describe tu negocio..." />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="telefono">Teléfono</Label>
-            <Input id="telefono" name="telefono" type="tel" defaultValue={negocio.telefono || ""} />
-          </div>
+    <form action={dispatch} className="space-y-8 pb-24"> {/* Padding bottom extra para móvil */}
+      
+      {/* Header con Botón de Guardar (Visible en Desktop) */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 className="text-3xl font-bold text-stone-800 tracking-tight">Editar Negocio</h1>
+            <p className="text-muted-foreground">Actualiza la información de tu establecimiento.</p>
+        </div>
+        <div className="hidden md:block">
+            <SubmitButton />
+        </div>
+      </div>
 
-          <CardTitle className="pt-4">Categorías</CardTitle>
-          <CardDescription>
-            Selecciona las categorías que mejor describen tu negocio.
-            Esto ayuda a los clientes a encontrarte.
-          </CardDescription>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* --- COLUMNA IZQUIERDA (Principal - 8/12) --- */}
+        <div className="lg:col-span-8 space-y-8">
+            
+            {/* 1. PERFIL */}
+            <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
+                <CardHeader className="bg-stone-50/50 pb-4">
+                    <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
+                        <Store className="w-5 h-5 text-orange-600" />
+                        Información General
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="nombre">Nombre del Negocio</Label>
+                            <Input id="nombre" name="nombre" defaultValue={negocio.nombre} required className="bg-stone-50 border-stone-200" />
+                            {state?.errors?.nombre && (<p className="text-sm text-red-500">{state.errors.nombre[0]}</p>)}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="slug">Slug (URL)</Label>
+                            <div className="flex items-center">
+                                <span className="text-sm text-muted-foreground mr-2 bg-stone-100 px-3 py-2 rounded-l-md border border-r-0 h-10 flex items-center">/negocio/</span>
+                                <Input id="slug" name="slug" defaultValue={negocio.slug} required className="rounded-l-none border-stone-200" />
+                            </div>
+                            {state?.errors?.slug && (<p className="text-sm text-red-500">{state.errors.slug[0]}</p>)}
+                        </div>
+                    </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4 border rounded-md">
-            {categoriasGlobales.map((categoria) => (
-              <div
-                key={categoria.id_categoria_g}
-                className="flex items-center space-x-2"
-              >
-                <Checkbox
-                  id={`cat-${categoria.id_categoria_g}`}
-                  // Comprobamos si el ID está en nuestro state
-                  checked={selectedCategoryIds.includes(categoria.id_categoria_g)}
-                  // Usamos el handler para actualizar el state
-                  onCheckedChange={(checked) => {
-                    handleCategoryChange(categoria.id_categoria_g, checked as boolean);
-                  }}
-                />
-                <Label
-                  htmlFor={`cat-${categoria.id_categoria_g}`}
-                  className="font-normal"
-                >
-                  {categoria.nombre}
-                </Label>
-              </div>
-            ))}
-          </div>
-          {/* Guardamos el state en un input oculto, igual que haces con redes y galería */}
-          <input
-            type="hidden"
-            name="categorias_ids"
-            value={JSON.stringify(selectedCategoryIds)}
-          />
-          {state?.errors?.categorias_ids && (<p className="text-sm text-red-500">{state.errors.categorias_ids[0]}</p>)}
+                    <div className="grid gap-2">
+                        <Label htmlFor="descripcion">Descripción</Label>
+                        <Textarea id="descripcion" name="descripcion" defaultValue={negocio.descripcion || ""} placeholder="Describe tu negocio..." className="min-h-[100px] bg-stone-50 border-stone-200" />
+                    </div>
 
-          {/* --- DIRECCIÓN --- */}
-          <CardTitle className="pt-4">Dirección</CardTitle>
-          {/* ... (inputs de calle, num_ext, num_int, colonia, cp, municipio, estado) ... */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="grid gap-2 md:col-span-2">
-              <Label htmlFor="calle">Calle</Label>
-              <Input id="calle" name="calle" defaultValue={negocio.calle || ""} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="num_ext">Num. Exterior</Label>
-              <Input id="num_ext" name="num_ext" defaultValue={negocio.num_ext || ""} />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="num_int">Num. Interior (Opcional)</Label>
-              <Input id="num_int" name="num_int" defaultValue={negocio.num_int || ""} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="colonia">Colonia</Label>
-              <Input id="colonia" name="colonia" defaultValue={negocio.colonia || ""} />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="cp">Código Postal</Label>
-              <Input id="cp" name="cp" defaultValue={negocio.cp || ""} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="municipio">Municipio</Label>
-              <Input id="municipio" name="municipio" defaultValue={negocio.municipio || ""} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="estado">Estado</Label>
-              <Input id="estado" name="estado" defaultValue={negocio.estado || ""} />
-            </div>
-          </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="telefono">Teléfono</Label>
+                        <Input id="telefono" name="telefono" type="tel" defaultValue={negocio.telefono || ""} className="bg-stone-50 border-stone-200 max-w-md" />
+                    </div>
 
-          {/* --- MAPA --- */}
-          <CardTitle className="pt-4">Ubicación en el Mapa</CardTitle>
-          <CardDescription>
-            Haz clic en el mapa para mover el marcador a la ubicación exacta de tu negocio.
-          </CardDescription>
-          <MapSelector
-            defaultLat={negocio.latitud}
-            defaultLng={negocio.longitud}
-          />
+                    <div className="space-y-3 pt-2">
+                        <Label className="text-base font-semibold">Categorías</Label>
+                        <CardDescription>Selecciona las categorías que te definen.</CardDescription>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border border-stone-200 rounded-2xl bg-stone-50/30">
+                            {categoriasGlobales.map((categoria) => (
+                                <div key={categoria.id_categoria_g} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={`cat-${categoria.id_categoria_g}`}
+                                        checked={selectedCategoryIds.includes(categoria.id_categoria_g)}
+                                        onCheckedChange={(checked) => handleCategoryChange(categoria.id_categoria_g, checked as boolean)}
+                                    />
+                                    <Label htmlFor={`cat-${categoria.id_categoria_g}`} className="font-normal cursor-pointer text-stone-600 text-sm">
+                                        {categoria.nombre}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                        <input type="hidden" name="categorias_ids" value={JSON.stringify(selectedCategoryIds)} />
+                        {state?.errors?.categorias_ids && (<p className="text-sm text-red-500">{state.errors.categorias_ids[0]}</p>)}
+                    </div>
+                </CardContent>
+            </Card>
 
-          {/* --- MEDIA Y JSON --- */}
-          <CardTitle className="pt-4">Media y Enlaces</CardTitle>
-          {/* ... (Input de Logo) ... */}
-          <div className="grid gap-2">
-            <Label htmlFor="url_logo">Logo del Negocio</Label>
-            {negocio.url_logo && (
-              <div className="my-2">
-                <p className="text-sm text-muted-foreground mb-2">Logo actual:</p>
-                <CldImage src={negocio.url_logo} width="100" height="100" alt="Logo actual" className="rounded-md object-cover" crop={{ type: "fill", source: true }} />
-              </div>
-            )}
-            <Input id="url_logo" name="url_logo" type="file" accept="image/png, image/jpeg, image/webp" />
-            <p className="text-sm text-muted-foreground">Sube un nuevo logo (Max 5MB). Si no seleccionas uno, se conservará el actual.</p>
-            {state?.errors?.url_logo && (<p className="text-sm text-red-500">{state.errors.url_logo[0]}</p>)}
-          </div>
+            {/* 2. UBICACIÓN */}
+            <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
+                <CardHeader className="bg-stone-50/50 pb-4">
+                    <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
+                        <MapPin className="w-5 h-5 text-orange-600" />
+                        Ubicación
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid gap-2 md:col-span-2">
+                            <Label htmlFor="calle">Calle</Label>
+                            <Input id="calle" name="calle" defaultValue={negocio.calle || ""} className="bg-stone-50 border-stone-200"/>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="num_ext">Num. Exterior</Label>
+                            <Input id="num_ext" name="num_ext" defaultValue={negocio.num_ext || ""} className="bg-stone-50 border-stone-200"/>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="colonia">Colonia</Label>
+                            <Input id="colonia" name="colonia" defaultValue={negocio.colonia || ""} className="bg-stone-50 border-stone-200"/>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="cp">C.P.</Label>
+                            <Input id="cp" name="cp" defaultValue={negocio.cp || ""} className="bg-stone-50 border-stone-200"/>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="municipio">Municipio</Label>
+                            <Input id="municipio" name="municipio" defaultValue={negocio.municipio || ""} className="bg-stone-50 border-stone-200"/>
+                        </div>
+                    </div>
 
-          {/* --- HORARIO --- */}
-          <CardTitle className="pt-4">Horario</CardTitle>
-          <CardDescription>
-            Define tus horas de apertura y cierre. Marca "Cerrado" si no abres.
-          </CardDescription>
-          <div className="space-y-4">
-            <HorarioDiaInput dia="lunes" label="Lunes" defaultState={defaultHorarios.lunes} error={state?.errors?.horario_lunes_cierre} />
-            <HorarioDiaInput dia="martes" label="Martes" defaultState={defaultHorarios.martes} error={state?.errors?.horario_martes_cierre} />
-            <HorarioDiaInput dia="miercoles" label="Miércoles" defaultState={defaultHorarios.miercoles} error={state?.errors?.horario_miercoles_cierre} />
-            <HorarioDiaInput dia="jueves" label="Jueves" defaultState={defaultHorarios.jueves} error={state?.errors?.horario_jueves_cierre} />
-            <HorarioDiaInput dia="viernes" label="Viernes" defaultState={defaultHorarios.viernes} error={state?.errors?.horario_viernes_cierre} />
-            <HorarioDiaInput dia="sabado" label="Sábado" defaultState={defaultHorarios.sabado} error={state?.errors?.horario_sabado_cierre} />
-            <HorarioDiaInput dia="domingo" label="Domingo" defaultState={defaultHorarios.domingo} error={state?.errors?.horario_domingo_cierre} />
-          </div>
+                    <div className="border border-stone-200 rounded-2xl overflow-hidden">
+                        <div className="bg-stone-100 p-2 text-xs text-center text-muted-foreground border-b">
+                            Arrastra el marcador o haz clic para ajustar la ubicación exacta.
+                        </div>
+                        <MapSelector defaultLat={negocio.latitud} defaultLng={negocio.longitud} />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
 
-          {/* --- REDES SOCIALES --- */}
-          <CardTitle className="pt-4">Redes Sociales</CardTitle>
-          <CardDescription>
-            Añade enlaces a tus redes sociales.
-          </CardDescription>
-          <div className="space-y-4">
-            {redes.map((red) => (
-              <div key={red.id} className="flex items-center gap-3 p-3 border rounded-md">
-                <div className="grid grid-cols-2 gap-3 flex-1">
-                  <div className="grid gap-1.5">
-                    <Label htmlFor={`red_plataforma_${red.id}`} className="text-xs">Plataforma</Label>
-                    <Input id={`red_plataforma_${red.id}`} placeholder="Ej: facebook" value={red.plataforma} onChange={(e) => updateRedSocial(red.id, 'plataforma', e.target.value)} />
-                  </div>
-                  <div className="grid gap-1.5">
-                    <Label htmlFor={`red_url_${red.id}`} className="text-xs">URL</Label>
-                    <Input id={`red_url_${red.id}`} type="url" placeholder="https://..." value={red.url} onChange={(e) => updateRedSocial(red.id, 'url', e.target.value)} />
-                  </div>
-                </div>
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeRedSocial(red.id)} aria-label="Eliminar red social">
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-            ))}
-            <Button type="button" variant="outline" size="sm" onClick={addRedSocial}>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Añadir Red Social
-            </Button>
-            <input type="hidden" name="url_redes_sociales" value={getRedesJsonString()} />
-          </div>
+        {/* --- COLUMNA DERECHA (Secundaria - 4/12) --- */}
+        <div className="lg:col-span-4 space-y-8">
+            
+            {/* 3. MULTIMEDIA */}
+            <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
+                <CardHeader className="bg-stone-50/50 pb-4">
+                    <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
+                        <ImageIcon className="w-5 h-5 text-orange-600" />
+                        Multimedia
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                    {/* Logo */}
+                    <div className="flex flex-col items-center gap-3">
+                        <Label className="text-base font-semibold text-stone-600">Logo</Label>
+                        <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-dashed border-stone-300 bg-stone-50 flex items-center justify-center group cursor-pointer hover:border-orange-400 transition-colors">
+                            {negocio.url_logo ? (
+                                <CldImage src={negocio.url_logo} fill alt="Logo" className="object-cover" />
+                            ) : (
+                                <Store className="w-10 h-10 text-stone-300" />
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                                <span className="text-white text-xs font-bold">Cambiar</span>
+                            </div>
+                            <Input id="url_logo" name="url_logo" type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                        </div>
+                        {state?.errors?.url_logo && (<p className="text-sm text-red-500">{state.errors.url_logo[0]}</p>)}
+                    </div>
 
-          {/* --- GALERÍA DE FOTOS --- */}
-          <CardTitle className="pt-4">Galería de Fotos</CardTitle>
-          <CardDescription>
-            Sube nuevas imágenes para tu galería. Las imágenes existentes se pueden eliminar.
-          </CardDescription>
-          {gallery.length > 0 && (
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
-              {gallery.map((url, index) => (
-                <div key={index} className="relative group">
-                  <CldImage src={url} width="150" height="150" alt={`Imagen de galería ${index + 1}`} className="rounded-md object-cover w-full h-full aspect-square" crop={{ type: "fill", source: true }} />
-                  <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeGalleryImage(url)} aria-label="Eliminar imagen">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-          {gallery.length === 0 && (
-            <p className="text-sm text-muted-foreground">Tu galería está vacía.</p>
-          )}
-          <input type="hidden" name="galeria_fotos_actuales" value={JSON.stringify(gallery)} />
-          <div className="grid gap-2">
-            <Label htmlFor="galeria_fotos_nuevas">Añadir nuevas imágenes</Label>
-            <Input id="galeria_fotos_nuevas" name="galeria_fotos_nuevas" type="file" multiple accept="image/png, image/jpeg, image/webp" />
-            {state?.errors?.galeria_fotos_nuevas && (<p className="text-sm text-red-500">{state.errors.galeria_fotos_nuevas[0]}</p>)}
-          </div>
-        </CardContent>
+                    <Separator />
 
-        <CardFooter className="border-t px-6 py-4 justify-end">
-          {state?.errors?._form && (
-            <p className="text-sm text-red-500 mr-auto">
-              {state.errors._form[0]}
-            </p>
-          )}
+                    {/* Galería */}
+                    <div className="space-y-3">
+                        <Label className="text-base font-semibold text-stone-600">Galería</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {gallery.map((url, index) => (
+                                <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-stone-200">
+                                    <CldImage src={url} fill alt="Galeria" className="object-cover" />
+                                    <button type="button" onClick={() => removeGalleryImage(url)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600">
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ))}
+                            {/* Botón Fake de subir */}
+                            <div className="aspect-square rounded-lg border-2 border-dashed border-stone-300 flex flex-col items-center justify-center text-stone-400 bg-stone-50 relative hover:bg-orange-50 hover:border-orange-300 hover:text-orange-500 transition-all cursor-pointer">
+                                <PlusCircle className="w-6 h-6 mb-1" />
+                                <span className="text-[10px] font-medium">Añadir</span>
+                                <Input id="galeria_fotos_nuevas" name="galeria_fotos_nuevas" type="file" multiple accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="galeria_fotos_actuales" value={JSON.stringify(gallery)} />
+                </CardContent>
+            </Card>
+
+            {/* 4. HORARIOS */}
+            <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
+                <CardHeader className="bg-stone-50/50 pb-4">
+                    <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
+                        <Clock className="w-5 h-5 text-orange-600" />
+                        Horarios
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                    <div className="space-y-2">
+                        {["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"].map(dia => (
+                            <HorarioDiaInput 
+                                key={dia} 
+                                dia={dia} 
+                                label={dia} 
+                                defaultState={defaultHorarios[dia]} 
+                                error={(state?.errors as any)?.[`horario_${dia}_cierre`]} 
+                            />
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 5. REDES SOCIALES */}
+            <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
+                <CardHeader className="bg-stone-50/50 pb-4">
+                    <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
+                        <Share2 className="w-5 h-5 text-orange-600" />
+                        Redes
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                    {redes.map((red) => (
+                        <div key={red.id} className="flex gap-2 items-start">
+                            <div className="grid gap-2 flex-1">
+                                <Input 
+                                    placeholder="Facebook..." 
+                                    value={red.plataforma} 
+                                    onChange={(e) => updateRedSocial(red.id, 'plataforma', e.target.value)} 
+                                    className="h-8 text-xs bg-stone-50"
+                                />
+                                <Input 
+                                    placeholder="URL..." 
+                                    value={red.url} 
+                                    onChange={(e) => updateRedSocial(red.id, 'url', e.target.value)} 
+                                    className="h-8 text-xs bg-stone-50"
+                                />
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeRedSocial(red.id)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={addRedSocial} className="w-full rounded-full text-xs h-8 border-dashed border-stone-300 text-stone-600 hover:text-orange-600 hover:border-orange-300">
+                        <PlusCircle className="h-3 w-3 mr-2" />
+                        Añadir Red Social
+                    </Button>
+                    <input type="hidden" name="url_redes_sociales" value={getRedesJsonString()} />
+                </CardContent>
+            </Card>
+
+        </div>
+      </div>
+
+      {/* Footer flotante en móviles para guardar */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-stone-200 md:hidden z-50 flex justify-end shadow-2xl">
           <SubmitButton />
-        </CardFooter>
-      </Card>
+      </div>
     </form>
   );
 }

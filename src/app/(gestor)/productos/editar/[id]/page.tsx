@@ -4,21 +4,14 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getCategoriasByNegocioId, getProductoById } from '@/lib/db';
 import { notFound, redirect } from "next/navigation";
-
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
-import { ProductoForm } from '../../ProductoForm'; // Importamos el formulario
-import { updateProductoAction } from '../../actions'; // Importamos la action de UPDATE
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { ProductoForm } from '../../ProductoForm';
+import { updateProductoAction } from '../../actions';
 
 export default async function PaginaEditarProducto({ 
   params 
 }: { 
-  params: { id: string } 
+  params: { id: string }
 }) {
   
   const session = await getServerSession(authOptions);
@@ -27,18 +20,18 @@ export default async function PaginaEditarProducto({
   const negocioId = session.user.negocioId;
   const productoId = Number(params.id);
 
-  // 1. Obtenemos los datos en paralelo
+  //  Obtenemos los datos en paralelo
   const [producto, categorias] = await Promise.all([
     getProductoById(productoId, negocioId), // Solo trae el producto de ESTE negocio
     getCategoriasByNegocioId(negocioId)
   ]);
 
-  // 2. Si no se encontró el producto (o no es del gestor), 404
+  // Si no se encontró el producto (o no es del gestor), 404
   if (!producto) {
     notFound();
   }
 
-  // 3. "Atamos" el ID del producto a la Server Action
+  // "Atamos" el ID del producto a la Server Action
   const updateActionWithId = updateProductoAction.bind(null, producto.id_producto);
 
   return (
@@ -53,12 +46,6 @@ export default async function PaginaEditarProducto({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* 4. Le pasamos al formulario:
-            - Las categorías (para el dropdown)
-            - El producto (para llenar los campos)
-            - La action de 'update' (con el ID atado)
-            - El texto del botón
-          */}
           <ProductoForm 
             categorias={categorias} 
             producto={producto}

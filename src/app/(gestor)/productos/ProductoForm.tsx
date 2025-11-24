@@ -1,4 +1,3 @@
-// app/(gestor)/productos/ProductoForm.tsx
 "use client";
 
 import { useFormState, useFormStatus } from 'react-dom';
@@ -10,15 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { CldImage } from 'next-cloudinary';
 import { useRouter } from 'next/navigation';
+import { TicketPercent } from 'lucide-react';
 
 function SubmitButton({ text }: { text: string }) {
   const { pending } = useFormStatus();
@@ -45,6 +40,9 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
   // Estado EXCLUSIVO para limpiar el Select de Shadcn
   const [selectResetKey, setSelectResetKey] = useState(0);
 
+  // --- Controla si se muestra la sección de promos ---
+  const [isPromoActive, setIsPromoActive] = useState(producto?.promo_activa || false);
+
   useEffect(() => {
     if (state?.message) {
       toast({
@@ -53,19 +51,27 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
         description: state.message,
       });
 
-      // Lógica de limpieza
-      if (state.success && !producto) {
-        // A) Limpia inputs nativos (Texto, Precio, Archivo)
-        formRef.current?.reset(); 
-        
-        // B) Fuerza al Select a redibujarse desde cero (limpiando la selección visual)
-        setSelectResetKey(prev => prev + 1); 
+      if (state.success) {
+        if (!producto) {
+          // --- CASO CREAR: Limpiamos el formulario ---
+          formRef.current?.reset(); 
+          setSelectResetKey(prev => prev + 1); 
+          setIsPromoActive(false);
+        } else {
+          // --- CASO EDITAR: Redirigimos ---
+          // Damos un pequeño delay para que el usuario alcance a ver el mensaje de éxito
+          const timer = setTimeout(() => {
+            router.push('/productos'); // Regresa a la lista
+            router.refresh(); // Asegura que la lista muestre los datos nuevos
+          }, 500); // Medio segundo es suficiente para ver el check verde
+
+          return () => clearTimeout(timer); // Limpieza del timer si el componente se desmonta
+        }
       }
     }
-  }, [state, toast, producto]);
+  }, [state, toast, producto, router]);
 
   return (
-    // Conectamos el ref al form
     <form ref={formRef} action={dispatch} className="space-y-6">
       
       {/* Campo Nombre */}
@@ -84,7 +90,7 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Campo Precio */}
         <div className="grid gap-2">
-          <Label htmlFor="precio">Precio</Label>
+          <Label htmlFor="precio">Precio Regular</Label>
           <Input 
             id="precio" 
             name="precio" 
@@ -117,9 +123,9 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
               ) : (
                 categorias.map(cat => (
                   <SelectItem key={cat.id_categoria} value={cat.id_categoria.toString()}>
-                     <span className="truncate block max-w-[250px]">
+                      <span className="truncate block max-w-[250px]">
                         {cat.nombre}
-                     </span>
+                      </span>
                   </SelectItem>
                 ))
               )}
@@ -127,6 +133,83 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
           </Select>
           {state?.errors?.id_categoria && <p className="text-sm text-red-500">{state.errors.id_categoria[0]}</p>}
         </div>
+      </div>
+
+      {/* --- SECCIÓN DE PROMOCIONES --- */}
+      <div className="border rounded-xl p-4 bg-orange-50/50 space-y-4 transition-all">
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="promo_activa" 
+            name="promo_activa" 
+            checked={isPromoActive}
+            onCheckedChange={(checked) => setIsPromoActive(checked as boolean)}
+          />
+          <Label 
+            htmlFor="promo_activa" 
+            className="text-stone-700 font-semibold cursor-pointer flex items-center gap-2 select-none"
+          >
+            <TicketPercent className="h-4 w-4 text-orange-600" />
+            Activar Promoción para este producto
+          </Label>
+        </div>
+
+        {/* Renderizado Condicional de los campos de promo */}
+        {isPromoActive && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2 duration-300">
+            
+            {/* Tipo de Promo */}
+            <div className="grid gap-2 w-full max-w-full">
+              <Label htmlFor="tipo_promo">Tipo de Promoción</Label>
+              <Select name="tipo_promo" defaultValue={producto?.tipo_promo || "DESCUENTO_SIMPLE"}>
+                <SelectTrigger className="w-full overflow-hidden">
+                  <span className="truncate text-left w-full block">
+                    <SelectValue placeholder="Selecciona el tipo" />
+                  </span>
+                </SelectTrigger>
+                
+                <SelectContent>
+                  <SelectItem value="DESCUENTO_SIMPLE">
+                    <span className="truncate block max-w-[280px] md:max-w-full">
+                        Descuento Simple (Precio rebajado)
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="DOS_POR_UNO">
+                    <span className="truncate block max-w-[280px] md:max-w-full">
+                        2x1 (Dos productos por un precio)
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="TRES_POR_DOS">
+                    <span className="truncate block max-w-[280px] md:max-w-full">
+                        3x2 (Tres productos por el precio de dos)
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Precio Promo */}
+            <div className="grid gap-2 w-full max-w-full">
+              <Label htmlFor="precio_promo">
+                Precio Final de la Promo 
+                <span className="text-xs text-muted-foreground ml-1 font-normal">(Lo que paga el cliente)</span>
+              </Label>
+              <Input 
+                id="precio_promo" 
+                name="precio_promo" 
+                type="number" 
+                step="0.01" 
+                defaultValue={producto?.precio_promo?.toString() || ''} 
+                placeholder="Ej. 80.00"
+                required={isPromoActive}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Si es 2x1, escribe el precio total del combo.
+              </p>
+              {state?.errors?.precio_promo && <p className="text-sm text-red-500">{state.errors.precio_promo[0]}</p>}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Campo Foto */}

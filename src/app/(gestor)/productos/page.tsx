@@ -5,23 +5,13 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getProductosByNegocioId, getCategoriasByNegocioId } from '@/lib/db';
 import { redirect } from "next/navigation";
 import { Prisma } from '@prisma/client';
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-} from '@/components/ui/card';
-
-// Importamos los componentes cliente
-import { ProductoForm } from './ProductoForm'; // El formulario que ya creamos
-import { ListaProductosAgrupados } from './ListaProductosAgrupados'; // El que vamos a crear
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { ProductoForm } from './ProductoForm';
+import { ListaProductosAgrupados } from './ListaProductosAgrupados';
 import { createProductoAction } from './actions';
 
-// --- Definimos los tipos que necesitamos (la solución que encontramos) ---
 type ProductosArray = Prisma.PromiseReturnType<typeof getProductosByNegocioId>;
 type ProductoConCategoria = ProductosArray[number];
-// ---
 
 export default async function PaginaProductos() {
 
@@ -30,13 +20,13 @@ export default async function PaginaProductos() {
 
     const negocioId = session.user.negocioId;
 
-    // 1. Obtenemos AMBOS datos en paralelo
+    // Obtenemos AMBOS datos en paralelo
     const [productos, categorias] = await Promise.all([
         getProductosByNegocioId(negocioId),
-        getCategoriasByNegocioId(negocioId) // Para el dropdown del formulario
+        getCategoriasByNegocioId(negocioId)
     ]);
 
-    // 2. --- Lógica de Agrupación (Tu idea) ---
+    // --- Lógica de Agrupación ---
     // Creamos un objeto donde cada "key" es un nombre de categoría
     // y cada "value" es un array de productos.
     const productosAgrupados = productos.reduce((acc, producto) => {
@@ -73,7 +63,6 @@ export default async function PaginaProductos() {
                                 categorias={categorias}
                                 action={createProductoAction}
                                 submitText="Crear Producto"
-                            // No pasamos 'producto' (porque es nuevo)
                             />
                         </CardContent>
                     </Card>

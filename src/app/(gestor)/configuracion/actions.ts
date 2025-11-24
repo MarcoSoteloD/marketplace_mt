@@ -3,21 +3,16 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { prisma } from '@/lib/prisma'; // Importamos prisma solo para los tipos
 import { Prisma, categorias_globales } from '@prisma/client';
-
-// Importamos las funciones de DB
 import { updateNegocio } from '@/lib/db';
-// Importamos la sesión y las opciones de auth
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-// 1. Esquema de validación con Zod (Campos del modelo 'negocios')
+// Esquema de validación con Zod (Campos del modelo 'negocios')
 const NegocioConfigSchema = z.object({
   nombre: z.string().min(3, "El nombre del negocio es requerido"),
   slug: z.string()
@@ -25,7 +20,6 @@ const NegocioConfigSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug inválido (solo minúsculas, números y guiones)"),
   descripcion: z.string().optional(),
   telefono: z.string().optional(),
-  // Campos de dirección (todos opcionales)
   calle: z.string().optional(),
   num_ext: z.string().optional(),
   num_int: z.string().optional(),
@@ -33,7 +27,6 @@ const NegocioConfigSchema = z.object({
   cp: z.string().optional(),
   municipio: z.string().optional(),
   estado: z.string().optional(),
-  // Campos de Media y JSON (opcionales)
   url_logo: z
     .instanceof(File)
     .optional()
@@ -43,7 +36,6 @@ const NegocioConfigSchema = z.object({
     .refine((file) => !file || file.size === 0 || ACCEPTED_IMAGE_TYPES.includes(file.type), {
       message: "Formato de imagen no válido (solo .jpg, .png, .webp)"
     }),
-  // Para los JSON, los validamos como strings que luego parsearemos
   horario_lunes_cerrado: z.string().optional(),
   horario_lunes_apertura: z.string().optional(),
   horario_lunes_cierre: z.string().optional(),
@@ -75,20 +67,17 @@ const NegocioConfigSchema = z.object({
       message: "Formato de imagen no válido para la galería."
     }),
   url_redes_sociales: z.string().optional(),
-  // Campos de Mapa (opcionales, convertidos a Decimal)
-  latitud: z.coerce.number().optional(), // z.coerce.number() convierte el string del form a número
+  latitud: z.coerce.number().optional(),
   longitud: z.coerce.number().optional(),
   categorias_ids: z.string().optional(),
 })
 
-  // --- Validación de Horas (¡Tu idea!) ---
   .refine(data => !data.horario_lunes_apertura || !data.horario_lunes_cierre || data.horario_lunes_cierre > data.horario_lunes_apertura, {
     message: "Lunes: La hora de cierre debe ser mayor a la de apertura.", path: ["horario_lunes_cierre"],
   })
   .refine(data => !data.horario_martes_apertura || !data.horario_martes_cierre || data.horario_martes_cierre > data.horario_martes_apertura, {
     message: "Martes: La hora de cierre debe ser mayor a la de apertura.", path: ["horario_martes_cierre"],
   })
-  // ... (Repetir .refine() para miércoles, jueves, viernes, sábado, domingo)
   .refine(data => !data.horario_miercoles_apertura || !data.horario_miercoles_cierre || data.horario_miercoles_cierre > data.horario_miercoles_apertura, {
     message: "Miércoles: La hora de cierre debe ser mayor a la de apertura.", path: ["horario_miercoles_cierre"],
   })
@@ -105,10 +94,7 @@ const NegocioConfigSchema = z.object({
     message: "Domingo: La hora de cierre debe ser mayor a la de apertura.", path: ["horario_domingo_cierre"],
   });
 
-
-
-// 2. Tipo de estado para el feedback del formulario
-// --- 2. Tipo de estado COMPLETO (¡Aquí está la solución que recordamos!) ---
+// --- Tipo de estado COMPLETO ---
 export type ConfigNegocioState = {
   errors?: {
     nombre?: string[];
@@ -136,14 +122,14 @@ export type ConfigNegocioState = {
     latitud?: string[];
     longitud?: string[];
     categorias_ids?: string[];
-    _form?: string[]; // Errores generales
+    _form?: string[];
   };
   message?: string;
   success?: boolean;
 } | undefined;
 
 
-// 3. La Server Action principal
+// La Server Action principal
 export async function updateNegocioConfig(prevState: ConfigNegocioState, formData: FormData) {
 
   const session = await getServerSession(authOptions);
@@ -156,7 +142,6 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
   const newLogoFile = formData.get('url_logo') as File;
   const newGalleryFiles = formData.getAll('galeria_fotos_nuevas') as File[];
 
-  // --- INICIO DE LA CORRECCIÓN ---
   // Convertimos 'null' a 'undefined' para que Zod (.optional()) los acepte
   const parsedData = {
     nombre: formData.get('nombre') || undefined,
@@ -170,8 +155,6 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     cp: formData.get('cp') || undefined,
     municipio: formData.get('municipio') || undefined,
     estado: formData.get('estado') || undefined,
-    
-    // Campos de horario (aquí estaba el error)
     horario_lunes_cerrado: formData.get('horario_lunes_cerrado') || undefined,
     horario_lunes_apertura: formData.get('horario_lunes_apertura') || undefined,
     horario_lunes_cierre: formData.get('horario_lunes_cierre') || undefined,
@@ -193,28 +176,19 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     horario_domingo_cerrado: formData.get('horario_domingo_cerrado') || undefined,
     horario_domingo_apertura: formData.get('horario_domingo_apertura') || undefined,
     horario_domingo_cierre: formData.get('horario_domingo_cierre') || undefined,
-    
-    // Campos JSON (string)
     url_redes_sociales: formData.get('url_redes_sociales') || undefined,
     galeria_fotos_actuales: formData.get('galeria_fotos_actuales') || undefined,
-    
-    // Campos numéricos
     latitud: formData.get('latitud') ? Number(formData.get('latitud')) : undefined,
     longitud: formData.get('longitud') ? Number(formData.get('longitud')) : undefined,
-    
-    // Campos de Archivos
     url_logo: (newLogoFile && newLogoFile.size > 0) ? newLogoFile : undefined,
     galeria_fotos_nuevas: (newGalleryFiles.length > 0 && newGalleryFiles[0].size > 0) ? newGalleryFiles : undefined,
     categorias_ids: formData.get('categorias_ids') || undefined,
   };
-  // --- FIN DE LA CORRECCIÓN ---
-
 
   // --- VALIDACIÓN CON ZOD ---
   const validatedFields = NegocioConfigSchema.safeParse(parsedData);
 
   if (!validatedFields.success) {
-    // ... (El resto del return de error de Zod se queda igual)
     return {
       errors: validatedFields.error.flatten().fieldErrors as NonNullable<ConfigNegocioState>["errors"],
       message: "Error de validación. Revisa los campos.",
@@ -222,8 +196,6 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
     };
   }
 
-  // ... (El resto de la función: desestructuración, parseo de JSON, lógica de horario,
-  //      lógica de subida de archivos, y el try/catch de la BD se quedan exactamente igual)
   const { 
     url_logo, 
     galeria_fotos_actuales, 
@@ -271,9 +243,7 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
   try {
     // Parseamos el array de IDs que viene del hidden input
     const categoriaIdsArray: number[] = categorias_ids ? JSON.parse(categorias_ids) : [];
-
     // Añadimos la operación anidada de M-N a 'negocioData'
-    // Esto se ejecutará dentro de la misma transacción de 'update'
     negocioData.negocio_categoria = {
       deleteMany: {}, // Borra todas las relaciones existentes
       create: categoriaIdsArray.map(id_g => ({ // Crea las nuevas

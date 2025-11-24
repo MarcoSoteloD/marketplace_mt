@@ -29,12 +29,12 @@ export function PublicNavbar() {
         <div className="mr-4 flex">
           <Link href="/" className="flex items-center">
             <Image
-              src="/mt_logo.svg" // Ruta desde la carpeta /public
+              src="/mt_logo.svg"
               alt="Logo de Manos Tonilenses"
-              width={200} // Define la 'proporción' (aspect-ratio)
-              height={200}  // Define la 'proporción' (aspect-ratio)
-              className="h-24 w-auto" // Define el 'tamaño real' (40px de alto)
-              priority // Carga esta imagen con prioridad (importante para LCP)
+              width={200}
+              height={200}
+              className="h-24 w-auto"
+              priority
             />
           </Link>
         </div>
@@ -78,7 +78,7 @@ export function PublicNavbar() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        {/* Botones Dinámicos (con el carrito añadido) */}
+        {/* Botones Dinámicos */}
         <div className="flex flex-1 items-center justify-end space-x-2">
 
           {/* A. Estado de Carga */}
@@ -124,12 +124,12 @@ export function PublicNavbar() {
             <Button
               variant="ghost"
               asChild
-              className="relative hover:bg-black/10 hover:text-black text-stone-700 h-12 w-12 rounded-full flex items-center justify-center"
+              className="relative hover:bg-black/10 hover:text-black text-stone-700 h-9 w-9 rounded-full flex items-center justify-center"
             >
               <Link href="/carrito">
                 <ShoppingCart style={{ width: '20px', height: '20px' }} />
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white ">
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white">
                     {totalItems}
                   </span>
                 )}

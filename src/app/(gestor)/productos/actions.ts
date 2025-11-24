@@ -1,18 +1,14 @@
-// app/(gestor)/productos/actions.ts
 "use server";
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { Prisma } from '@prisma/client';
+import { Prisma, tipo_promocion } from '@prisma/client'; 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
-// Importamos los helpers que ya tenemos
-import { createProducto, getProductoById, updateProducto, deleteProducto } from '@/lib/db'; 
+import { createProducto, updateProducto, deleteProducto, reactivateProducto } from '@/lib/db'; 
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 
-// --- Esquema de Validación de Zod ---
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const ProductoSchema = z.object({
@@ -20,6 +16,9 @@ const ProductoSchema = z.object({
   descripcion: z.string().optional(),
   precio: z.coerce.number().min(0, "El precio no puede ser negativo"),
   id_categoria: z.coerce.number().int().positive("Debes seleccionar una categoría"),
+  promo_activa: z.coerce.boolean().optional(),
+  tipo_promo: z.nativeEnum(tipo_promocion).optional(),
+  precio_promo: z.coerce.number().min(0).optional(),
   url_foto: z
     .instanceof(File)
     .optional()
@@ -29,15 +28,26 @@ const ProductoSchema = z.object({
     .refine((file) => !file || file.size === 0 || ACCEPTED_IMAGE_TYPES.includes(file.type), {
       message: "Formato de imagen no válido."
     }),
+}).refine((data) => {
+  // REGLA DE NEGOCIO: Si la promo está activa, DEBE haber un precio promo definido.
+  if (data.promo_activa && (data.precio_promo === undefined || data.precio_promo === null)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Si activas la promoción, debes definir un precio promocional.",
+  path: ["precio_promo"],
 });
 
-// --- Tipo de Estado del Formulario ---
 export type ProductoState = {
   errors?: {
     nombre?: string[];
     descripcion?: string[];
     precio?: string[];
     id_categoria?: string[];
+    promo_activa?: string[];
+    tipo_promo?: string[];
+    precio_promo?: string[];
     url_foto?: string[];
     _form?: string[]; 
   };
@@ -57,11 +67,16 @@ export async function createProductoAction(prevState: ProductoState, formData: F
   const gestorId = session.user.id; 
 
   const newFotoFile = formData.get('url_foto') as File;
+  
+  // Parseamos los datos incluyendo los nuevos campos
   const parsedData = {
     nombre: formData.get('nombre') || undefined,
     descripcion: formData.get('descripcion') || undefined,
     precio: formData.get('precio') || undefined,
     id_categoria: formData.get('id_categoria') || undefined,
+    promo_activa: formData.get('promo_activa') === 'on', 
+    tipo_promo: formData.get('tipo_promo') as tipo_promocion || undefined,
+    precio_promo: formData.get('precio_promo') || undefined,
     url_foto: (newFotoFile && newFotoFile.size > 0) ? newFotoFile : undefined,
   };
 
@@ -75,7 +90,6 @@ export async function createProductoAction(prevState: ProductoState, formData: F
     };
   }
   
-  // Usamos la corrección que encontramos (sacar id_categoria)
   const { url_foto, id_categoria, ...data } = validatedFields.data;
 
   try {
@@ -89,15 +103,19 @@ export async function createProductoAction(prevState: ProductoState, formData: F
     }
 
     const productoData: Prisma.productosCreateInput = {
-      ...data,
+      nombre: data.nombre,
+      descripcion: data.descripcion,
       precio: new Prisma.Decimal(data.precio),
+      promo_activa: data.promo_activa || false,
+      tipo_promo: data.tipo_promo || 'DESCUENTO_SIMPLE', 
+      precio_promo: data.precio_promo ? new Prisma.Decimal(data.precio_promo) : null,
       url_foto: newFotoUrl,
       activo: true,
       negocios: {
         connect: { id_negocio: negocioId }
       },
       categorias_producto: {
-        connect: { id_categoria: id_categoria } // Usamos la variable corregida
+        connect: { id_categoria: id_categoria }
       }
     };
 
@@ -133,11 +151,16 @@ export async function updateProductoAction(
   const gestorId = session.user.id;
 
   const newFotoFile = formData.get('url_foto') as File;
+  
   const parsedData = {
     nombre: formData.get('nombre') || undefined,
     descripcion: formData.get('descripcion') || undefined,
     precio: formData.get('precio') || undefined,
     id_categoria: formData.get('id_categoria') || undefined,
+    promo_activa: formData.get('promo_activa') === 'on',
+    tipo_promo: formData.get('tipo_promo') as tipo_promocion || undefined,
+    precio_promo: formData.get('precio_promo') || undefined,
+
     url_foto: (newFotoFile && newFotoFile.size > 0) ? newFotoFile : undefined,
   };
 
@@ -155,8 +178,12 @@ export async function updateProductoAction(
 
   try {
     const productoData: Prisma.productosUpdateInput = {
-      ...data,
+      nombre: data.nombre,
+      descripcion: data.descripcion,
       precio: new Prisma.Decimal(data.precio),
+      promo_activa: data.promo_activa,
+      tipo_promo: data.tipo_promo,
+      precio_promo: data.precio_promo ? new Prisma.Decimal(data.precio_promo) : null,
       categorias_producto: {
         connect: { id_categoria: id_categoria }
       }
@@ -184,8 +211,7 @@ export async function updateProductoAction(
   return { message: "Producto actualizado con éxito.", success: true };
 }
 
-
-// --- Server Action: ELIMINAR PRODUCTO ---
+// --- Server Action: ELIMINAR PRODUCTO (Soft Delete) ---
 export async function deleteProductoAction(productoId: number) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.negocioId) {
@@ -196,7 +222,24 @@ export async function deleteProductoAction(productoId: number) {
   try {
     await deleteProducto(productoId, negocioId); 
     revalidatePath('/(gestor)/productos');
-    return { success: true, message: "Producto eliminado." };
+    return { success: true, message: "Producto desactivado." };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// --- Server Action: REACTIVAR PRODUCTO ---
+export async function reactivateProductoAction(productoId: number) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.negocioId) {
+    return { success: false, message: "No autorizado." };
+  }
+  const negocioId = session.user.negocioId;
+
+  try {
+    await reactivateProducto(productoId, negocioId); 
+    revalidatePath('/(gestor)/productos');
+    return { success: true, message: "Producto reactivado con éxito." };
   } catch (error) {
     return { success: false, message: (error as Error).message };
   }

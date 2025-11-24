@@ -107,6 +107,7 @@ model productos {
   precio              Decimal              @db.Decimal(10, 2)
   precio_promo        Decimal?             @db.Decimal(10, 2)
   promo_activa        Boolean?             @default(false)
+  tipo_promo          tipo_promocion?      @default(DESCUENTO_SIMPLE) 
   url_foto            String?              @db.VarChar(255)
   activo              Boolean?             @default(true)
   detalle_pedido      detalle_pedido[]
@@ -167,4 +168,10 @@ enum rol_usuario {
   admin
   gestor
   cliente
+}
+
+enum tipo_promocion {
+  DESCUENTO_SIMPLE
+  DOS_POR_UNO
+  TRES_POR_DOS
 }

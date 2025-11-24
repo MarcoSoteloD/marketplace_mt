@@ -68,7 +68,7 @@ export const createClienteUser = async (
 
 /**
  * Obtiene todos los pedidos de UN cliente específico,
- * incluyendo el nombre del negocio donde se hizo el pedido.
+ * incluyendo detalles profundos para el recibo digital (Modal).
  */
 export const getPedidosByClienteId = async (clienteId: number) => {
   try {
@@ -77,16 +77,28 @@ export const getPedidosByClienteId = async (clienteId: number) => {
         id_usuario: clienteId,
       },
       include: {
-        // Incluimos el modelo 'negocios'
+        // 1. Info del Negocio (Añadimos url_logo)
         negocios: {
           select: {
-            nombre: true, // Solo queremos el nombre del negocio
-            slug: true,   // Y el slug (para el link)
-          }
+            nombre: true,
+            telefono: true,
+            url_logo: true, // <--- IMPORTANTE: Necesario para el header del modal
+          },
+        },
+        // 2. Detalle de los platillos (Vital para el modal)
+        detalle_pedido: {
+          include: {
+            productos: {
+              select: {
+                nombre: true,   // Qué comió
+                url_foto: true, // Foto pequeñita (opcional pero se ve bien)
+              },
+            },
+          },
         },
       },
       orderBy: {
-        fecha_hora: 'desc', // Los más nuevos primero
+        fecha_hora: 'desc',
       },
     });
   } catch (error) {
@@ -739,6 +751,7 @@ export const getNegocioById = async (id: number) => {
 
 /**
  * Obtiene todos los productos de UN negocio específico.
+ * Ordenados por estado (Activos primero) y luego por nombre.
  * @param negocioId - El ID del negocio del cual obtener los productos.
  */
 export const getProductosByNegocioId = async (negocioId: number) => {
@@ -746,14 +759,15 @@ export const getProductosByNegocioId = async (negocioId: number) => {
     return await prisma.productos.findMany({
       where: {
         id_negocio: negocioId,
+        // Nota: NO filtramos activo: true aquí, porque el Gestor debe ver TODO (incluso lo eliminado)
       },
       include: {
-        // Incluimos el modelo 'categorias_producto'
         categorias_producto: true,
       },
-      orderBy: {
-        nombre: 'asc',
-      },
+      orderBy: [
+        { activo: 'desc' }, // true (Activos) primero, false (Inactivos) al final
+        { nombre: 'asc' },  // Alfabéticamente
+      ],
     });
   } catch (error) {
     console.error('Error en getProductosByNegocioId:', error);
@@ -964,28 +978,57 @@ export const updateProducto = async (
 };
 
 /**
- * Elimina un producto.
+ * Realiza un "Soft Delete" (desactivación) del producto.
+ * Esto evita romper el historial de pedidos.
  */
 export const deleteProducto = async (productoId: number, negocioId: number) => {
   try {
-    const result = await prisma.productos.deleteMany({
+    // EN LUGAR DE DELETE, HACEMOS UPDATE (Soft Delete)
+    // Usamos updateMany para asegurarnos de que coincida ID y Negocio (seguridad)
+    const result = await prisma.productos.updateMany({
       where: {
         id_producto: productoId,
         id_negocio: negocioId, // ¡Seguridad!
       },
+      data: {
+        activo: false, // Lo marcamos como inactivo (eliminado lógicamente)
+      }
     });
 
     if (result.count === 0) {
       throw new Error("No se encontró el producto o no tienes permiso.");
     }
+    
     return result;
   } catch (error) {
-    // Manejar error si el producto está en un pedido (foreign key)
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
-      throw new Error("No se puede eliminar: Este producto ya está en un pedido.");
+    console.error('Error en deleteProducto (soft delete):', error);
+    throw new Error("Error al desactivar el producto.");
+  }
+};
+
+/**
+ * Reactiva un producto previamente desactivado (Soft Delete).
+ */
+export const reactivateProducto = async (productoId: number, negocioId: number) => {
+  try {
+    const result = await prisma.productos.updateMany({
+      where: {
+        id_producto: productoId,
+        id_negocio: negocioId, // Seguridad
+      },
+      data: {
+        activo: true, // Lo volvemos a activar
+      }
+    });
+
+    if (result.count === 0) {
+      throw new Error("No se encontró el producto o no tienes permiso.");
     }
-    console.error('Error en deleteProducto:', error);
-    throw new Error("Error de base de datos al eliminar.");
+    
+    return result;
+  } catch (error) {
+    console.error('Error en reactivateProducto:', error);
+    throw new Error("Error al reactivar el producto.");
   }
 };
 
