@@ -1,10 +1,16 @@
 import { getNegocioPublicoBySlug } from "@/lib/db";
 import { notFound } from "next/navigation";
+import { Prisma } from '@prisma/client';
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Phone, Link as LinkIcon, type LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+    MapPin,
+    Phone,
+    Link as LinkIcon,
+    type LucideIcon 
+} from "lucide-react";
 import { type IconType } from "react-icons";
 import { SiFacebook, SiInstagram, SiX, SiWhatsapp } from "react-icons/si";
 import dynamic from 'next/dynamic';
@@ -12,11 +18,14 @@ import { checkOpenStatus } from "@/lib/time-helpers";
 import { GoogleMapsButton } from './GoogleMapsButton';
 import { NegocioGallery } from "./NegocioGallery";
 import { NegocioLogo } from "./NegocioLogo";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard } from "@/components/ProductCard"; // Importamos tu componente refactorizado
 
 const DisplayMap = dynamic(
     () => import('./DisplayMap').then(mod => mod.DisplayMap),
-    { ssr: false, loading: () => <div className="h-[250px] w-full bg-muted animate-pulse rounded-2xl" /> }
+    {
+        ssr: false,
+        loading: () => <div className="h-[250px] w-full bg-muted animate-pulse rounded-2xl" />
+    }
 );
 
 // Helpers
@@ -53,18 +62,40 @@ function DisplayHorario({ horario }: { horario: any }) {
 export default async function PaginaNegocio({ params }: { params: { slug_negocio: string } }) {
 
     const slug = params.slug_negocio;
-    const negocio = await getNegocioPublicoBySlug(slug);
-    if (!negocio) notFound();
+    
+    // 1. Obtenemos los datos "crudos" de la DB (vienen con Decimal)
+    const negocioRaw = await getNegocioPublicoBySlug(slug); 
+    
+    if (!negocioRaw) notFound();
+
+    // 2. TRANSFORMACIÓN DE DATOS (Solución a los Warnings de Decimal)
+    // Convertimos los objetos Decimal de Prisma a números de JS
+    const negocio = {
+        ...negocioRaw,
+        latitud: negocioRaw.latitud ? Number(negocioRaw.latitud) : null,
+        longitud: negocioRaw.longitud ? Number(negocioRaw.longitud) : null,
+        
+        // Mapeamos profundamente para limpiar los precios en los productos
+        categorias_producto: negocioRaw.categorias_producto.map(cat => ({
+            ...cat,
+            productos: cat.productos.map(prod => ({
+                ...prod,
+                precio: Number(prod.precio), // Decimal -> Number
+                precio_promo: prod.precio_promo ? Number(prod.precio_promo) : null, // Decimal -> Number
+            }))
+        }))
+    };
 
     const direccion = [
         negocio.calle, negocio.num_ext, negocio.colonia, negocio.cp, negocio.municipio
     ].filter(Boolean).join(', ');
 
     const galeria = Array.isArray(negocio.galeria_fotos)
-        ? negocio.galeria_fotos.filter(x => typeof x === "string")
+        ? (negocio.galeria_fotos as string[]).filter(x => typeof x === "string")
         : [];
 
     const logoUrl = negocio.url_logo;
+
     const isOpen = checkOpenStatus(negocio.horario);
     const redes = negocio.url_redes_sociales && typeof negocio.url_redes_sociales === "object"
         ? negocio.url_redes_sociales
@@ -121,8 +152,8 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
                         {negocio.latitud && negocio.longitud && (
                             <>
                                 <Separator />
-                                <DisplayMap lat={Number(negocio.latitud)} lng={Number(negocio.longitud)} popupText={negocio.nombre} />
-                                <GoogleMapsButton lat={Number(negocio.latitud)} lng={Number(negocio.longitud)} nombre={negocio.nombre} />
+                                <DisplayMap lat={negocio.latitud} lng={negocio.longitud} popupText={negocio.nombre} />
+                                <GoogleMapsButton lat={negocio.latitud} lng={negocio.longitud} nombre={negocio.nombre} />
                             </>
                         )}
                     </CardContent>
@@ -152,7 +183,10 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {categoria.productos.map(producto => (
-                                        /* USAMOS EL COMPONENTE CARD */
+                                        /* USO DEL NUEVO COMPONENTE:
+                                           Pasamos el 'producto' ya transformado (precios son number).
+                                           Esto elimina warnings y encapsula la lógica del modal.
+                                        */
                                         <ProductCard 
                                             key={producto.id_producto}
                                             producto={producto}
