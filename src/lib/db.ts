@@ -512,44 +512,75 @@ export const deleteCategoriaInDb = async (id: number) => {
 
 /**
  * Obtiene las estadísticas principales para el Dashboard de Admin.
- * (Versión actualizada SIN 'totalGestores')
+ * AHORA INCLUYE: Total de ventas ($) y Total de pedidos (#).
  */
 export const getAdminDashboardStats = async () => {
   try {
-    // Corremos las 3 consultas en paralelo
+    // Corremos las consultas en paralelo
     const [
       totalNegocios,
       totalClientes,
-      totalCategorias
+      totalCategorias,
+      totalPedidos,
+      sumaVentas
     ] = await prisma.$transaction([
       prisma.negocios.count(),
       prisma.usuarios.count({ where: { rol: rol_usuario.cliente } }),
-      prisma.categorias_globales.count()
+      prisma.categorias_globales.count(),
+      prisma.pedidos.count(),
+      // Suma total de todos los pedidos (Volumen bruto de mercancía)
+      prisma.pedidos.aggregate({
+        _sum: { total: true }
+      })
     ]);
 
-    // Devolvemos solo los 3 valores
-    return { totalNegocios, totalClientes, totalCategorias };
+    return { 
+        totalNegocios, 
+        totalClientes, 
+        totalCategorias, 
+        totalPedidos,
+        totalVentas: sumaVentas._sum.total || 0 // Si es null, devuelve 0
+    };
 
   } catch (error) {
     console.error("Error en getAdminDashboardStats:", error);
-    // Devuelve 0 en caso de error
-    return { totalNegocios: 0, totalClientes: 0, totalCategorias: 0 };
+    return { totalNegocios: 0, totalClientes: 0, totalCategorias: 0, totalPedidos: 0, totalVentas: 0 };
   }
 };
 
 /**
- * Obtiene los 5 gestores más recientes (para el "feed" de actividad).
+ * Obtiene los 5 gestores más recientes (Mantenemos tu función)
  */
 export const getRecentGestores = async (limit: number = 5) => {
   try {
     return await prisma.usuarios.findMany({
       where: { rol: rol_usuario.gestor },
-      orderBy: { fecha_registro: 'desc' }, // Ordena por fecha de registro
-      take: limit, // Toma solo los 5 más nuevos
-      include: { negocios: true }, // Incluye su negocio
+      orderBy: { fecha_registro: 'desc' }, 
+      take: limit, 
+      include: { negocios: true }, 
     });
   } catch (error) {
     console.error('Error en getRecentGestores:', error);
+    return [];
+  }
+};
+
+/**
+ * NUEVA: Obtiene los 5 pedidos más recientes de TODA la plataforma.
+ * Para ver el movimiento en tiempo real.
+ */
+export const getRecentGlobalOrders = async (limit: number = 5) => {
+  try {
+    return await prisma.pedidos.findMany({
+      orderBy: { fecha_hora: 'desc' },
+      take: limit,
+      include: {
+        negocios: { select: { nombre: true, url_logo: true } },
+        usuarios: { select: { nombre: true, email: true } }
+      }
+    });
+  } catch (error) {
+    console.error('Error en getRecentGlobalOrders:', error);
     return [];
   }
 };
@@ -1315,20 +1346,28 @@ export const deleteVacante = async (vacanteId: number, negocioId: number) => {
 /**
  * Actualiza la información del perfil (nombre y teléfono) de un usuario.
  */
-export const updateUsuarioPerfil = async (
-  usuarioId: number,
-  data: { nombre: string; telefono?: string | null }
-) => {
+export const updateUsuarioPerfil = async (userId: number, data: { nombre?: string; telefono?: string | null }) => {
   try {
-    await prisma.usuarios.update({
-      where: { id_usuario: usuarioId },
+    return await prisma.usuarios.update({
+      where: { id_usuario: userId },
       data: {
         nombre: data.nombre,
         telefono: data.telefono,
       },
     });
   } catch (error) {
-    console.error("Error en updateUsuarioPerfil:", error);
-    throw new Error("Error de base de datos al actualizar el perfil.");
+    console.error("Error actualizando usuario:", error);
+    throw new Error("No se pudo actualizar el perfil.");
+  }
+};
+
+// Helper para obtener usuario fresco (usado en PerfilPage)
+export const getUsuarioById = async (id: number) => {
+  try {
+    return await prisma.usuarios.findUnique({
+      where: { id_usuario: id },
+    });
+  } catch (error) {
+    return null;
   }
 };

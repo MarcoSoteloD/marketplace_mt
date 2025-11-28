@@ -58,7 +58,7 @@ const parseHorarioDefault = (horario: any) => {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" aria-disabled={pending} disabled={pending} className="w-full md:w-auto rounded-full bg-orange-600 hover:bg-orange-500 min-w-[150px]">
+    <Button type="submit" aria-disabled={pending} disabled={pending} className="w-full md:w-auto rounded-lg min-w-[150px]">
       <Save className="w-4 h-4 mr-2" />
       {pending ? "Guardando..." : "Guardar Cambios"}
     </Button>

@@ -63,19 +63,17 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
     if (!negocioRaw) notFound();
 
     // TRANSFORMACIÓN DE DATOS
-    // Convertimos los objetos Decimal de Prisma a números de JS
     const negocio = {
         ...negocioRaw,
         latitud: negocioRaw.latitud ? Number(negocioRaw.latitud) : null,
         longitud: negocioRaw.longitud ? Number(negocioRaw.longitud) : null,
         
-        // Mapeamos profundamente para limpiar los precios en los productos
         categorias_producto: negocioRaw.categorias_producto.map(cat => ({
             ...cat,
             productos: cat.productos.map(prod => ({
                 ...prod,
-                precio: Number(prod.precio), // Decimal -> Number
-                precio_promo: prod.precio_promo ? Number(prod.precio_promo) : null, // Decimal -> Number
+                precio: Number(prod.precio),
+                precio_promo: prod.precio_promo ? Number(prod.precio_promo) : null,
             }))
         }))
     };
@@ -163,12 +161,12 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
             {/* Columna Derecha (PRODUCTOS) */}
             <main className="md:col-span-2 lg:col-span-3 space-y-10">
                 <section className="space-y-6">
-                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Conoce de nosotros</h2>
+                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Conócenos</h2>
                     <NegocioGallery galeria={galeria} nombreNegocio={negocio.nombre} />
                 </section>
 
                 <section className="space-y-10">
-                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Nuestros Productos</h2>
+                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Te ofrecemos</h2>
 
                     {negocio.categorias_producto.length > 0 ? (
                         negocio.categorias_producto.map(categoria => (

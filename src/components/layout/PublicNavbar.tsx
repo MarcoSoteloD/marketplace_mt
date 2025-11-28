@@ -40,13 +40,13 @@ export function PublicNavbar() {
         </div>
 
         <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
+          <NavigationMenuList className="gap-1">
 
             {/* Link a Negocios */}
             <NavigationMenuItem>
               <Link href="/negocios" legacyBehavior passHref>
                 <NavigationMenuLink
-                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-black/10 focus:bg-white/10 hover:text-black text-base rounded-full")}
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-orange-50 focus:bg-orange-50 hover:text-orange-600 text-base rounded-full")}
                 >
                   Negocios
                 </NavigationMenuLink>
@@ -57,7 +57,7 @@ export function PublicNavbar() {
             <NavigationMenuItem>
               <Link href="/categorias" legacyBehavior passHref>
                 <NavigationMenuLink
-                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-black/10 focus:bg-white/10 hover:text-black text-base rounded-full")}
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-orange-50 focus:bg-orange-50 hover:text-orange-600 text-base rounded-full")}
                 >
                   Categorías
                 </NavigationMenuLink>
@@ -68,9 +68,23 @@ export function PublicNavbar() {
             <NavigationMenuItem>
               <Link href="/empleos" legacyBehavior passHref>
                 <NavigationMenuLink
-                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-black/10 focus:bg-white/10 hover:text-black text-base rounded-full")}
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 hover:bg-orange-50 focus:bg-orange-50 hover:text-orange-600 text-base rounded-full")}
                 >
                   Empleos
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+
+            {/* --- SEPARADOR VISUAL --- */}
+            <div className="h-6 w-px bg-stone-300 mx-2 self-center" aria-hidden="true" />
+
+            {/* Link a Historia */}
+            <NavigationMenuItem>
+              <Link href="/historia" legacyBehavior passHref>
+                <NavigationMenuLink
+                  className={cn(navigationMenuTriggerStyle(), "bg-transparent text-stone-700 font-medium hover:bg-orange-50 focus:bg-orange-50 hover:text-orange-600 text-base rounded-full")}
+                >
+                  Historia
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>

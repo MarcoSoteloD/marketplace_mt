@@ -79,7 +79,7 @@ export function ListaCategorias({ categorias: initialCategorias }: { categorias:
   return (
     <div className="space-y-4">
         <div className="flex justify-between items-center px-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Orden de visualización</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">Puedes cambiar el orden de visualización</h3>
             {isPending && <span className="text-xs text-orange-600 animate-pulse">Guardando orden...</span>}
         </div>
 

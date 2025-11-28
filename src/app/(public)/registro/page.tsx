@@ -51,7 +51,7 @@ export default function PaginaRegistro() {
             
             {/* Campo Nombre */}
             <div className="grid gap-2">
-              <Label htmlFor="nombre" className="text-stone-700">Nombre Completo</Label>
+              <Label htmlFor="nombre" className="text-stone-700">Nombre</Label>
               <Input id="nombre" name="nombre" placeholder="Ej. Juan Pérez" className="rounded-full" required />
               {state?.errors?.nombre && (
                 <p className="text-xs text-red-500 ml-2">{state.errors.nombre[0]}</p>

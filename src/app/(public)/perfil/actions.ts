@@ -1,19 +1,16 @@
-// app/(admin)/perfil/actions.ts
 "use server";
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { updateUsuarioPerfil } from '@/lib/db'; // Importamos la nueva función
+import { updateUsuarioPerfil } from '@/lib/db'; 
 
-// Esquema de validación
 const PerfilSchema = z.object({
   nombre: z.string().min(3, "El nombre es requerido"),
   telefono: z.string().optional(),
 });
 
-// Tipo de estado
 export type PerfilState = {
   errors?: {
     nombre?: string[];
@@ -28,7 +25,6 @@ export type PerfilState = {
 export async function updatePerfilAction(prevState: PerfilState, formData: FormData) {
   
   const session = await getServerSession(authOptions);
-  // Seguridad: obtenemos el ID desde la sesión, no del formulario
   if (!session?.user?.id) {
     return { message: "Error de autenticación.", success: false };
   }
@@ -53,7 +49,10 @@ export async function updatePerfilAction(prevState: PerfilState, formData: FormD
       telefono: validatedFields.data.telefono || null,
     });
     
-    revalidatePath('/(admin)/perfil-admin'); // Revalida esta misma página
+    revalidatePath('/perfil'); 
+    
+    revalidatePath('/', 'layout'); 
+
     return { message: "Perfil actualizado con éxito.", success: true };
 
   } catch (error) {

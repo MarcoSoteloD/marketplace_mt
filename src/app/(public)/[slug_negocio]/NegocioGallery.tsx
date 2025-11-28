@@ -1,16 +1,9 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react"; // <--- NUEVO: useRef y useCallback
+import { useState, useRef, useCallback } from "react";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
-import Autoplay from "embla-carousel-autoplay"; // <--- NUEVO: Importamos el plugin
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi, // <--- NUEVO: Importamos el tipo
-} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { Store } from "lucide-react";
 import ImageViewer from "@/components/ui/ImageViewer";
 
@@ -22,7 +15,7 @@ interface NegocioGalleryProps {
 export function NegocioGallery({ galeria, nombreNegocio }: NegocioGalleryProps) {
   const [selected, setSelected] = useState<string | null>(null);
   
-  // --- INICIO LÓGICA AUTOPLAY (Igual que CategoryCarousel) ---
+  // --- INICIO LÓGICA AUTOPLAY ---
   const [api, setApi] = useState<CarouselApi>();
 
   const plugin = useRef(
@@ -44,21 +37,18 @@ export function NegocioGallery({ galeria, nombreNegocio }: NegocioGalleryProps) 
     if (!api) return;
     api.plugins()?.autoplay?.play();
   }, [api]);
-  // --- FIN LÓGICA AUTOPLAY ---
 
   return (
     <>
-      <section className="relative h-[35vh] w-full bg-muted rounded-3xl overflow-hidden">
+      <section className="relative h-[35vh] w-full bg-muted rounded-xl overflow-hidden">
         {galeria.length > 0 ? (
           <Carousel 
             className="w-full h-full" 
             opts={{ loop: true }}
-            // --- PROPS NUEVAS ---
             plugins={[plugin.current]}
             setApi={setApi}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            // --------------------
           >
             <CarouselContent className="h-full">
               {galeria.map((url, index) => (
@@ -73,7 +63,7 @@ export function NegocioGallery({ galeria, nombreNegocio }: NegocioGalleryProps) 
                     fill
                     className="object-cover"
                     priority={index === 0}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw" // Ajustado para mejor performance
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
                   />
                 </CarouselItem>
               ))}

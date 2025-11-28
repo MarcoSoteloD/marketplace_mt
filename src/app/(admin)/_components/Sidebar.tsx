@@ -1,23 +1,14 @@
-// app/(admin)/_components/Sidebar.tsx
-
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import {
-  LayoutDashboard,
-  LayoutGrid,
-  Users,
-  User,
-} from "lucide-react";
-
-// Importamos los nuevos componentes cliente
+import { User, Globe } from "lucide-react";
 import { SidebarNav } from "./SidebarNav";
 import { LogoutButton } from "../../../components/layout/LogoutButton";
 
 // Definimos las rutas aquí, en el servidor
 const routes = [
   {
-    label: "Dashboard", // El "botón superior" que pediste
+    label: "Dashboard",
     href: "/dashboard",
     iconName: "LayoutDashboard"
   },
@@ -39,9 +30,9 @@ export async function AdminSidebar() {
 
   return (
     <div className="hidden border-r bg-slate-950 text-white md:block w-64">
-      <div className="flex h-full max-h-screen flex-col gap-4"> {/* Añadí más gap */}
+      <div className="flex h-full max-h-screen flex-col gap-4">
 
-        {/* Encabezado del Sidebar (¡Como lo pediste!) */}
+        {/* Encabezado del Sidebar */}
         <div className="flex h-auto flex-col items-start border-b px-4 py-5 lg:px-6">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold mb-2">
             <span className="">Panel Administrativo</span>
@@ -52,15 +43,25 @@ export async function AdminSidebar() {
           </p>
         </div>
 
-        {/* Links de Navegación (ahora es un Client Component) */}
+        {/* Links de Navegación */}
         <div className="flex-1">
           <SidebarNav routes={routes} />
         </div>
 
-        {/* --- INICIO DE LA CORRECCIÓN --- */}
-        {/* Footer del Sidebar con Perfil y Logout */}
+        {/* Footer del Sidebar */}
         <div className="mt-auto py-4 space-y-2 border-t border-slate-700">
-          {/* 1. Nuevo Link de Perfil (estilo Jenga) */}
+          
+          {/* --- IR A PLATAFORMA --- */}
+          <Link
+            href="/"
+            target="_blank"
+            className="flex items-center gap-3 px-4 py-2 h-10 text-gray-200 transition-all hover:text-white hover:bg-white/10 rounded-none"
+          >
+            <Globe className="h-4 w-4" />
+            Ver Plataforma
+          </Link>
+
+          {/* Link de Perfil */}
           <Link
             href="/perfil-admin"
             className="flex items-center gap-3 px-4 py-2 h-10 text-gray-200 transition-all hover:text-white hover:bg-white/10 rounded-none"
@@ -69,10 +70,9 @@ export async function AdminSidebar() {
             Mi Perfil
           </Link>
 
-          {/* 2. Botón de Logout (con el nuevo estilo) */}
+          {/* Botón de Logout */}
           <LogoutButton />
         </div>
-        {/* --- FIN DE LA CORRECCIÓN --- */}
 
       </div>
     </div>

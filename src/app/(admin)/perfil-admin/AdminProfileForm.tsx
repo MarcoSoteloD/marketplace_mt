@@ -1,25 +1,27 @@
 "use client";
 
 import { useFormState, useFormStatus } from 'react-dom';
-import { updatePerfilAction, PerfilState } from './actions';
+import { updatePerfilAction, PerfilState } from '../../(public)/perfil/actions';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Save } from 'lucide-react';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="rounded-full bg-orange-600 hover:bg-orange-500 text-white px-8" aria-disabled={pending} disabled={pending}>
-        {pending ? 'Guardando...' : 'Actualizar Información'}
+    <Button type="submit" disabled={pending}>
+      <Save className="w-4 h-4 mr-2" />
+      {pending ? 'Guardando...' : 'Guardar Cambios'}
     </Button>
   );
 }
 
-// Recibimos el usuario como prop
-export default function EditProfileForm({ user }: { user: any }) { 
+// Recibimos 'user' fresco desde el Server Component
+export default function AdminProfileForm({ user }: { user: any }) { 
   const { toast } = useToast();
   
   const initialState: PerfilState = undefined;
@@ -28,8 +30,8 @@ export default function EditProfileForm({ user }: { user: any }) {
   useEffect(() => {
     if (state?.message) {
       toast({
-        variant: state.success ? "success" : "destructive",
-        title: state.success ? "¡Actualizado!" : "Error",
+        variant: state.success ? "default" : "destructive",
+        title: state.success ? "Actualizado" : "Error",
         description: state.message,
       });
       
@@ -40,54 +42,50 @@ export default function EditProfileForm({ user }: { user: any }) {
   }, [state, toast]);
 
   return (
-    <Card className="rounded-3xl border-stone-200 shadow-sm"> 
+    <Card>
       <CardHeader>
-        <CardTitle className="text-xl text-stone-700">Información Personal</CardTitle>
-        <CardDescription>Actualiza tu nombre y teléfono de contacto.</CardDescription>
+        <CardTitle>Datos Personales</CardTitle>
+        <CardDescription>Información básica de tu cuenta de administrador.</CardDescription>
       </CardHeader>
       
       <form action={dispatch}>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4">
           
           <div className="grid gap-2">
-            <Label htmlFor="nombre" className="text-stone-600">Nombre</Label>
+            <Label htmlFor="nombre">Nombre Completo</Label>
             <Input 
               id="nombre" 
               name="nombre"
-              defaultValue={user?.nombre || user?.name || ''} 
+              defaultValue={user?.nombre || ''} 
               required 
-              className="rounded-xl bg-stone-50 border-stone-200 focus-visible:ring-orange-500"
             />
             {state?.errors?.nombre && <p className="text-sm text-red-500">{state.errors.nombre[0]}</p>}
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="email" className="text-stone-600">Correo Electrónico</Label>
+            <Label htmlFor="email">Email</Label>
             <Input 
               id="email" 
               name="email" 
               type="email" 
               defaultValue={user?.email || ''} 
-              disabled
-              className="rounded-xl bg-stone-100 text-stone-500 border-transparent cursor-not-allowed"
+              disabled 
+              className="bg-muted"
             />
-            <p className="text-xs text-muted-foreground">El correo no se puede cambiar.</p>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="telefono" className="text-stone-600">Teléfono</Label>
+            <Label htmlFor="telefono">Teléfono</Label>
             <Input 
               id="telefono" 
               name="telefono" 
               type="tel" 
               defaultValue={user?.telefono || ''}
-              placeholder="Ej. 312 123 4567"
-              className="rounded-xl bg-stone-50 border-stone-200 focus-visible:ring-orange-500"
             />
           </div>
 
         </CardContent>
-        <CardFooter className="justify-end border-t bg-stone-50/50 p-6 rounded-b-3xl">
+        <CardFooter className="border-t px-6 py-4 justify-end">
           {state?.errors?._form && <p className="text-sm text-red-500 mr-auto">{state.errors._form[0]}</p>}
           <SubmitButton/>
         </CardFooter>

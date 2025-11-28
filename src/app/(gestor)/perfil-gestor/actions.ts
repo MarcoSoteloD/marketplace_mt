@@ -1,11 +1,11 @@
-// app/(admin)/perfil/actions.ts
+// app/(gestor)/perfil-gestor/actions.ts
 "use server";
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { updateUsuarioPerfil } from '@/lib/db'; // Importamos la nueva función
+import { updateUsuarioPerfil } from '@/lib/db';
 
 // Esquema de validación
 const PerfilSchema = z.object({

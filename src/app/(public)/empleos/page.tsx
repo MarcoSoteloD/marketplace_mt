@@ -1,45 +1,50 @@
 import { getAllActiveVacantes } from '@/lib/db';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import CloudinaryImage from "@/components/ui/cloudinary-image"; 
-import { Briefcase, DollarSign, AlertTriangle, Phone, Mail } from 'lucide-react';
+import { Briefcase, DollarSign, AlertTriangle, Phone, Mail, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-// --- (Helpers de formato se quedan igual) ---
+// --- Helpers ---
 const formatCurrency = (value: number | string | null | undefined) => {
-  if (value === null || value === undefined) return 'No especificado';
+  if (value === null || value === undefined) return 'A tratar';
   const amount = Number(value);
-  if (isNaN(amount)) return 'No especificado';
+  if (isNaN(amount) || amount === 0) return 'A tratar';
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
+    maximumFractionDigits: 0,
   }).format(amount);
 };
 
 const formatDate = (date: Date | string | null) => {
   if (!date) return '';
   const cleanDate = typeof date === 'string' ? new Date(date) : date;
-  return format(cleanDate, "d 'de' MMMM, yyyy", { locale: es });
+  return format(cleanDate, "d 'de' MMM", { locale: es });
 };
 
-const ContactInfo = ({ contacto }: { contacto: string | null | undefined }) => {
-  if (!contacto) return null;
+// Componente de Botón de Contacto
+const ContactButton = ({ contacto }: { contacto: string | null | undefined }) => {
+  if (!contacto) return (
+    <Button disabled variant="outline" className="w-full rounded-full opacity-50">
+        Sin contacto
+    </Button>
+  );
+
   const isEmail = contacto.includes('@');
   const Icon = isEmail ? Mail : Phone;
   const href = isEmail ? `mailto:${contacto}` : `tel:${contacto}`;
+  const label = isEmail ? "Enviar Correo" : "Llamar ahora";
+
   return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium pt-2">
-      <Icon className="h-4 w-4" />
-      <a href={href} className="hover:underline">
-        {contacto}
+    <Button asChild className="w-full rounded-full bg-orange-600 hover:bg-orange-500 text-white gap-2 shadow-sm">
+      <a href={href}>
+        <Icon className="h-4 w-4" />
+        {label}
       </a>
-    </div>
+    </Button>
   );
 };
 
@@ -56,7 +61,7 @@ export default async function PaginaEmpleos() {
           Bolsa de Empleo
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mt-4">
-          Encuentra oportunidades laborales en nuestros negocios de Tonila.
+          Encuentra tu próximo trabajo en los negocios de Tonila.
         </p>
       </div>
 
@@ -67,73 +72,89 @@ export default async function PaginaEmpleos() {
           {vacantes.map((vacante) => (
             <Card 
               key={vacante.id_vacante} 
-              className="h-full flex flex-col rounded-3xl"
+              className="group h-full flex flex-col rounded-3xl border-stone-200 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
             >
-              <CardHeader className="flex flex-row items-start gap-4">
-                
-                {/* --- AQUÍ ESTÁ LA CORRECCIÓN --- */}
-                <div className="relative w-12 h-12 rounded-lg overflow-hidden border flex-shrink-0">
-                  {vacante.negocios.url_logo ? (
-                    <CloudinaryImage
-                      src={vacante.negocios.url_logo} // Ahora SÓLO se llama si existe
-                      fill
-                      alt={`Logo de ${vacante.negocios.nombre}`}
-                      className="object-cover"
-                    />
-                  ) : (
-                    // Fallback de UI (un div con un ícono)
-                    <div className="flex h-full w-full items-center justify-center bg-muted">
-                      {/* Reutilizamos el ícono 'Briefcase' que ya está importado */}
-                      <Briefcase className="h-6 w-6 text-muted-foreground/50" />
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-4">
+                    {/* Info del Negocio */}
+                    <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden border flex-shrink-0 bg-white">
+                            {vacante.negocios.url_logo ? (
+                                <CloudinaryImage
+                                    src={vacante.negocios.url_logo}
+                                    fill
+                                    alt={vacante.negocios.nombre}
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center bg-muted">
+                                    <Briefcase className="h-5 w-5 text-muted-foreground/50" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-col">
+                            <p className="text-sm font-semibold text-stone-600 leading-tight">
+                                {vacante.negocios.nombre}
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                Tonila
+                            </p>
+                        </div>
                     </div>
-                  )}
+                    {/* Fecha (Badge sutil) */}
+                    <Badge variant="secondary" className="bg-stone-100 text-stone-500 font-normal text-[10px]">
+                        {formatDate(vacante.fecha_publicacion)}
+                    </Badge>
                 </div>
-                {/* --- FIN DE LA CORRECCIÓN --- */}
-
-                <div className="flex-1">
-                  <CardTitle className="text-lg text-stone-700">
-                    {vacante.titulo}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {vacante.negocios.nombre}
-                  </p>
-                </div>
+                
+                {/* Título Grande */}
+                <CardTitle className="text-xl font-bold text-stone-800 pt-2 leading-snug">
+                  {vacante.titulo}
+                </CardTitle>
               </CardHeader>
               
-              <CardContent className="space-y-3 flex-1">
-                {/* Puesto */}
-                {vacante.puesto && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Briefcase className="h-4 w-4" />
-                    <span>{vacante.puesto}</span>
-                  </div>
-                )}
-                {/* Salario */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <DollarSign className="h-4 w-4" />
-                  <span>{formatCurrency(Number(vacante.salario))}</span>
-                </div>
+              <CardContent className="space-y-4 flex-1">
                 
-                {/* --- CAMPO DE CONTACTO --- */}
-                <ContactInfo contacto={vacante.contacto} />
+                {/* Badges de Info (Salario y Puesto) */}
+                <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="rounded-md border-green-200 bg-green-50 text-green-700 gap-1 px-2 py-1">
+                        <DollarSign className="h-3.5 w-3.5" />
+                        {formatCurrency(Number(vacante.salario))}
+                    </Badge>
+                    {vacante.puesto && (
+                        <Badge variant="outline" className="rounded-md border-blue-200 bg-blue-50 text-blue-700 gap-1 px-2 py-1">
+                            <Briefcase className="h-3.5 w-3.5" />
+                            {vacante.puesto}
+                        </Badge>
+                    )}
+                </div>
+
+                {/* Descripción */}
+                <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                    {vacante.descripcion}
+                </p>
 
               </CardContent>
               
-              <CardFooter className="text-xs text-muted-foreground justify-end">
-                Publicado: {formatDate(vacante.fecha_publicacion)}
+              <CardFooter className="pt-0 flex flex-col gap-3">
+                 <div className="w-full h-px bg-stone-100 mb-2" />
+                 <ContactButton contacto={vacante.contacto} />
               </CardFooter>
             </Card>
           ))}
         </div>
       ) : (
         // --- Estado Vacío ---
-        <div className="flex flex-col items-center justify-center text-center gap-4 py-16 max-w-lg mx-auto border bg-background rounded-lg shadow-sm">
-          <AlertTriangle className="h-12 w-12 text-muted-foreground" />
-          <h2 className="text-2xl font-semibold text-stone-700">
-            Sin Empleos Disponibles
+        <div className="flex flex-col items-center justify-center text-center gap-4 py-16 px-4 max-w-lg mx-auto border-2 border-dashed border-stone-200 bg-stone-50/50 rounded-3xl">
+          <div className="bg-white p-4 rounded-full shadow-sm mb-2">
+            <AlertTriangle className="h-10 w-10 text-orange-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-stone-700">
+            Sin vacantes por ahora
           </h2>
-          <p className="text-muted-foreground">
-            No hay vacantes activas en este momento. Vuelve a intentarlo más tarde.
+          <p className="text-muted-foreground max-w-xs mx-auto">
+            No hay ofertas de empleo activas en este momento. ¡Date una vuelta más tarde!
           </p>
         </div>
       )}

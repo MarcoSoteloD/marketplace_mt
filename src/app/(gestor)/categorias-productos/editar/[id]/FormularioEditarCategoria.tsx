@@ -3,7 +3,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useFormState, useFormStatus } from 'react-dom';
-import { updateCategoriaAction, CategoriaState } from '../../actions'; // Importamos la action
+import { updateCategoriaAction, CategoriaState } from '../../actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,7 +35,7 @@ export function FormularioEditarCategoria({
   const [state, dispatch] = useFormState(updateActionWithId, initialState);
   const { toast } = useToast();
 
-  // Efecto para mostrar Toasts y redirigir (como en el Admin)
+  // Efecto para mostrar Toasts y redirigir
   useEffect(() => {
     if (state?.message) {
       toast({
