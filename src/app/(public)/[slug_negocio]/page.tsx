@@ -116,11 +116,11 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
                     <CardContent className="space-y-4">
                         <Separator />
                         <div className="flex items-start gap-3">
-                            <MapPin className="h-5 w-5 text-stone-700" />
+                            <MapPin className="h-5 w-5 text-stone-700 shrink-0 mt-0.5" />
                             <p className="font-medium text-stone-700">{direccion || "Sin dirección"}</p>
                         </div>
                         <div className="flex items-start gap-3">
-                            <Phone className="h-5 w-5 text-stone-700" />
+                            <Phone className="h-5 w-5 text-stone-700 shrink-0 mt-0.5" />
                             <p className="font-medium text-stone-700">{negocio.telefono || "Sin teléfono"}</p>
                         </div>
                         {redes && Object.keys(redes).length > 0 && (

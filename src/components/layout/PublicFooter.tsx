@@ -1,9 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Phone, Mail, ExternalLink } from "lucide-react";
+import { MapPin, Phone, Mail, ExternalLink, LayoutDashboard } from "lucide-react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export function PublicFooter() {
+export async function PublicFooter() {
   const currentYear = new Date().getFullYear();
+  
+  // Obtenemos la sesión para saber si mostrar el botón de panel
+  const session = await getServerSession(authOptions);
 
   return (
     <footer className="border-t border-stone-200 bg-stone-900 text-stone-400 py-12 md:py-12 mt-auto">
@@ -12,7 +17,7 @@ export function PublicFooter() {
         {/* --- COLUMNA 1: IDENTIDAD MUNICIPAL --- */}
         <div className="flex flex-col items-center md:items-start gap-5">
            <div className="flex items-center gap-3 text-white">
-              <div className="relative h-20 w-20 shrink-0">
+              <div className="relative h-24 w-24 shrink-0">
                   <Image 
                     src="/images/TonilaLogo.svg" 
                     alt="Escudo de Tonila" 
@@ -73,8 +78,20 @@ export function PublicFooter() {
                  </Link>
             </nav>
             
-            <div className="flex flex-col items-center md:items-end gap-2">
-                {/* Enlace externo al sitio web del gobierno si existe */}
+            <div className="flex flex-col items-center md:items-end gap-3">
+                
+                {/* --- IR AL PANEL (Solo si hay sesión) --- */}
+                {session && (
+                    <Link 
+                        href="/router" 
+                        className="inline-flex items-center gap-2 text-xs bg-orange-700 hover:bg-orange-600 text-white px-4 py-2 rounded-full transition-colors font-medium shadow-lg shadow-orange-900/20"
+                    >
+                        <LayoutDashboard className="h-3 w-3" />
+                        Ir a mi Panel
+                    </Link>
+                )}
+
+                {/* Enlace externo */}
                 <a 
                     href="https://www.facebook.com/tonilamunicipio/?locale=es_LA" 
                     target="_blank" 
