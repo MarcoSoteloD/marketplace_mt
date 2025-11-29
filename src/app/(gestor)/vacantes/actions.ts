@@ -2,17 +2,10 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
-// Importamos las funciones de DB
-import {
-    createVacante,
-    deleteVacante,
-    updateVacante,
-} from '@/lib/db';
+import { createVacante, deleteVacante, updateVacante } from '@/lib/data/vacancies';
 
 // --- Esquema de Validación de Zod ---
 const VacanteSchema = z.object({
@@ -26,7 +19,7 @@ const VacanteSchema = z.object({
             .optional()
     ),
     activo: z.string().optional(),
-    contacto: z.string().optional(), // + AÑADIDO
+    contacto: z.string().optional(),
 });
 
 // --- Tipo de Estado del Formulario ---
@@ -37,7 +30,7 @@ export type VacanteState = {
         puesto?: string[];
         salario?: string[];
         activo?: string[];
-        contacto?: string[]; // + AÑADIDO
+        contacto?: string[];
         _form?: string[];
     };
     message?: string;
@@ -45,7 +38,7 @@ export type VacanteState = {
 } | undefined;
 
 
-// --- 1. Server Action: CREAR VACANTE ---
+// --- Server Action: CREAR VACANTE ---
 export async function createVacanteAction(prevState: VacanteState, formData: FormData) {
 
     const session = await getServerSession(authOptions);
@@ -60,7 +53,7 @@ export async function createVacanteAction(prevState: VacanteState, formData: For
         puesto: formData.get('puesto'),
         salario: formData.get('salario'),
         activo: formData.get('activo'),
-        contacto: formData.get('contacto'), // + AÑADIDO
+        contacto: formData.get('contacto'),
     };
 
     const validatedFields = VacanteSchema.safeParse(parsedData);
@@ -73,7 +66,6 @@ export async function createVacanteAction(prevState: VacanteState, formData: For
         };
     }
 
-    // + AÑADIDO 'contacto' a la desestructuración
     const { titulo, descripcion, puesto, salario, contacto } = validatedFields.data;
 
     try {
@@ -85,9 +77,7 @@ export async function createVacanteAction(prevState: VacanteState, formData: For
             salario: salario ? new Prisma.Decimal(salario) : null,
             activo: formData.get('activo') === "on",
             fecha_publicacion: new Date(),
-            contacto, // + AÑADIDO
-
-            // Conectamos con el negocio
+            contacto,
             negocios: {
                 connect: { id_negocio: negocioId }
             }
@@ -108,8 +98,7 @@ export async function createVacanteAction(prevState: VacanteState, formData: For
 }
 
 
-// --- 2. Server Action: ELIMINAR VACANTE ---
-// (No se necesitan cambios en 'deleteVacanteAction')
+// --- Server Action: ELIMINAR VACANTE ---
 export async function deleteVacanteAction(vacanteId: number) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.negocioId) {
@@ -126,7 +115,7 @@ export async function deleteVacanteAction(vacanteId: number) {
     }
 }
 
-// --- 3. Server Action: ACTUALIZAR VACANTE ---
+// --- Server Action: ACTUALIZAR VACANTE ---
 export async function updateVacanteAction(
   vacanteId: number,
   prevState: VacanteState, 
@@ -145,7 +134,7 @@ export async function updateVacanteAction(
     puesto: formData.get('puesto'),
     salario: formData.get('salario'),
     activo: formData.get('activo'),
-    contacto: formData.get('contacto'), // + AÑADIDO
+    contacto: formData.get('contacto'),
   };
 
   const validatedFields = VacanteSchema.safeParse(parsedData);
@@ -158,7 +147,6 @@ export async function updateVacanteAction(
     };
   }
   
-  // + AÑADIDO 'contacto' a la desestructuración
   const { titulo, descripcion, puesto, salario, contacto } = validatedFields.data;
 
   try {
@@ -169,7 +157,7 @@ export async function updateVacanteAction(
       puesto,
       salario: salario ? new Prisma.Decimal(salario) : null,
       activo: formData.get('activo') === "on",
-      contacto, // + AÑADIDO
+      contacto,
     };
 
     await updateVacante(vacanteId, negocioId, data);

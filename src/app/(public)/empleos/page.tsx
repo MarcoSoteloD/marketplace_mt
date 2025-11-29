@@ -1,4 +1,4 @@
-import { getAllActiveVacantes } from '@/lib/db';
+import { getAllActiveVacantes } from '@/lib/data/vacancies';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

@@ -1,8 +1,8 @@
 // src/lib/cloudinary.ts
-import { v2 as cloudinary } from 'cloudinary'; // <-- Esto viene de 'npm install cloudinary'
+import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
 
-// Se configura solo con la URL de tu .env
+// Se configura solo con la URL de .env
 cloudinary.config(); 
 
 export async function uploadImageToCloudinary(file: File, folder: string): Promise<string> {

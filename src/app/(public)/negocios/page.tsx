@@ -1,6 +1,6 @@
-// En: src/app/(public)/negocios/page.tsx
+// src/app/(public)/negocios/page.tsx
 
-import { getActiveNegocios } from '@/lib/db';
+import { getActiveNegocios } from '@/lib/data/businesses';
 import { NegocioCard } from '@/components/NegocioCard';
 import { AlertTriangle } from 'lucide-react';
 
@@ -8,7 +8,6 @@ import { AlertTriangle } from 'lucide-react';
 interface NegociosPageProps {
   searchParams: {
     categoria?: string; // ej. "restaurantes"
-    // (Podríamos añadir 'q' para búsqueda de texto en el futuro)
   };
 }
 

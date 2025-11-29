@@ -2,12 +2,12 @@
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getCategoriaProductoById } from '@/lib/db';
+import { getCategoriaProductoById } from '@/lib/data/products';
 import { notFound, redirect } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { FormularioEditarCategoria } from './FormularioEditarCategoria';
 
-export default async function PaginaEditarCategoriaProducto({ 
+export default async function PaginaEditarCategoriaProducto({
   params 
 }: { 
   params: { id: string } 

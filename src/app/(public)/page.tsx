@@ -1,10 +1,12 @@
 // app/(public)/page.tsx
-import { getNegociosActivos, getCategoriasGlobales } from "@/lib/db";
+
+import { getNegociosActivos } from "@/lib/data/businesses";
+import { getCategoriasGlobales } from "@/lib/data/global-categories";
 import { NegocioCard } from "@/components/NegocioCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
-import { CategoryCarousel } from './CategoryCarousel';
+import { CategoryCarousel } from '../../components/CategoryCarousel';
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-16 md:gap-20">
 
-      {/* --- 1. Hero --- */}
+      {/* --- Hero --- */}
       <section
         className="relative bg-muted/40 py-16 md:py-24 min-h-[500px] overflow-hidden flex flex-col justify-center"
         style={{
@@ -55,7 +57,7 @@ export default async function HomePage() {
               type="search"
               name="q"
               placeholder="¿Qué estás buscando? (Ej. tacos, peluquería...)"
-              className="h-12 text-base text-stone-700 flex-1 rounded-full bg-white" // Asegura que el texto de búsqueda sea legible
+              className="h-12 text-base text-stone-700 flex-1 rounded-full bg-white"
             />
             <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0 bg-orange-600 hover:bg-orange-500 rounded-full">
               <Search className="h-5 w-5 " />
@@ -64,7 +66,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* --- 2. Categorías --- */}
+      {/* --- Categorías --- */}
       <section className="container">
         <h2 className="text-2xl text-stone-700 font-semibold tracking-tight mb-6">
           Explora nuestras Categorías
@@ -72,7 +74,7 @@ export default async function HomePage() {
         <CategoryCarousel categorias={categorias} />
       </section>
 
-      {/* --- 3. Negocios --- */}
+      {/* --- Negocios --- */}
       <section className="container pb-24">
         <h2 className="text-2xl text-stone-700 font-semibold tracking-tight mb-6">
           Explora los Negocios

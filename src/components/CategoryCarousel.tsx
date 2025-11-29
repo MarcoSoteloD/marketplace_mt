@@ -2,17 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import Autoplay from "embla-carousel-autoplay"; // (Tu import)
+import Autoplay from "embla-carousel-autoplay";
 import { getCategoryIcon } from "@/lib/icon-map";
-
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi, // <-- 1. Importamos el TIPO de la API
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 
 type Categoria = {
   id_categoria_g: number;
@@ -21,7 +13,7 @@ type Categoria = {
 
 export function CategoryCarousel({ categorias }: { categorias: Categoria[] }) {
 
-  // 2. Creamos el plugin (como ya lo tenías, esto está bien)
+  // Creamos el plugin
   const plugin = React.useRef(
     Autoplay({
       delay: 3000,
@@ -29,12 +21,11 @@ export function CategoryCarousel({ categorias }: { categorias: Categoria[] }) {
     })
   );
 
-  // 3. Creamos un estado para guardar la API
+  // Creamos un estado para guardar la API
   const [api, setApi] = React.useState<CarouselApi>();
 
-  // 4. Creamos los handlers (con useCallback para optimizar)
+  // Creamos los handlers (con useCallback para optimizar)
   const handleMouseEnter = React.useCallback(() => {
-    // --- ESTA ES LA LÍNEA CORREGIDA ---
     // Si la API no existe, O no puede scrollear en NINGUNA dirección, salimos.
     if (!api || (!api.canScrollPrev() && !api.canScrollNext())) return;
     
@@ -44,7 +35,6 @@ export function CategoryCarousel({ categorias }: { categorias: Categoria[] }) {
   }, [api]); // Depende de la API
 
   const handleMouseLeave = React.useCallback(() => {
-    // --- ESTA ES LA LÍNEA CORREGIDA ---
     if (!api || (!api.canScrollPrev() && !api.canScrollNext())) return;
     
     // Accedemos al plugin de autoplay DESDE la API y lo reanudamos
@@ -57,9 +47,8 @@ export function CategoryCarousel({ categorias }: { categorias: Categoria[] }) {
     <Carousel
       plugins={[plugin.current]} 
       className="w-full"
-      // 5. LE PASAMOS EL SETTER a shadcn/ui
-      setApi={setApi} 
-      // 6. Usamos nuestros nuevos handlers seguros
+      // LE PASAMOS EL SETTER a shadcn/ui
+      setApi={setApi}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       opts={{

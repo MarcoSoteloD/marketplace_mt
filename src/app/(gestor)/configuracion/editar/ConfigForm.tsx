@@ -214,10 +214,10 @@ export function ConfigForm({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* --- COLUMNA IZQUIERDA (Principal - 8/12) --- */}
+        {/* --- COLUMNA IZQUIERDA --- */}
         <div className="lg:col-span-8 space-y-8">
             
-            {/* 1. PERFIL */}
+            {/* PERFIL */}
             <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
                 <CardHeader className="bg-stone-50/50 pb-4">
                     <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
@@ -275,7 +275,7 @@ export function ConfigForm({
                 </CardContent>
             </Card>
 
-            {/* 2. UBICACIÓN */}
+            {/* UBICACIÓN */}
             <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
                 <CardHeader className="bg-stone-50/50 pb-4">
                     <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
@@ -320,10 +320,10 @@ export function ConfigForm({
             </Card>
         </div>
 
-        {/* --- COLUMNA DERECHA (Secundaria - 4/12) --- */}
+        {/* --- COLUMNA DERECHA --- */}
         <div className="lg:col-span-4 space-y-8">
             
-            {/* 3. MULTIMEDIA */}
+            {/* MULTIMEDIA */}
             <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
                 <CardHeader className="bg-stone-50/50 pb-4">
                     <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
@@ -375,7 +375,7 @@ export function ConfigForm({
                 </CardContent>
             </Card>
 
-            {/* 4. HORARIOS */}
+            {/* HORARIOS */}
             <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
                 <CardHeader className="bg-stone-50/50 pb-4">
                     <CardTitle className="flex items-center gap-2 text-xl text-stone-700">
@@ -398,7 +398,7 @@ export function ConfigForm({
                 </CardContent>
             </Card>
 
-            {/* 5. REDES SOCIALES */}
+            {/* REDES SOCIALES */}
             <Card className="rounded-3xl shadow-sm border-stone-200 overflow-hidden">
                 <CardHeader className="bg-stone-50/50 pb-4">
                     <CardTitle className="flex items-center gap-2 text-xl text-stone-700">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Badge } from "@/components/ui/badge";
@@ -58,16 +58,12 @@ export function ProductDetailModal({ producto, negocioId, isOpen, onClose }: Pro
       <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-3xl gap-0">
         
         {/* --- IMAGEN GRANDE (Header) --- */}
-        {/* CAMBIO: bg-white en lugar de bg-muted para que se vea limpia */}
         <div className="relative h-64 w-full bg-white">
           {producto.url_foto ? (
             <CloudinaryImage
               src={producto.url_foto}
               alt={producto.nombre}
               fill
-              // CAMBIO: object-contain + p-4
-              // - object-contain: Muestra la imagen completa sin recortes.
-              // - p-4: Le da aire alrededor para que no toque los bordes.
               className="object-contain p-4"
             />
           ) : (

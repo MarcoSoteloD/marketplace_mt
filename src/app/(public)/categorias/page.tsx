@@ -1,6 +1,6 @@
 // app/(public)/categorias/page.tsx
 
-import { getCategoriasGlobales } from '@/lib/db';
+import { getCategoriasGlobales } from '@/lib/data/global-categories';
 import { getCategoryIcon } from '@/lib/icon-map';
 import Link from 'next/link';
 import type { categorias_globales } from '@prisma/client';

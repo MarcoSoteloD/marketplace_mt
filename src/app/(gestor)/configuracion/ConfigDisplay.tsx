@@ -1,30 +1,13 @@
 // app/(gestor)/configuracion/ConfigDisplay.tsx
-"use client"; // <-- ¡El paso más importante!
+"use client";
 
 import Link from "next/link";
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent, 
-  CardDescription
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CldImage } from "next-cloudinary";
-import { 
-  Store, 
-  MapPin, 
-  Phone, 
-  Clock, 
-  Link as LinkIcon,
-  Pencil,
-  Globe,
-  Camera,
-  FileText,
-  type LucideIcon
-} from "lucide-react";
+import { Store, MapPin, Phone, Clock, Link as LinkIcon, Pencil, Globe, Camera, FileText, type LucideIcon } from "lucide-react";
 
 // --- Definimos los tipos que esperamos del servidor ---
 type Horario = Record<string, string>;
@@ -38,7 +21,7 @@ interface NegocioData {
   slug: string;
   descripcion: string | null;
   telefono: string | null;
-  direccion: string; // La dirección ya viene formateada
+  direccion: string;
   horario: Horario | null;
   redes: Redes | null;
   galeria: Galeria;
@@ -142,7 +125,7 @@ function DisplayGaleria({ galeria }: { galeria: Galeria }) {
 }
 
 
-// --- Componente Principal (que ahora es Cliente) ---
+// --- Componente Principal ---
 export default function ConfigDisplay({ negocio }: { negocio: NegocioData }) {
   return (
     <div className="flex flex-col gap-6">

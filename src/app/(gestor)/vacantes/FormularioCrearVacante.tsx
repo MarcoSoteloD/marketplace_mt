@@ -62,7 +62,6 @@ export function FormularioCrearVacante() {
         )}
       </div>
 
-      {/* --- BLOQUE AÑADIDO --- */}
       <div className="grid gap-2">
         <Label htmlFor="contacto">Información de Contacto (Opcional)</Label>
         <Input 
@@ -77,7 +76,6 @@ export function FormularioCrearVacante() {
           <p className="text-sm text-red-500">{state.errors.contacto[0]}</p>
         )}
       </div>
-      {/* --- FIN DEL BLOQUE AÑADIDO --- */}
 
       <div className="grid gap-2">
         <Label htmlFor="descripcion">Descripción</Label>

@@ -10,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from "@/hooks/use-toast";
-import { useEffect, useState } from 'react';
-import type { categorias_globales } from '@prisma/client'; // Importamos el tipo
+import { useEffect } from 'react';
+import type { categorias_globales } from '@prisma/client';
 
 // Botón de Submit (reutilizable)
 function SubmitButton({ variant = "default", text }: { variant?: any, text: string }) {
@@ -48,8 +48,6 @@ export function FormularioEditarCategoria({
     const router = useRouter();
     const initialState: State = undefined;
 
-    // --- Lógica de Actions ---
-    // Necesitamos "atar" el ID a la server action
     const updateActionWithId = updateCategoriaGlobal.bind(null, categoria.id_categoria_g);
     const deleteActionWithId = deleteCategoriaGlobal.bind(null, categoria.id_categoria_g);
 
@@ -58,18 +56,18 @@ export function FormularioEditarCategoria({
 
     // Efecto para mostrar Toasts de éxito o error
     useEffect(() => {
-        // 1. Solo actúa si 'state' existe y tiene un mensaje
-        //    (esto evita que se dispare en la carga inicial)
+        // Solo actúa si 'state' existe y tiene un mensaje
+        // (esto evita que se dispare en la carga inicial)
         if (state?.message) {
 
-            // 2. Muestra el toast
+            // Muestra el toast
             toast({
                 variant: state.success ? "success" : "destructive",
                 title: state.success ? "¡Éxito!" : "Error",
                 description: state.message,
             });
 
-            // 3. Si fue exitoso, inicia el timer para redirigir
+            // Si fue exitoso, inicia el timer para redirigir
             if (state.success) {
                 const timer = setTimeout(() => {
                     router.push('/gestion-categorias');
@@ -80,7 +78,7 @@ export function FormularioEditarCategoria({
             }
         }
 
-        // 4. El array de dependencias ahora es más simple
+        // El array de dependencias ahora es más simple
     }, [state, toast, router]);
 
     return (

@@ -20,16 +20,13 @@ export function NegocioGallery({ galeria, nombreNegocio }: NegocioGalleryProps) 
 
   const plugin = useRef(
     Autoplay({
-      delay: 4000, // 4 segundos es buen tiempo para fotos grandes
+      delay: 4000, 
       stopOnInteraction: true,
     })
   );
 
   const handleMouseEnter = useCallback(() => {
     if (!api) return;
-    // Solo paramos si realmente hay scroll (más de 1 foto)
-    // La comprobación api.canScroll... a veces da falso positivo en loop,
-    // pero con api.plugins().autoplay.stop() es seguro intentarlo.
     api.plugins()?.autoplay?.stop();
   }, [api]);
 
@@ -40,41 +37,57 @@ export function NegocioGallery({ galeria, nombreNegocio }: NegocioGalleryProps) 
 
   return (
     <>
-      <section className="relative h-[35vh] w-full bg-muted rounded-xl overflow-hidden">
+      <section className="w-full" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         {galeria.length > 0 ? (
           <Carousel 
-            className="w-full h-full" 
-            opts={{ loop: true }}
+            className="w-full" 
+            opts={{ 
+                loop: true,
+                align: "start"
+            }}
             plugins={[plugin.current]}
             setApi={setApi}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
           >
-            <CarouselContent className="h-full">
+            <CarouselContent className="-ml-4">
               {galeria.map((url, index) => (
                 <CarouselItem
                   key={index}
-                  className="relative h-[35vh] cursor-pointer"
-                  onClick={() => setSelected(url)}
+                  className="pl-4 basis-full md:basis-1/2"
                 >
-                  <CloudinaryImage
-                    src={url}
-                    alt={`Foto de ${nombreNegocio} ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    priority={index === 0}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                  />
+                  <div 
+                    className="relative h-72 w-full cursor-pointer rounded-2xl overflow-hidden group shadow-sm hover:shadow-md transition-all"
+                    onClick={() => setSelected(url)}
+                  >
+                    <CloudinaryImage
+                      src={url}
+                      alt={`Foto de ${nombreNegocio} ${index + 1}`}
+                      fill
+                      // object-cover llena el contenedor
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      priority={index < 2} // Priorizamos las primeras 2 imágenes
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    
+                    {/* Overlay sutil al hacer hover */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                  </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
 
-            <CarouselPrevious className="absolute left-4 rounded-full bg-white/80 hover:bg-white border-0" />
-            <CarouselNext className="absolute right-4 rounded-full bg-white/80 hover:bg-white border-0" />
+            {/* Flechas de navegación (Ocultas en móvil para limpieza, visibles en md) */}
+            <div className="hidden md:block">
+                <CarouselPrevious className="absolute -left-4 h-10 w-10 border-stone-200 bg-white/90 hover:bg-white text-stone-700 shadow-md" />
+                <CarouselNext className="absolute -right-4 h-10 w-10 border-stone-200 bg-white/90 hover:bg-white text-stone-700 shadow-md" />
+            </div>
           </Carousel>
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Store className="h-32 w-32 text-muted-foreground/30" />
+          // Estado vacío (Placeholder elegante)
+          <div className="flex h-64 w-full items-center justify-center bg-muted rounded-2xl border-2 border-dashed border-stone-200">
+            <div className="flex flex-col items-center gap-2 text-muted-foreground/50">
+                <Store className="h-16 w-16" />
+                <span className="text-sm font-medium">Sin fotos disponibles</span>
+            </div>
           </div>
         )}
       </section>

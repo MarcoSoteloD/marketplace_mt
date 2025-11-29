@@ -3,44 +3,16 @@
 
 import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-
-// Importamos TODAS las actions que usaremos
-import {
-  updateGestorInfoAction,
-  UpdateGestorState,
-  toggleGestorStatusAction,
-  deleteGestorYNegocioAction
-} from '../../actions';
-
-// Importamos los tipos de Prisma
+import { updateGestorInfoAction, UpdateGestorState, toggleGestorStatusAction, deleteGestorYNegocioAction } from '../../actions';
 import type { usuarios, negocios } from '@prisma/client';
-
-// Componentes de Shadcn
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent, 
-  CardDescription,
-  CardFooter
-} from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch'; // El nuevo switch
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'; // Para eliminar
+import {  Card, CardHeader, CardTitle, CardContent, CardDescription,CardFooter } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
@@ -58,7 +30,6 @@ function DeleteButton() {
   const { pending } = useFormStatus();
   return <Button type="submit" variant="destructive" aria-disabled={pending} disabled={pending}>{pending ? 'Eliminando...' : 'Eliminar Permanentemente'}</Button>;
 }
-// ----- Fin de Botones -----
 
 
 export function EditGestorForm({ gestorConNegocio }: { gestorConNegocio: GestorConNegocio }) {
@@ -68,7 +39,7 @@ export function EditGestorForm({ gestorConNegocio }: { gestorConNegocio: GestorC
   // Estado de transición para los botones (switch y eliminar) que no usan useFormState
   const [isPending, startTransition] = useTransition();
 
-  // --- Lógica para Formulario 1: Actualizar Info Gestor ---
+  // --- Lógica para Formulario: Actualizar Info Gestor ---
   const initialState: UpdateGestorState = undefined;
   const updateActionWithId = updateGestorInfoAction.bind(null, gestorConNegocio.id_usuario);
   const [state, dispatch] = useFormState(updateActionWithId, initialState);
@@ -81,7 +52,6 @@ export function EditGestorForm({ gestorConNegocio }: { gestorConNegocio: GestorC
         title: state.success ? "¡Éxito!" : "Error",
         description: state.message,
       });
-      // (No redirigimos, nos quedamos en la página)
     }
   }, [state, toast]);
 

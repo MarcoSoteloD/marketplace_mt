@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Prisma } from '@prisma/client';
-import {  createCategoriaProducto, deleteCategoriaProducto, updateCategoriaProducto,reorderCategorias } from '@/lib/db';
+import {  createCategoriaProducto, deleteCategoriaProducto, updateCategoriaProducto, reorderCategorias } from '@/lib/data/products';
 
 const CategoriaProductoSchema = z.object({
   nombre: z.string().min(3, { message: 'El nombre debe tener al menos 3 caracteres.' }),
@@ -108,7 +108,7 @@ export async function updateCategoriaAction(categoriaId: number, prevState: Cate
   }
 }
 
-// --- REORDENAR (NUEVA) ---
+// --- REORDENAR ---
 export async function reorderCategoriasAction(items: { id_categoria: number; orden: number }[]) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.negocioId) {

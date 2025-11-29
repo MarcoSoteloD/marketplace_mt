@@ -1,4 +1,4 @@
-import { getNegociosByCategoriaGlobal } from '@/lib/db';
+import { getNegociosByCategoriaGlobal } from '@/lib/data/businesses';
 import { NegocioCard } from '@/components/NegocioCard';
 import { AlertTriangle } from 'lucide-react';
 
@@ -9,7 +9,7 @@ interface CategoriaDetallePageProps {
   };
 }
 
-// Exportamos los metadatos dinámicos (buena práctica para SEO)
+// Exportamos los metadatos dinámicos
 export async function generateMetadata({ params }: CategoriaDetallePageProps) {
   const nombreCategoria = decodeURIComponent(params.categoria);
   return {

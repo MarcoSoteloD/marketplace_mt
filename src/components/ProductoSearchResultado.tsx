@@ -1,12 +1,9 @@
 import Link from "next/link";
-import CloudinaryImage from "@/components/ui/cloudinary-image"; // Usamos tu wrapper
+import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Card } from "@/components/ui/card";
 import { ImageIcon, Store } from "lucide-react";
-// CORREGIDO: Importamos 'productos' (el tipo del modelo) además de 'Prisma'
 import { type Prisma, type productos } from "@prisma/client";
 
-// Definimos un tipo para el producto que esperamos de la búsqueda
-// CORREGIDO: Usamos 'productos' en lugar de 'Prisma.productos'
 type ProductoConNegocio = productos & {
   negocios: {
     slug: string;
@@ -31,7 +28,7 @@ export function ProductoSearchResultCard({
 }: ProductoSearchResultCardProps) {
   return (
     <Link
-      href={`/${producto.negocios.slug}`} // <-- CORREGIDO (era slug_negocio)
+      href={`/${producto.negocios.slug}`}
       className="group block"
     >
       <Card className="flex items-center gap-4 p-4 rounded-2xl hover:bg-muted/50 transition-colors">

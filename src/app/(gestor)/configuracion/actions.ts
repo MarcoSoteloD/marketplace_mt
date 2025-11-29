@@ -3,8 +3,8 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { Prisma, categorias_globales } from '@prisma/client';
-import { updateNegocio } from '@/lib/db';
+import { Prisma } from '@prisma/client';
+import { updateNegocio } from '@/lib/data/businesses';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { uploadImageToCloudinary } from '@/lib/cloudinary';

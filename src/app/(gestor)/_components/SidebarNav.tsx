@@ -3,16 +3,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LucideIcon, User } from "lucide-react";
-import {
-  Settings,
-  LayoutGrid,
-  Package,
-  ShoppingCart,
-  Briefcase
-} from "lucide-react";
+import { LucideIcon } from "lucide-react";
+import { Settings, LayoutGrid, Package, ShoppingCart, Briefcase } from "lucide-react";
 
-// 1. Mapa de Iconos para el Gestor
+// Mapa de Iconos para el Gestor
 const iconMap: Record<string, LucideIcon> = {
   Settings: Settings,
   LayoutGrid: LayoutGrid,
@@ -21,12 +15,12 @@ const iconMap: Record<string, LucideIcon> = {
   Briefcase: Briefcase,
 };
 
-// 2. Función 'helper' de clases
+// Función 'helper' de clases
 function cn(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-// 3. Tipo para las rutas del gestor
+// Tipo para las rutas del gestor
 type Route = {
   label: string;
   href: string;
@@ -41,7 +35,7 @@ export function SidebarNav({ routes }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    // 4. Mapeo (con la corrección que ya hicimos)
+    // Mapeo
     <nav className="grid items-start font-medium">
       {routes.map((route) => {
         const Icon = iconMap[route.iconName];

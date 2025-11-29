@@ -1,21 +1,13 @@
 // app/(gestor)/configuracion/editar/MapSelector.tsx
 "use client";
 
-// Importamos el CSS de Leaflet, ¡muy importante!
 import 'leaflet/dist/leaflet.css';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  MapContainer, 
-  TileLayer, 
-  Marker, 
-  useMapEvents,
-  Popup
-} from 'react-leaflet';
-import L from 'leaflet'; // Importamos 'L' para el ícono
+import { MapContainer, TileLayer, Marker, useMapEvents, Popup } from 'react-leaflet';
+import L from 'leaflet';
 
-// Arreglamos el ícono por defecto de Leaflet (un bug conocido)
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -58,7 +50,7 @@ export function MapSelector({ defaultLat, defaultLng }: MapSelectorProps) {
         center={position}
         zoom={13}
         scrollWheelZoom={false}
-        className="h-[400px] w-full rounded-md z-0" // z-0 es importante
+        className="h-[400px] w-full rounded-md z-0"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -73,7 +65,6 @@ export function MapSelector({ defaultLat, defaultLng }: MapSelectorProps) {
       </MapContainer>
       
       {/* --- LOS INPUTS OCULTOS --- */}
-      {/* Estos son los que SÍ se envían con el formulario */}
       <input 
         type="hidden" 
         name="latitud" 
@@ -85,7 +76,6 @@ export function MapSelector({ defaultLat, defaultLng }: MapSelectorProps) {
         value={position[1]} 
       />
 
-      {/* Inputs visibles (deshabilitados) para que el usuario vea las coordenadas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="grid gap-2">
           <Label>Latitud (Automático)</Label>

@@ -1,4 +1,6 @@
-import { getAdminDashboardStats, getRecentGestores, getRecentGlobalOrders } from '@/lib/db';
+import { getRecentGlobalOrders } from '@/lib/data/orders';
+import { getRecentGestores } from '@/lib/data/users';
+import { getAdminDashboardStats} from '@/lib/data/stats';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

@@ -1,13 +1,8 @@
-import { searchPlataforma } from "@/lib/db"; // Importamos la nueva lógica
-import type { searchPlataforma as searchPlataformaType } from "@/lib/db";
+import { searchPlataforma } from "@/lib/data/search";
+import type { searchPlataforma as searchPlataformaType } from "@/lib/data/search";
 import { NegocioCard } from "@/components/NegocioCard";
 import { ProductoSearchResultCard } from "@/components/ProductoSearchResultado";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building, Package, SearchX } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,7 +32,7 @@ export default async function PaginaBuscar({ searchParams }: SearchPageProps) {
 
   return (
     <div className="container py-12 md:py-16">
-      {/* --- Encabezado y Barra de Búsqueda (para re-intentar) --- */}
+      {/* --- Encabezado y Barra de Búsqueda --- */}
       <div className="flex flex-col items-center text-center mb-12">
         <h1 className="text-4xl md:text-5xl text-stone-700 font-bold tracking-tight">
           {query
@@ -127,7 +122,6 @@ export default async function PaginaBuscar({ searchParams }: SearchPageProps) {
                 {productos.map((producto) => (
                   <ProductoSearchResultCard
                     key={producto.id_producto}
-                    // CORREGIDO: Quitamos 'as any' porque el tipo ya coincide
                     producto={producto} 
                   />
                 ))}

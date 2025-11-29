@@ -2,11 +2,9 @@
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getCategoriasByNegocioId } from '@/lib/db';
+import { getCategoriasByNegocioId } from '@/lib/data/products';
 import { redirect } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-
-// Importamos los componentes cliente que crearemos a continuación
 import { FormularioCrearCategoria } from './FormularioCrearCategoria';
 import { ListaCategorias } from './ListaCategorias';
 

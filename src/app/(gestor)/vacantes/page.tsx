@@ -2,15 +2,9 @@
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getVacantesByNegocioId } from '@/lib/db';
+import { getVacantesByNegocioId } from '@/lib/data/vacancies';
 import { redirect } from "next/navigation";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 // Importamos los componentes cliente que crearemos
 import { FormularioCrearVacante } from './FormularioCrearVacante';

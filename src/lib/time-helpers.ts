@@ -35,24 +35,24 @@ function getCurrentTimeInColima(): string {
  * Recibe el objeto 'horario' de la base de datos y determina si está abierto.
  */
 export function checkOpenStatus(horario: Prisma.JsonValue | null): boolean {
-  // 1. Validar que el horario exista y sea un objeto
+  // Validar que el horario exista y sea un objeto
   if (!horario || typeof horario !== 'object' || Array.isArray(horario)) {
     return false; // Si no hay horario, está cerrado
   }
 
-  // 2. Obtener el día y la hora actual
+  // Obtener el día y la hora actual
   const diaActual = getCurrentDayInColima(); // ej: "viernes"
   const horaActual = getCurrentTimeInColima(); // ej: "14:30"
   
-  // 3. Obtener el string del horario para hoy
+  // Obtener el string del horario para hoy
   const horarioDeHoy = (horario as Horario)[diaActual]; // ej: "09:00 - 18:00"
 
-  // 4. Validar el string
+  // Validar el string
   if (!horarioDeHoy || horarioDeHoy.toLowerCase() === 'cerrado' || !horarioDeHoy.includes(' - ')) {
     return false; // Si dice "Cerrado" o está vacío, está cerrado
   }
 
-  // 5. Comparar las horas
+  // Comparar las horas
   try {
     const [horaApertura, horaCierre] = horarioDeHoy.split(' - ');
     

@@ -1,12 +1,10 @@
 // app/(public)/[slug_negocio]/DisplayMap.tsx
 "use client";
 
-// Importamos el CSS de Leaflet, ¡muy importante!
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
-// Arreglamos el ícono por defecto de Leaflet (el bug que ya conocemos)
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -27,9 +25,9 @@ export function DisplayMap({ lat, lng, popupText }: MapDisplayProps) {
   return (
     <MapContainer
       center={position}
-      zoom={15} // Un zoom más cercano para ver la ubicación
+      zoom={15}
       scrollWheelZoom={false}
-      className="h-[250px] w-full rounded-3xl z-0 overflow-hidden" // Buena altura para el sidebar
+      className="h-[250px] w-full rounded-3xl z-0 overflow-hidden"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

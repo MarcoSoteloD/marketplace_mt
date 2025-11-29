@@ -7,19 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { deleteVacanteAction } from './actions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-// + Añadimos Phone y Mail
 import { Trash2, Edit, DollarSign, Calendar, Phone, Mail } from 'lucide-react'; 
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 // Helper para formatear el precio
 function formatCurrency(amount: number | null | undefined) {
@@ -86,7 +75,6 @@ export function ListaVacantes({ vacantes }: { vacantes: vacantes[] }) {
                 </span>
               )}
 
-              {/* --- BLOQUE AÑADIDO --- */}
               {vacante.contacto && (
                 <span className="flex items-center gap-1">
                   {/* Detecta si es email o teléfono */}
@@ -98,7 +86,6 @@ export function ListaVacantes({ vacantes }: { vacantes: vacantes[] }) {
                   {vacante.contacto}
                 </span>
               )}
-              {/* --- FIN DEL BLOQUE AÑADIDO --- */}
 
             </div>
           </div>
@@ -117,7 +104,6 @@ export function ListaVacantes({ vacantes }: { vacantes: vacantes[] }) {
               </Button>
               
               <AlertDialog>
-                {/* ... (Tu <AlertDialog> se queda exactamente igual) ... */}
                 <AlertDialogTrigger asChild>
                   <Button variant="ghost" size="icon" disabled={isPending} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" />

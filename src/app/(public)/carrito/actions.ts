@@ -5,7 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import type { CartItem } from '@/store/cart-store'; 
-import { getNegocioBasicoById } from '@/lib/db';
+import { getNegocioBasicoById } from '@/lib/data/businesses';
 
 type CreatePedidoResult = {
   success: true;

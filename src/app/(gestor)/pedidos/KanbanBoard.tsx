@@ -5,7 +5,7 @@ import type { PedidoConCliente } from './actions';
 import { getPedidosAction, updatePedidoEstadoAction } from './actions';
 import { estado_pedido } from '@prisma/client';
 import useSWR from 'swr';
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, UniqueIdentifier } from '@dnd-kit/core';
 import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -58,7 +58,7 @@ function OrderCard({ pedido }: { pedido: PedidoConCliente }) {
             style={style}
             {...attributes}
             {...listeners}
-            className="mb-3 touch-none cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+            className="mb-3 touch-none cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow active:opacity-50 active:rotate-2"
         >
             <CardHeader className="p-4">
                 <CardTitle className="text-md flex justify-between items-center">
@@ -104,10 +104,10 @@ function KanbanColumn({
     return (
         <div
             ref={setNodeRef}
-            className="flex-1 min-w-[300px] md:min-w-0 flex flex-col h-full"
+            className="w-full md:w-1/3 flex-shrink-0 flex flex-col h-auto md:h-full min-h-[200px]"
         >
-            <Card className="bg-stone-50/80 h-full border-stone-200 flex flex-col">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b p-4 bg-white/50 rounded-t-xl">
+            <Card className="bg-stone-50/80 h-full border-stone-200 flex flex-col shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b p-4 bg-white/50 rounded-t-xl sticky top-0 z-10 backdrop-blur-sm">
                     <CardTitle className="text-lg font-semibold flex items-center gap-2 text-stone-700 truncate">
                         <div className="p-1.5 bg-white rounded-md border shadow-sm text-orange-600 shrink-0">
                             {columna.icon}
@@ -116,11 +116,12 @@ function KanbanColumn({
                     </CardTitle>
                     <Badge variant="secondary" className="text-sm font-bold bg-stone-200 text-stone-700 shrink-0">{pedidos.length}</Badge>
                 </CardHeader>
-                <CardContent className="p-3 flex-1 overflow-y-auto scrollbar-hide">
+                
+                <CardContent className="p-3 flex-1 md:overflow-y-auto scrollbar-hide">
                     <SortableContext items={pedidosIds}>
                         {pedidos.length === 0 ? (
-                            <div className="h-32 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg m-2">
-                                <p className="text-sm">Sin pedidos</p>
+                            <div className="h-24 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg m-2 bg-stone-100/50">
+                                <p className="text-sm font-medium">Sin pedidos</p>
                             </div>
                         ) : (
                             pedidos.map(pedido => (
@@ -176,28 +177,48 @@ export function KanbanBoard({ initialPedidos }: { initialPedidos: PedidoConClien
         return grouped;
     }, [pedidos]);
 
+    // --- NUEVA FUNCIÓN HELPER PARA ENCONTRAR LA COLUMNA DESTINO ---
+    const findContainer = (id: UniqueIdentifier | undefined): ColumnaId | null => {
+        if (!id) return null;
+
+        // 1. Si soltamos sobre una Columna (el ID coincide con un estado)
+        if (COLUMNAS.some(c => c.id === id)) {
+            return id as ColumnaId;
+        }
+
+        // 2. Si soltamos sobre una Tarjeta (el ID es un número de pedido)
+        // Buscamos a qué pedido corresponde y cuál es su estado actual
+        const pedido = pedidos.find(p => p.id_pedido === id);
+        return pedido ? pedido.estado : null;
+    };
+
     function onDragEnd(event: DragEndEvent) {
         const { active, over } = event;
         if (!over || !active.data.current?.pedido) return;
 
         const pedido = active.data.current.pedido as PedidoConCliente;
-        const columnaDestinoId = over.id as ColumnaId;
+        
+        // CORRECCIÓN: Usamos el helper para encontrar la columna real
+        const columnaDestinoId = findContainer(over.id);
 
-        if (pedido.estado !== columnaDestinoId) {
-            setPedidos(prev =>
-                prev.map(p =>
-                    p.id_pedido === pedido.id_pedido ? { ...p, estado: columnaDestinoId } : p
-                )
-            );
-            updatePedidoEstadoAction(pedido.id_pedido, columnaDestinoId);
+        if (!columnaDestinoId || pedido.estado === columnaDestinoId) {
+            return; // No hubo cambio de columna
         }
+
+        // Actualización Optimista UI
+        setPedidos(prev =>
+            prev.map(p =>
+                p.id_pedido === pedido.id_pedido ? { ...p, estado: columnaDestinoId } : p
+            )
+        );
+        // Actualización Servidor
+        updatePedidoEstadoAction(pedido.id_pedido, columnaDestinoId);
     }
 
     return (
         <div className="h-full flex flex-col">
             <DndContext sensors={sensors} onDragEnd={onDragEnd}>
-                {/* overflow-x-auto se mantiene para móviles, pero en desktop ya no se activará */}
-                <div className="flex-1 flex gap-4 h-full overflow-x-auto pb-4">
+                <div className="flex-1 flex flex-col md:flex-row gap-6 md:gap-4 h-auto md:h-full overflow-x-hidden md:overflow-x-auto pb-20 md:pb-4">
                     <SortableContext items={COLUMNAS.map(c => c.id)}>
                         {COLUMNAS.map(col => (
                             <KanbanColumn

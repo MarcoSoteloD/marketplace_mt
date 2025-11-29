@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getPedidoDetailsByClienteId } from '@/lib/db';
+import { getPedidoDetailsByClienteId } from '@/lib/data/orders';
 import { notFound, redirect } from "next/navigation";
 import { Prisma } from '@prisma/client';
 import Link from 'next/link';
@@ -68,8 +68,7 @@ export default async function PaginaPedidoExitoso({
                         <span className="font-medium">{item.productos?.nombre || "Producto"}</span>
                         <span className="text-sm text-muted-foreground ml-2">x {item.cantidad}</span>
                     </div>
-                    
-                    {/* --- AQUÍ MOSTRAMOS EL COMENTARIO --- */}
+                  
                     {item.comentarios && (
                         <p className="text-xs text-stone-500 italic mt-1">
                             Nota: {item.comentarios}

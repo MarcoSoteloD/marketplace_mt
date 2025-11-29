@@ -2,18 +2,10 @@
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getVacanteById } from '@/lib/db'; // Importamos la función de DB
+import { getVacanteById } from '@/lib/data/vacancies';
 import { notFound, redirect } from "next/navigation";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
-// Importamos el formulario que crearemos a continuación
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { FormularioEditarVacante } from './FormularioEditarVacante';
-
 
 export default async function PaginaEditarVacante({
   params 
@@ -26,10 +18,10 @@ export default async function PaginaEditarVacante({
 
   const id = Number(params.id);
   
-  // 1. Buscamos la vacante (solo si pertenece a este negocio)
+  // Buscamos la vacante (solo si pertenece a este negocio)
   const vacante = await getVacanteById(id, session.user.negocioId);
 
-  // 2. Si no existe, 404
+  // Si no existe, 404
   if (!vacante) {
     notFound();
   }
@@ -43,7 +35,7 @@ export default async function PaginaEditarVacante({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* 3. Pasamos la vacante al formulario cliente */}
+        {/* Pasamos la vacante al formulario cliente */}
         <FormularioEditarVacante vacante={vacante} />
       </CardContent>
     </Card>

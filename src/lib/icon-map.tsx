@@ -9,7 +9,7 @@ import {
   ShoppingBasket,   // Para Tiendas
   Shirt,          // Para Ropa
   Hammer          // Para Ferretería
-  // ... (importa todos los iconos de lucide-react que quieras)
+  // ... (importen todos los iconos de lucide-react que requieran)
 } from "lucide-react";
 
 /**

@@ -1,16 +1,10 @@
 // app/(admin)/gestores/page.tsx
 
 import Link from 'next/link';
-import { getGestoresConNegocio } from '@/lib/db'; // Importamos la nueva función
+import { getGestoresConNegocio } from '@/lib/data/users';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge'; // npx shadcn-ui@latest add badge
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export default async function PaginaGestores() {
 
@@ -64,10 +58,9 @@ export default async function PaginaGestores() {
                     )}
                   </div>
 
-                  {/* Agrupamos el Estado y el Botón */}
                   <div className="flex items-center gap-3 mt-2 md:mt-0 md:ml-4">
 
-                    {/* 1. El nuevo Badge de Estado */}
+                    {/* Badge de Estado */}
                     <Badge
                       variant={gestor.activo ? "secondary" : "destructive"}
                       className="w-20 justify-center h-8 md:mr-2"
@@ -75,14 +68,13 @@ export default async function PaginaGestores() {
                       {gestor.activo ? "Activo" : "Inactivo"}
                     </Badge>
 
-                    {/* 2. El Botón de Editar */}
+                    {/* El Botón de Editar */}
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/gestores/editar/${gestor.id_usuario}`}>
                         Editar
                       </Link>
                     </Button>
                   </div>
-                  {/* --- FIN DEL CAMBIO --- */}
                 </li>
               ))}
             </ul>

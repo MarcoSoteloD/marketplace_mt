@@ -4,7 +4,7 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { Prisma, rol_usuario } from '@prisma/client';
-import { createClienteUser, getUserByEmail } from '@/lib/db';
+import { createClienteUser, getUserByEmail } from '@/lib/data/users';
 
 // --- Schema de Contraseña Robusta ---
 const PasswordSchema = z.string()

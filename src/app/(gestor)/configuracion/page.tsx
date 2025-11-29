@@ -1,18 +1,14 @@
 // app/(gestor)/configuracion/page.tsx
-// (Este es un SERVER Component, no tiene 'use client')
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getNegocioById } from "@/lib/db";
+import { getNegocioById } from "@/lib/data/businesses";
 import { notFound, redirect } from "next/navigation";
-
-// 1. Importa el NUEVO componente de display
 import ConfigDisplay from "./ConfigDisplay"; 
 
-// Definimos los tipos aquí también para el parseo
+// Definimos los tipos aquí para el parseo
 type Horario = Record<string, string>;
 type Redes = Record<string, string>;
-type Galeria = string[];
 
 export default async function PaginaConfiguracion() {
   
@@ -45,7 +41,7 @@ export default async function PaginaConfiguracion() {
     ? negocio.galeria_fotos.map(String)
     : [];
 
-  // 2. Creamos el objeto de props "plano"
+  // Creamos el objeto de props "plano"
   const negocioData = {
     nombre: negocio.nombre,
     activo: negocio.activo,
@@ -59,6 +55,6 @@ export default async function PaginaConfiguracion() {
     galeria: galeria
   };
   
-  // 3. Renderizamos el componente cliente pasándole los datos
+  // Renderizamos el componente cliente pasándole los datos
   return <ConfigDisplay negocio={negocioData} />;
 }

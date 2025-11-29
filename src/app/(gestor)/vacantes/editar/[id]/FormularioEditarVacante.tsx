@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useFormState, useFormStatus } from 'react-dom';
-import { updateVacanteAction, VacanteState } from '../../actions'; // Importamos la action
+import { updateVacanteAction, VacanteState } from '../../actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,14 +93,12 @@ export function FormularioEditarVacante({
         )}
       </div>
 
-      {/* --- BLOQUE AÑADIDO --- */}
       <div className="grid gap-2">
         <Label htmlFor="contacto">Información de Contacto (Opcional)</Label>
         <Input 
           id="contacto" 
           name="contacto" 
           placeholder="Ej: 312-555-0199 o empleos@minegocio.com"
-          // Usamos defaultValue para poblar el campo
           defaultValue={vacante.contacto || ''} 
         />
         <p className="text-xs text-muted-foreground">
@@ -110,7 +108,6 @@ export function FormularioEditarVacante({
           <p className="text-sm text-red-500">{state.errors.contacto[0]}</p>
         )}
       </div>
-      {/* --- FIN DEL BLOQUE AÑADIDO --- */}
 
       <div className="grid gap-2">
         <Label htmlFor="descripcion">Descripción</Label>

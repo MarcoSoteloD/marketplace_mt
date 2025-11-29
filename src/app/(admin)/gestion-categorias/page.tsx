@@ -1,16 +1,9 @@
 // app/(admin)/gestion-categorias/page.tsx
 
 import Link from 'next/link';
-import { getCategoriasGlobales } from '@/lib/db'; // Importamos la función
+import { getCategoriasGlobales } from '@/lib/data/global-categories';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
-// Importamos el formulario que crearemos a continuación
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { FormularioCrearCategoria } from './FormularioCrearCategoria';
 import { getCategoryIcon } from '@/lib/icon-map';
 
@@ -34,9 +27,6 @@ export default async function PaginaCategorias() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Usamos un Server Component (página) que contiene 
-              un Client Component (formulario) para mejor UX.
-            */}
               <FormularioCrearCategoria />
             </CardContent>
           </Card>
@@ -56,20 +46,16 @@ export default async function PaginaCategorias() {
                 <ul className="divide-y">
                   {categorias.map((cat) => {
 
-                    // --- AÑADE ESTA LÍNEA ---
                     const Icono = getCategoryIcon(cat.nombre);
-                    // --- FIN DE LA LÍNEA ---
 
                     return (
                       <li
                         key={cat.id_categoria_g}
                         className="flex justify-between items-center p-3"
                       >
-                        <div className="flex items-center gap-3"> {/* Contenedor flex */}
+                        <div className="flex items-center gap-3">
 
-                          {/* --- AÑADE EL ICONO --- */}
                           <Icono className="h-5 w-5 text-muted-foreground" />
-                          {/* --- FIN DEL ICONO --- */}
 
                           <div>
                             <p className="font-medium">{cat.nombre}</p>

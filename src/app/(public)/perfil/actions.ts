@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { updateUsuarioPerfil } from '@/lib/db'; 
+import { updateUsuarioPerfil } from '@/lib/data/users'; 
 
 const PerfilSchema = z.object({
   nombre: z.string().min(3, "El nombre es requerido"),

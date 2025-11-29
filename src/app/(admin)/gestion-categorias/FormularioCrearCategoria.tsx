@@ -7,9 +7,9 @@ import { createCategoriaGlobal, State } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea'; // Asumo que lo tienes, si no: npx shadcn-ui@latest add textarea
+import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useRef, useState } from 'react';
-import { useToast } from "@/hooks/use-toast"; // Si no: npx shadcn-ui@latest add toast
+import { useToast } from "@/hooks/use-toast";
 
 // Componente para el botón de Submit (para mostrar estado 'pending')
 function SubmitButton() {
@@ -25,10 +25,6 @@ export function FormularioCrearCategoria() {
   const initialState: State = undefined;
   const [state, dispatch] = useFormState(createCategoriaGlobal, initialState);
   const formRef = useRef<HTMLFormElement>(null);
-
-  // --- Opcional: Feedback con Toasts ---
-  // (Si no tienes Toasts, puedes borrar este bloque y el div de abajo)
-  // Necesitas 'use-toast' y el componente <Toaster /> en tu layout.tsx
   const { toast } = useToast();
   const [lastMessage, setLastMessage] = useState<string | null>(null);
 
@@ -52,7 +48,6 @@ export function FormularioCrearCategoria() {
       }
     }
   }, [state, toast, lastMessage]);
-  // --- Fin del bloque de Toasts ---
 
   return (
     <form ref={formRef} action={dispatch} className="flex flex-col gap-4">
@@ -78,10 +73,6 @@ export function FormularioCrearCategoria() {
 
       <SubmitButton />
       
-      {/* Mensaje de error genérico (si no usas Toasts) */}
-      {/* {state?.message && state.errors && (
-         <p className="text-sm text-red-500">{state.message}</p>
-      )} */}
     </form>
   );
 }

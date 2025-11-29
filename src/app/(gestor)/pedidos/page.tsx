@@ -2,7 +2,7 @@
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getPedidosByNegocioId } from '@/lib/db';
+import { getPedidosByNegocioId } from '@/lib/data/orders';
 import { redirect } from "next/navigation";
 import { estado_pedido } from '@prisma/client';
 import { KanbanBoard } from './KanbanBoard';

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { Prisma, tipo_promocion } from '@prisma/client'; 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { createProducto, updateProducto, deleteProducto, reactivateProducto } from '@/lib/db'; 
+import { createProducto, updateProducto, deleteProducto, reactivateProducto } from '@/lib/data/products'; 
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; 
@@ -68,7 +68,6 @@ export async function createProductoAction(prevState: ProductoState, formData: F
 
   const newFotoFile = formData.get('url_foto') as File;
   
-  // Parseamos los datos incluyendo los nuevos campos
   const parsedData = {
     nombre: formData.get('nombre') || undefined,
     descripcion: formData.get('descripcion') || undefined,

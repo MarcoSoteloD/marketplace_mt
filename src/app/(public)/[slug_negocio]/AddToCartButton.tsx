@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useCartStore } from "@/store/cart-store"; // Importamos nuestro store
+import { useCartStore } from "@/store/cart-store";
 import type { productos } from "@prisma/client";
 import { Plus } from "lucide-react";
 
@@ -15,25 +15,25 @@ interface AddToCartButtonProps {
 export function AddToCartButton({ producto, negocioId }: AddToCartButtonProps) {
   const { toast } = useToast();
   
-  // 1. Obtenemos la acción 'addItem' de nuestro store
+  // Obtenemos la acción 'addItem' de nuestro store
   const addItem = useCartStore((state) => state.addItem);
 
   const handleAddToCart = () => {
-    // 2. Llamamos a la acción con el producto y el ID del negocio
+    // Llamamos a la acción con el producto y el ID del negocio
     addItem(producto, negocioId);
 
-    // 3. Mostramos una notificación de éxito
+    // Mostramos una notificación de éxito
     toast({
       title: "¡Producto añadido!",
       description: `Se añadió "${producto.nombre}" a tu carrito.`,
-      variant: "success", // (Tu toast verde)
+      variant: "success",
     });
   };
 
   return (
     <Button 
       size="icon" 
-      className="absolute bg-orange-600 hover:bg-orange-500 bottom-2 right-2 h-10 w-10 rounded-full" // Posición y tamaño
+      className="absolute bg-orange-600 hover:bg-orange-500 bottom-2 right-2 h-10 w-10 rounded-full"
       onClick={handleAddToCart}
       aria-label="Añadir al carrito"
     >

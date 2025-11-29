@@ -7,14 +7,8 @@ import { createGestorYNegocio, CreateGestorState } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent, 
-  CardDescription 
-} from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast'; // Usando tu ruta de hooks
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 
 // Botón de Submit con estado de carga
@@ -41,11 +35,9 @@ export default function PaginaCrearGestor() {
         description: state.message,
       });
     }
-    // (No necesitamos un toast de éxito porque la action redirige)
   }, [state, toast]);
 
   return (
-    // Un solo <form> que llama a la Server Action
     <form action={dispatch} className="flex flex-col gap-6 max-w-3xl mx-auto">
       
       <h1 className="text-2xl font-semibold">Crear Nuevo Gestor y Negocio</h1>

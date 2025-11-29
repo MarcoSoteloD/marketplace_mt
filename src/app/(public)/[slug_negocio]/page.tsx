@@ -1,4 +1,4 @@
-import { getNegocioPublicoBySlug } from "@/lib/db";
+import { getNegocioPublicoBySlug } from "@/lib/data/businesses";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -158,7 +158,7 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
                 </Card>
             </aside>
 
-            {/* Columna Derecha (PRODUCTOS) */}
+            {/* Columna Derecha (GALERÍA + PRODUCTOS) */}
             <main className="md:col-span-2 lg:col-span-3 space-y-10">
                 <section className="space-y-6">
                     <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Conócenos</h2>

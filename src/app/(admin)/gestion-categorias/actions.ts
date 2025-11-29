@@ -5,23 +5,14 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
-
-// 1. Importa las NUEVAS funciones de db.ts
-import { 
-  createCategoriaInDb, 
-  updateCategoriaInDb, 
-  deleteCategoriaInDb 
-} from '@/lib/db';
+import { createCategoriaInDb, updateCategoriaInDb, deleteCategoriaInDb } from '@/lib/data/global-categories';
 
 // --- Schema y Estado ---
-// El schema de Zod no cambia
 const CategoriaSchema = z.object({
   nombre: z.string().min(3, { message: 'El nombre debe tener al menos 3 caracteres.' }),
   descripcion: z.string().optional(),
 });
 
-// El tipo 'State' se queda aquí. 
-// Borré el 'import' confuso que puse antes.
 export type State = {
   errors?: {
     nombre?: string[];
@@ -32,7 +23,7 @@ export type State = {
 } | undefined;
 
 
-// --- 1. ACCIÓN DE CREAR (Refactorizada) ---
+// --- ACCIÓN DE CREAR ---
 export async function createCategoriaGlobal(prevState: State, formData: FormData) {
   const validatedFields = CategoriaSchema.safeParse({
     nombre: formData.get('nombre'),
@@ -65,7 +56,7 @@ export async function createCategoriaGlobal(prevState: State, formData: FormData
   }
 }
 
-// --- 2. ACCIÓN DE ACTUALIZAR (Refactorizada) ---
+// --- ACCIÓN DE ACTUALIZAR ---
 export async function updateCategoriaGlobal(id: number, prevState: State, formData: FormData) {
   const validatedFields = CategoriaSchema.safeParse({
     nombre: formData.get('nombre'),
@@ -98,7 +89,7 @@ export async function updateCategoriaGlobal(id: number, prevState: State, formDa
   }
 }
 
-// --- 3. ACCIÓN DE ELIMINAR (Refactorizada) ---
+// --- ACCIÓN DE ELIMINAR ---
 export async function deleteCategoriaGlobal(id: number) {
   try {
     // Llama a la función de db.ts
@@ -109,7 +100,6 @@ export async function deleteCategoriaGlobal(id: number) {
   } catch (error) {
     // Si algo sale mal (ej. la categoría está en uso), 
     // lo ideal sería redirigir con un mensaje de error.
-    // Por ahora, solo logueamos y redirigimos.
     console.error("Error al eliminar categoría:", (error as Error).message);
   }
   

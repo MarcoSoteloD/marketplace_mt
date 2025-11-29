@@ -15,6 +15,13 @@ import { CldImage } from 'next-cloudinary';
 import { useRouter } from 'next/navigation';
 import { TicketPercent } from 'lucide-react';
 
+// --- DEFINICIÓN DE TIPO HÍBRIDO ---
+// Creamos un tipo que coincida con lo que el Server Component envía al Cliente (precios como number)
+type ProductoFrontend = Omit<productos, 'precio' | 'precio_promo'> & {
+  precio: number;
+  precio_promo: number | null;
+};
+
 function SubmitButton({ text }: { text: string }) {
   const { pending } = useFormStatus();
   return <Button type="submit" aria-disabled={pending} disabled={pending}>{pending ? 'Guardando...' : text}</Button>;
@@ -22,7 +29,7 @@ function SubmitButton({ text }: { text: string }) {
 
 interface ProductoFormProps {
   categorias: categorias_producto[];
-  producto?: productos | null;
+  producto?: ProductoFrontend | null; 
   action: (prevState: ProductoState, formData: FormData) => Promise<ProductoState>;
   submitText: string;
 }
@@ -34,13 +41,9 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
   const { toast } = useToast();
   const router = useRouter();
 
-  // Usamos useRef
   const formRef = useRef<HTMLFormElement>(null);
-
-  // Estado EXCLUSIVO para limpiar el Select de Shadcn
   const [selectResetKey, setSelectResetKey] = useState(0);
 
-  // --- Controla si se muestra la sección de promos ---
   const [isPromoActive, setIsPromoActive] = useState(producto?.promo_activa || false);
 
   useEffect(() => {
@@ -53,19 +56,16 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
 
       if (state.success) {
         if (!producto) {
-          // --- CASO CREAR: Limpiamos el formulario ---
           formRef.current?.reset(); 
           setSelectResetKey(prev => prev + 1); 
           setIsPromoActive(false);
         } else {
-          // --- CASO EDITAR: Redirigimos ---
-          // Damos un pequeño delay para que el usuario alcance a ver el mensaje de éxito
           const timer = setTimeout(() => {
-            router.push('/productos'); // Regresa a la lista
-            router.refresh(); // Asegura que la lista muestre los datos nuevos
-          }, 500); // Medio segundo es suficiente para ver el check verde
+            router.push('/productos'); 
+            router.refresh(); 
+          }, 500); 
 
-          return () => clearTimeout(timer); // Limpieza del timer si el componente se desmonta
+          return () => clearTimeout(timer); 
         }
       }
     }
@@ -105,7 +105,6 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
         {/* Campo Categoría */}
         <div className="grid gap-2 w-full max-w-full"> 
           <Label htmlFor="id_categoria">Categoría</Label>
-          
           <Select 
             key={selectResetKey} 
             name="id_categoria" 
@@ -153,11 +152,11 @@ export function ProductoForm({ categorias, producto, action, submitText }: Produ
           </Label>
         </div>
 
-        {/* Renderizado Condicional de los campos de promo */}
+        {/* Renderizado Condicional */}
         {isPromoActive && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2 duration-300">
             
-            {/* Tipo de Promo */}
+            {/* Tipo de Promo (Con protección de desbordamiento) */}
             <div className="grid gap-2 w-full max-w-full">
               <Label htmlFor="tipo_promo">Tipo de Promoción</Label>
               <Select name="tipo_promo" defaultValue={producto?.tipo_promo || "DESCUENTO_SIMPLE"}>

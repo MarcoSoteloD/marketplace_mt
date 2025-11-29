@@ -2,7 +2,8 @@
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getNegocioById, getCategoriasGlobales } from "@/lib/db"; 
+import { getNegocioById } from "@/lib/data/businesses";
+import { getCategoriasGlobales } from "@/lib/data/global-categories"; 
 import { notFound, redirect } from "next/navigation";
 import { ConfigForm } from "./ConfigForm";
 
@@ -16,7 +17,7 @@ export default async function PaginaEditarConfiguracion() {
 
   const todasLasCategorias = await getCategoriasGlobales();
 
-  // + PROCESAMOS LAS CATEGORÍAS ACTUALES DEL NEGOCIO
+  // PROCESAMOS LAS CATEGORÍAS ACTUALES DEL NEGOCIO
   const plainCategoriasActualesIds = negocio.negocio_categoria.map(
     (nc) => nc.id_categoria_g
   );

@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getPedidosByClienteId, getUsuarioById } from '@/lib/db';
+import { getUsuarioById } from '@/lib/data/users';
+import { getPedidosByClienteId } from '@/lib/data/orders';
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -19,7 +20,18 @@ export default async function PerfilPage() {
 
   const usuarioFresco = await getUsuarioById(Number(session.user.id));
 
-  const pedidos = await getPedidosByClienteId(Number(session.user.id));
+  // Obtenemos los datos crudos (con Decimales)
+  const pedidosRaw = await getPedidosByClienteId(Number(session.user.id));
+  
+  // Transformamos los datos para eliminar los Decimales
+  const pedidos = pedidosRaw.map(pedido => ({
+    ...pedido,
+    total: Number(pedido.total), // Convertimos el total del pedido
+    detalle_pedido: pedido.detalle_pedido.map(detalle => ({
+      ...detalle,
+      precio_unitario: Number(detalle.precio_unitario) // Convertimos el precio unitario de cada item
+    }))
+  }));
   
   const displayName = usuarioFresco?.nombre || session.user.name || "Usuario";
   

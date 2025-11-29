@@ -2,16 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LucideIcon, User } from "lucide-react";
+import { LucideIcon } from "lucide-react";
+import { LayoutDashboard, LayoutGrid, Users } from "lucide-react";
 
-// 1. Importa los iconos que vas a usar
-import {
-  LayoutDashboard,
-  LayoutGrid,
-  Users,
-} from "lucide-react";
-
-// 2. Crea el mapa de iconos
+// Crea el mapa de iconos
 const iconMap: Record<string, LucideIcon> = {
   LayoutDashboard: LayoutDashboard,
   LayoutGrid: LayoutGrid,
@@ -23,7 +17,6 @@ function cn(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-// Definimos el "tipo" de una ruta
 type Route = {
   label: string;
   href: string;
@@ -40,30 +33,25 @@ export function SidebarNav({ routes }: SidebarNavProps) {
   return (
     <nav className="grid items-start text-sm font-medium">
       
-      {/* --- INICIO DE LA CORRECCIÓN --- */}
       {routes.map((route) => {
         
-        // 1. Ahora esto es válido porque estamos dentro de llaves {}
         const Icon = iconMap[route.iconName];
 
-        // 2. Usamos un 'return' explícito
         return (
           <Link
             key={route.href}
             href={route.href}
             className={cn(
-              "flex items-center gap-3 px-6 py-2 h-10 text-gray-200 transition-all hover:text-white", // <-- CÓDIGO NUEVO
+              "flex items-center gap-3 px-6 py-2 h-10 text-gray-200 transition-all hover:text-white",
               pathname === route.href ? "text-white bg-white/10" : ""
             )}
           >
-            {/* 3. Usamos la variable 'Icon' (con mayúscula) */}
             {Icon && <Icon className="h-4 w-4" />}
             
             {route.label}
           </Link>
         );
       })}
-      {/* --- FIN DE LA CORRECCIÓN --- */}
 
     </nav>
   );
