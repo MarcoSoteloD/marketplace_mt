@@ -1,5 +1,3 @@
-// app/(public)/page.tsx
-
 import { getNegociosActivos } from "@/lib/data/businesses";
 import { getCategoriasGlobales } from "@/lib/data/global-categories";
 import { NegocioCard } from "@/components/NegocioCard";
@@ -7,12 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { CategoryCarousel } from '../../components/CategoryCarousel';
+import { type negocios, type categorias_globales } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  let negocios: any[] = [];
-  let categorias: any[] = [];
+  let negocios: negocios[] = [];
+  let categorias: categorias_globales[] = [];
 
   try {
     [negocios, categorias] = await Promise.all([

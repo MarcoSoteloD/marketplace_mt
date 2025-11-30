@@ -10,6 +10,12 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription }
 import { useToast } from '@/hooks/use-toast';
 import { Save } from 'lucide-react';
 
+interface AdminUser {
+  nombre: string | null;
+  email: string;
+  telefono: string | null;
+}
+
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -20,8 +26,8 @@ function SubmitButton() {
   );
 }
 
-// Recibimos 'user' fresco desde el Server Component
-export default function AdminProfileForm({ user }: { user: any }) { 
+// Usamos la interfaz en las props
+export default function AdminProfileForm({ user }: { user: AdminUser }) { 
   const { toast } = useToast();
   
   const initialState: PerfilState = undefined;
@@ -55,7 +61,7 @@ export default function AdminProfileForm({ user }: { user: any }) {
             <Label htmlFor="nombre">Nombre Completo</Label>
             <Input 
               id="nombre" 
-              name="nombre"
+              name="nombre" 
               defaultValue={user?.nombre || ''} 
               required 
             />

@@ -143,7 +143,61 @@ export const getUsuarioById = async (id: number) => {
     return await prisma.usuarios.findUnique({
       where: { id_usuario: id },
     });
-  } catch (error) {
+  } catch {
     return null;
+  }
+};
+
+/**
+ * Guarda el token de recuperación y su fecha de expiración.
+ */
+export const setUserResetToken = async (email: string, token: string, expires: Date) => {
+  try {
+    return await prisma.usuarios.update({
+      where: { email },
+      data: {
+        token_recuperacion: token,
+        token_expiracion: expires
+      }
+    });
+  } catch (error) {
+    console.error("Error setting reset token:", error);
+    return null;
+  }
+};
+
+/**
+ * Busca un usuario por su token de recuperación, 
+ * SIEMPRE Y CUANDO el token no haya expirado.
+ */
+export const getUserByResetToken = async (token: string) => {
+  try {
+    return await prisma.usuarios.findFirst({
+      where: {
+        token_recuperacion: token,
+        token_expiracion: { gt: new Date() } // 'gt' = greater than (mayor que ahora)
+      }
+    });
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Actualiza la contraseña y elimina el token usado.
+ */
+export const updateUserPassword = async (id: number, passwordHash: string) => {
+  try {
+    return await prisma.usuarios.update({
+      where: { id_usuario: id },
+      data: {
+        password: passwordHash,
+        token_recuperacion: null, // Consumimos el token (lo borramos)
+        token_expiracion: null
+      }
+    });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    throw new Error("No se pudo actualizar la contraseña.");
   }
 };

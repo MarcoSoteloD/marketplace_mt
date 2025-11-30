@@ -1,9 +1,10 @@
 "use server";
 
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from '@/lib/prisma'; 
 import type { CartItem } from '@/store/cart-store'; 
+import { Prisma } from '@prisma/client';
 
 /**
  * Guarda el estado actual del carrito en la BD.
@@ -15,7 +16,7 @@ export async function saveCartToDB(items: CartItem[]) {
   try {
     await prisma.usuarios.update({
       where: { id_usuario: Number(session.user.id) },
-      data: { carrito_persistente: items as any } 
+      data: { carrito_persistente: items as unknown as Prisma.InputJsonValue } 
     });
   } catch (error) {
     console.error("Error guardando carrito:", error);

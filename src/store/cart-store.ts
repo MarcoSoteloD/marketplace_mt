@@ -28,7 +28,7 @@ export const useCartStore = create<CartState>()(
         set({ items: newItems });
       },
 
-      addItem: (producto, negocioIdDelProducto) => {
+      addItem: (producto) => {
         const { items } = get(); 
         const existingItem = items.find(item => item.id_producto === producto.id_producto);
 

@@ -62,7 +62,7 @@ export default async function CategoriaDetallePage({
           </h2>
           
           <p className="text-muted-foreground max-w-xs mx-auto">
-            No encontramos negocios activos en la categoría <span className="font-medium text-stone-600">"{nombreCategoriaTitulo}"</span> por ahora.
+            No encontramos negocios activos en la categoría <span className="font-medium text-stone-600">&quot;{nombreCategoriaTitulo}&quot;</span> por ahora.
           </p>
         </div>
       )}

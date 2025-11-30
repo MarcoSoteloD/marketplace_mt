@@ -3,16 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { 
-  User, 
-  Loader2, 
-  ShoppingCart, 
-  Menu, 
-  BookOpen, 
-  Store, 
-  LayoutGrid, 
-  Briefcase 
-} from "lucide-react"; // Agregamos los iconos faltantes
+import { User, Loader2, ShoppingCart, Menu, BookOpen, Store, LayoutGrid, Briefcase } from "lucide-react"; 
 import { useSession } from "next-auth/react";
 import { useCartStore } from "@/store/cart-store";
 import { useEffect, useState } from "react";
@@ -22,7 +13,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 export function PublicNavbar() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
+  
   const items = useCartStore((state) => state.items);
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
@@ -34,7 +26,6 @@ export function PublicNavbar() {
   }, []);
 
   // Clases base unificadas para los links de escritorio
-  // Ahora todos usan text-stone-700 y hover:text-orange-600
   const navLinkClass = cn(
     navigationMenuTriggerStyle(), 
     "bg-transparent text-stone-700 hover:bg-orange-50 focus:bg-orange-50 hover:text-orange-600 text-base rounded-full gap-2"

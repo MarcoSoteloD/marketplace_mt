@@ -149,7 +149,7 @@ export function ListaCategorias({ categorias: initialCategorias }: { categorias:
                         <AlertDialogHeader>
                         <AlertDialogTitle>¿Eliminar categoría?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Se eliminará <b>"{cat.nombre}"</b>. Los productos pasarán a no tener categoría, pero no se borrarán.
+                            Se eliminará <b>&quot;{cat.nombre}&quot;</b>. Los productos pasarán a no tener categoría, pero no se borrarán.
                         </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

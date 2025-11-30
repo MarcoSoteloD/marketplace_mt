@@ -5,6 +5,10 @@ import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { Prisma, rol_usuario } from '@prisma/client';
 import { createClienteUser, getUserByEmail } from '@/lib/data/users';
+import React from 'react';
+import { resend, EMAIL_REMITENTE } from '@/lib/email';
+import WelcomeEmail from '@/components/emails/WelcomeEmail';
+import { render } from '@react-email/render'; 
 
 // --- Schema de Contraseña Robusta ---
 const PasswordSchema = z.string()
@@ -41,7 +45,6 @@ export type RegistroState = {
 // --- Server Action: CREAR CLIENTE ---
 export async function createClienteAction(prevState: RegistroState, formData: FormData) {
   
-  // Validar los datos del formulario con Zod
   const validatedFields = RegistroSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
@@ -55,7 +58,6 @@ export async function createClienteAction(prevState: RegistroState, formData: Fo
   const { nombre, email, password } = validatedFields.data;
 
   try {
-    // Verificar si el email ya existe
     const existingUser = await getUserByEmail(email);
     
     if (existingUser) {
@@ -66,10 +68,8 @@ export async function createClienteAction(prevState: RegistroState, formData: Fo
       };
     }
 
-    // Hashear la contraseña (12 rondas es el estándar actual seguro)
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Preparar datos para Prisma
     const data: Prisma.usuariosCreateInput = {
       nombre,
       email,
@@ -78,7 +78,31 @@ export async function createClienteAction(prevState: RegistroState, formData: Fo
       activo: true,
     };
 
+    // CREAR USUARIO EN DB
     await createClienteUser(data);
+
+    // ENVIAR CORREO DE BIENVENIDA
+    try {
+        const emailHtml = await render(
+          React.createElement(WelcomeEmail, { 
+            nombreUsuario: nombre 
+          })
+        );
+
+        console.log("Intentando enviar correo a:", email);
+
+        await resend.emails.send({
+            from: EMAIL_REMITENTE,
+            to: email,
+            subject: "¡Bienvenido a Manos Tonilenses! 👋",
+            html: emailHtml, 
+        });
+        
+        console.log("Correo enviado con éxito");
+
+    } catch (emailError) {
+        console.error("Error enviando correo de bienvenida:", emailError);
+    }
 
   } catch (error) {
     return { 
@@ -88,6 +112,5 @@ export async function createClienteAction(prevState: RegistroState, formData: Fo
     };
   }
 
-  // ¡Éxito! Redirigir al login
   redirect('/login?registro=exitoso');
 }

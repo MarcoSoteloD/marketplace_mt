@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getPedidoDetailsByClienteId } from '@/lib/data/orders';
 import { notFound, redirect } from "next/navigation";
 import { Prisma } from '@prisma/client';
@@ -102,7 +102,7 @@ export default async function PaginaPedidoExitoso({
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              Tu pedido estará listo pronto. El negocio te notificará (o puedes revisar el estado en "Mi Perfil").
+              Tu pedido estará listo pronto. El negocio te notificará (o puedes revisar el estado en &quot;Mi Perfil&quot;).
             </p>
           </div>
 

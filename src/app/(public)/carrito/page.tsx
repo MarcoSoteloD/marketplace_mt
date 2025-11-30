@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useTransition } from 'react';
+import { useEffect, useMemo, useTransition, Suspense } from 'react';
 import { useCartStore, CartItem } from '@/store/cart-store';
 import { getNegociosDelCarritoAction, createPedidoAction } from './actions';
 import useSWR from 'swr';
@@ -17,7 +17,8 @@ function formatCurrency(amount: number) {
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
 }
 
-export default function CarritoPage() {
+// COMPONENTE INTERNO
+function CarritoContent() {
     const router = useRouter();
     const searchParams = useSearchParams(); 
     const { toast } = useToast();
@@ -233,5 +234,18 @@ export default function CarritoPage() {
                 })}
             </div>
         </div>
+    );
+}
+
+// COMPONENTE DEFAULT QUE ENVUELVE EN SUSPENSE
+export default function CarritoPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-[60vh] w-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+            </div>
+        }>
+            <CarritoContent />
+        </Suspense>
     );
 }

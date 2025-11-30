@@ -113,7 +113,7 @@ export function ListaVacantes({ vacantes }: { vacantes: vacantes[] }) {
                   <AlertDialogHeader>
                     <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Se eliminará la vacante <span className="font-bold">"{vacante.titulo}"</span>.
+                      Se eliminará la vacante <span className="font-bold">&quot;{vacante.titulo}&quot;</span>.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

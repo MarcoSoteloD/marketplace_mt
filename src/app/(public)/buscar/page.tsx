@@ -7,6 +7,7 @@ import { Building, Package, SearchX } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { negocios } from "@prisma/client"; 
 
 interface SearchPageProps {
   searchParams: {
@@ -45,7 +46,6 @@ export default async function PaginaBuscar({ searchParams }: SearchPageProps) {
             : "Encuentra negocios y productos en un solo lugar."}
         </p>
 
-        {/* Repetimos la barra aquí para conveniencia */}
         <form
           className="mt-6 flex w-full max-w-lg items-center space-x-2 "
           action="/buscar"
@@ -54,7 +54,7 @@ export default async function PaginaBuscar({ searchParams }: SearchPageProps) {
           <Input
             type="search"
             name="q"
-            defaultValue={query} // Ponemos la búsqueda actual
+            defaultValue={query}
             placeholder="¿Qué estás buscando? (Ej. tacos, peluquería...)"
             className="h-12 text-base text-stone-700 flex-1 rounded-full"
           />
@@ -103,9 +103,7 @@ export default async function PaginaBuscar({ searchParams }: SearchPageProps) {
             {negocios.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {negocios.map((negocio) => (
-                  // Dejamos 'as any' aquí porque NegocioCard espera el modelo COMPLETO,
-                  // pero nuestra consulta 'select' solo trae los campos que usa.
-                  <NegocioCard key={negocio.id_negocio} negocio={negocio as any} /> 
+                  <NegocioCard key={negocio.id_negocio} negocio={negocio as unknown as negocios} /> 
                 ))}
               </div>
             ) : (

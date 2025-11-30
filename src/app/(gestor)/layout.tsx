@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { GestorSidebar } from "./_components/Sidebar"; 
 import { GestorMobileSidebar } from "./_components/MobileSidebar";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function GestorLayout({

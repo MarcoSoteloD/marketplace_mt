@@ -1,5 +1,3 @@
-// src/app/(public)/perfil/PedidosList.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -7,32 +5,56 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PedidoDetalleModal } from "@/components/PedidoDetalleModal";
-import { Package, CheckCircle2, ShoppingBag } from "lucide-react";
+import { Package, CheckCircle2 } from "lucide-react";
+
+// Definimos la interfaz para el tipo de datos que recibimos
+interface PedidoFrontend {
+  id_pedido: number;
+  total: number;
+  estado: string;
+  fecha_hora: Date | null;
+  negocios: {
+    nombre: string;
+    url_logo: string | null;
+    telefono: string | null;
+  } | null;
+  detalle_pedido: {
+    id_producto: number;
+    cantidad: number;
+    precio_unitario: number;
+    comentarios: string | null;
+    productos: {
+      nombre: string;
+      url_foto: string | null;
+    };
+  }[];
+}
 
 // Helpers de formato
-function formatCurrency(amount: any) {
-  if (!amount) return "$0.00";
-  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(amount));
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
 }
-function formatDate(date: any) {
+
+function formatDate(date: Date | string | null) {
   if (!date) return "Fecha desconocida";
-  return new Intl.DateTimeFormat('es-MX', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(date));
+  const d = new Date(date);
+  return new Intl.DateTimeFormat('es-MX', { dateStyle: 'short', timeStyle: 'short' }).format(d);
 }
+
 function formatEstado(estado: string) {
   return estado.replace(/_/g, ' ');
 }
 
 interface PedidosListProps {
-  pedidos: any[];
+  pedidos: PedidoFrontend[];
 }
 
 export function PedidosList({ pedidos }: PedidosListProps) {
   
-  // Estado para controlar el modal
-  const [selectedPedido, setSelectedPedido] = useState<any | null>(null);
+  const [selectedPedido, setSelectedPedido] = useState<PedidoFrontend | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleVerDetalle = (pedido: any) => {
+  const handleVerDetalle = (pedido: PedidoFrontend) => {
     setSelectedPedido(pedido);
     setIsModalOpen(true);
   };
@@ -49,13 +71,11 @@ export function PedidosList({ pedidos }: PedidosListProps) {
          {pedidos.length > 0 ? (
             <div className="grid gap-4">
               {pedidos.map((pedido) => (
-                // Convertimos cada item de la lista en una tarjeta individual flotante
                 <Card key={pedido.id_pedido} className="group overflow-hidden rounded-2xl border-stone-200 hover:border-orange-200 hover:shadow-md transition-all duration-200">
                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4">
                       
                       {/* Info Izquierda */}
                       <div className="flex items-start gap-4">
-                         {/* Icono Estado */}
                          <div className={`p-3 rounded-full ${pedido.estado === 'Entregado' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
                              {pedido.estado === 'Entregado' ? <CheckCircle2 className="w-5 h-5"/> : <Package className="w-5 h-5"/>}
                          </div>
@@ -68,6 +88,9 @@ export function PedidosList({ pedidos }: PedidosListProps) {
                                 <span>•</span>
                                 <span>#{pedido.id_pedido}</span>
                             </div>
+                            <Badge variant="secondary" className="mt-1 rounded-full text-stone-700 bg-stone-100">
+                              {formatEstado(pedido.estado)}
+                            </Badge>
                          </div>
                       </div>
 
@@ -79,32 +102,28 @@ export function PedidosList({ pedidos }: PedidosListProps) {
                           </div>
                           
                           <Button 
-                              variant="secondary" 
-                              className="rounded-full px-6 bg-stone-100 hover:bg-stone-200 text-stone-700"
+                              variant="link" 
+                              size="sm" 
+                              className="p-0 h-auto text-primary"
                               onClick={() => handleVerDetalle(pedido)}
                           >
-                            Ver Detalles
+                            Ver detalle
                           </Button>
                       </div>
                    </div>
                    
-                   {/* Barra de estado inferior colorida */}
                    <div className={`h-1.5 w-full ${pedido.estado === 'Entregado' ? 'bg-green-500' : 'bg-orange-500'}`} />
                 </Card>
               ))}
             </div>
           ) : (
-            // Estado Vacío
-            <Card className="flex flex-col items-center justify-center py-16 text-center border-dashed border-2 bg-stone-50/50 rounded-3xl">
-                <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-                    <ShoppingBag className="h-10 w-10 text-stone-300" />
-                </div>
-                <h3 className="text-lg font-semibold text-stone-600">No tienes pedidos aún</h3>
-                <p className="text-muted-foreground max-w-xs mt-2">¡Explora los negocios locales y haz tu primer pedido!</p>
-            </Card>
+            <div className="text-center py-8">
+                <p className="text-muted-foreground mb-2">Aún no has realizado ningún pedido.</p>
+            </div>
           )}
       </div>
 
+      {/* El Modal vive aquí */}
       <PedidoDetalleModal 
         pedido={selectedPedido} 
         isOpen={isModalOpen} 

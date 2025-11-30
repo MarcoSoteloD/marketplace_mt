@@ -9,9 +9,22 @@ import { Minus, Plus, ShoppingCart, ImageIcon } from "lucide-react";
 import { useCartStore } from "@/store/cart-store"; 
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { type productos } from '@prisma/client';
+
+// Definimos la interfaz exacta que esperamos del cliente
+interface ProductFrontend {
+  id_producto: number;
+  nombre: string;
+  descripcion: string | null;
+  precio: number;
+  precio_promo: number | null;
+  url_foto: string | null;
+  promo_activa: boolean | null;
+  tipo_promo: string | null;
+}
 
 interface ProductoModalProps {
-  producto: any; 
+  producto: ProductFrontend | null; 
   negocioId: number;
   isOpen: boolean;
   onClose: (open: boolean) => void;
@@ -37,8 +50,12 @@ export function ProductDetailModal({ producto, negocioId, isOpen, onClose }: Pro
   const handleDecrement = () => setCantidad(prev => (prev > 1 ? prev - 1 : 1));
 
   const handleAddToCart = () => {
+    // Verificación de seguridad por si producto es null
+    if (!producto) return;
+
+    // Añadimos el producto N veces según la cantidad seleccionada
     for (let i = 0; i < cantidad; i++) {
-      addItem(producto, negocioId);
+      addItem(producto as unknown as productos, negocioId);
     }
 
     toast({

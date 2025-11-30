@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { User, Globe } from "lucide-react";
 import { SidebarNav } from "./SidebarNav";
 import { LogoutButton } from "../../../components/layout/LogoutButton";

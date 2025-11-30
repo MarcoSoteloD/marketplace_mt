@@ -1,7 +1,7 @@
 // app/(gestor)/categorias-productos/page.tsx
 
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getCategoriasByNegocioId } from '@/lib/data/products';
 import { redirect } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';

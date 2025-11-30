@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { CldImage } from 'next-cloudinary';
 import { Edit, Trash2, Image as ImageIcon, RefreshCcw } from 'lucide-react';
-import { Separator } from "@/components/ui/separator";
 import { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { deleteProductoAction, reactivateProductoAction } from './actions';
@@ -200,7 +199,7 @@ export function ListaProductosAgrupados({ groupedProducts, totalProducts }: List
                               <AlertDialogHeader>
                                 <AlertDialogTitle>¿Desactivar producto?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  El producto <b>"{producto.nombre}"</b> dejará de estar visible para los clientes, pero permanecerá en tu historial.
+                                  El producto <b>&quot;{producto.nombre}&quot;</b> dejará de estar visible para los clientes, pero permanecerá en tu historial.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

@@ -7,6 +7,10 @@ import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { createGestorYNegocioInDb, toggleGestorStatusInDb, deleteGestorYNegocioInDb } from '@/lib/data/businesses';
 import { updateGestorInfoInDb, getUserByEmail } from '@/lib/data/users';
+import { resend, EMAIL_REMITENTE } from '@/lib/email';
+import NewGestorEmail from '@/components/emails/NewGestorEmail';
+import { render } from '@react-email/render'; 
+import React from 'react';
 
 // ESQUEMA COMBINADO (GESTOR + NEGOCIO)
 const GestorYNegocioSchema = z.object({
@@ -82,7 +86,7 @@ export async function createGestorYNegocio(prevState: CreateGestorState, formDat
     // Hashear la contraseña
     const passwordHash = await bcrypt.hash(data.gestorPassword, 12);
 
-    // Llamar a la función transaccional
+    // Llamar a la función transaccional de la BD
     await createGestorYNegocioInDb({
       gestor: {
         email: data.gestorEmail,
@@ -97,6 +101,30 @@ export async function createGestorYNegocio(prevState: CreateGestorState, formDat
       }
     });
 
+    // ENVIAR CORREO CON CREDENCIALES AL NUEVO GESTOR
+    try {
+        const emailHtml = await render(
+            React.createElement(NewGestorEmail, {
+                nombreGestor: data.gestorNombre,
+                nombreNegocio: data.negocioNombre,
+                email: data.gestorEmail,
+                passwordRaw: data.gestorPassword
+            })
+        );
+
+        console.log("Enviando credenciales a:", data.gestorEmail);
+
+        await resend.emails.send({
+            from: EMAIL_REMITENTE,
+            to: data.gestorEmail,
+            subject: "Bienvenido a Manos Tonilenses - Tus Credenciales 🔐",
+            html: emailHtml,
+        });
+
+    } catch (emailError) {
+        console.error("Error enviando correo al gestor:", emailError);
+    }
+
   } catch (error) {
     // Manejo de errores de base de datos (slug duplicado)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') { 
@@ -107,7 +135,7 @@ export async function createGestorYNegocio(prevState: CreateGestorState, formDat
       };
     }
     
-    // Error genérico (con mensaje seguro)
+    // Error genérico
     const errorMsg = (error as Error).message;
     return {
       errors: { _form: ['Ocurrió un error al crear el gestor y su negocio.'] },
@@ -116,7 +144,7 @@ export async function createGestorYNegocio(prevState: CreateGestorState, formDat
     };
   }
 
-  // Éxito: Refrescar la lista y redirigir
+  // Éxito
   revalidatePath('/(admin)/gestores');
   redirect('/gestores');
 }
@@ -125,7 +153,6 @@ export async function createGestorYNegocio(prevState: CreateGestorState, formDat
 // ACCIONES DE EDICIÓN Y ESTADO
 // ------------------------------------------------------------
 
-// Esquema para actualizar solo datos del gestor
 const UpdateGestorSchema = z.object({
   gestorNombre: z.string().min(3, "El nombre es requerido"),
   gestorEmail: z.string().email("Email inválido"),
@@ -149,11 +176,7 @@ export async function updateGestorInfoAction(
   formData: FormData
 ) {
   
-  const validatedFields = UpdateGestorSchema.safeParse({
-    gestorNombre: formData.get('gestorNombre'),
-    gestorEmail: formData.get('gestorEmail'),
-    gestorTelefono: formData.get('gestorTelefono'),
-  });
+  const validatedFields = UpdateGestorSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
     return {
@@ -172,7 +195,6 @@ export async function updateGestorInfoAction(
       telefono: data.gestorTelefono || null,
     };
     
-    // Usamos la función importada de @/lib/data/users
     await updateGestorInfoInDb(gestorId, gestorData);
 
     revalidatePath('/(admin)/gestores');
@@ -195,7 +217,6 @@ export async function toggleGestorStatusAction(
   newStatus: boolean
 ) {
   try {
-    // Usamos la función importada de @/lib/data/businesses
     await toggleGestorStatusInDb(gestorId, negocioId, newStatus);
     
     revalidatePath('/(admin)/gestores');
@@ -206,7 +227,7 @@ export async function toggleGestorStatusAction(
       success: true 
     };
 
-  } catch (error) {
+  } catch {
     return { 
       message: "Error al cambiar el estado.", 
       success: false 
@@ -217,14 +238,12 @@ export async function toggleGestorStatusAction(
 // ACCIÓN DE ELIMINAR GESTOR Y NEGOCIO
 export async function deleteGestorYNegocioAction(gestorId: number, negocioId: number) {
   try {
-    // Usamos la función importada de @/lib/data/businesses
     await deleteGestorYNegocioInDb(gestorId, negocioId);
-  } catch (error) {
+  } catch {
     // Si falla, redirige de vuelta con un mensaje
     return redirect(`/gestores/editar/${gestorId}?error=NoSePudoEliminar`);
   }
   
-  // Si tiene éxito, redirige a la lista
   revalidatePath('/(admin)/gestores');
   redirect('/gestores');
 }

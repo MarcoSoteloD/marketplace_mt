@@ -1,19 +1,18 @@
 "use client";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Prisma } from '@prisma/client';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CloudinaryImage from "@/components/ui/cloudinary-image";
 import { Phone, Calendar, ShoppingBag, Receipt } from "lucide-react";
 
 // Helper para formatear el precio
-function formatCurrency(amount: Prisma.Decimal | number | null | undefined) {
+function formatCurrency(amount: number | null | undefined) {
     if (!amount) return "$0.00";
     return new Intl.NumberFormat('es-MX', {
         style: 'currency',
         currency: 'MXN',
-    }).format(Number(amount));
+    }).format(amount);
 }
 
 function formatDate(date: Date | null | string) {
@@ -35,14 +34,14 @@ interface Producto {
 interface Detalle {
   id_producto: number;
   cantidad: number;
-  precio_unitario: any;
+  precio_unitario: number;
   comentarios: string | null;
   productos: Producto;
 }
 
 interface PedidoCompleto {
   id_pedido: number;
-  total: any;
+  total: number;
   estado: string;
   fecha_hora: Date | null;
   negocios: { nombre: string; url_logo: string | null; telefono: string | null } | null;
@@ -60,10 +59,10 @@ export function PedidoDetalleModal({ pedido, isOpen, onClose }: PedidoDetalleMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-        
+      {/* Contenedor principal: Sin padding por defecto para controlar las secciones (header, body, footer) */}
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-3xl bg-stone-50 border-0 shadow-2xl">
         
-        {/* --- ENCABEZADO --- */}
+        {/* --- ENCABEZADO (Blanco y Centrado) --- */}
         <div className="bg-white p-6 pb-8 flex flex-col items-center text-center shadow-sm z-10 relative">
             
             {/* Decoración superior */}
@@ -108,7 +107,7 @@ export function PedidoDetalleModal({ pedido, isOpen, onClose }: PedidoDetalleMod
             </div>
         </div>
 
-        {/* --- LISTA DE PRODUCTOS --- */}
+        {/* --- LISTA DE PRODUCTOS (Cuerpo con scroll) --- */}
         <div className="p-6 max-h-[50vh] overflow-y-auto scrollbar-thin scrollbar-thumb-stone-200">
              <div className="flex items-center gap-2 mb-4 text-stone-400">
                 <Receipt className="w-4 h-4" />
@@ -131,7 +130,7 @@ export function PedidoDetalleModal({ pedido, isOpen, onClose }: PedidoDetalleMod
                                     {item.productos.nombre}
                                 </p>
                                 <p className="text-sm font-medium text-stone-900 whitespace-nowrap">
-                                    {formatCurrency(Number(item.precio_unitario) * item.cantidad)}
+                                    {formatCurrency(item.precio_unitario * item.cantidad)}
                                 </p>
                             </div>
                             

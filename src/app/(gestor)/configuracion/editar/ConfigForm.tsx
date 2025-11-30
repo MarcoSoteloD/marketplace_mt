@@ -36,12 +36,15 @@ const MapSelector = dynamic(
 );
 
 // --- Helper: Parsear Horario Guardado ---
-const parseHorarioDefault = (horario: any) => {
+const parseHorarioDefault = (horario: unknown) => {
   const dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
   const initialState: Record<string, { apertura: string; cierre: string; cerrado: boolean }> = {};
 
+  // Casteamos a un tipo indexable seguro
+  const horarioObj = horario as Record<string, string | undefined> || {};
+
   dias.forEach((dia) => {
-    const valor = horario?.[dia];
+    const valor = horarioObj[dia];
     if (valor === "Cerrado") {
       initialState[dia] = { apertura: "", cierre: "", cerrado: true };
     } else if (typeof valor === "string" && valor.includes(" - ")) {
@@ -124,14 +127,15 @@ function HorarioDiaInput({
 // --- Helpers Redes y Galería ---
 type RedSocial = { id: number; plataforma: string; url: string; };
 
-const parseRedesSocialesDefault = (redes: any): RedSocial[] => {
+const parseRedesSocialesDefault = (redes: unknown): RedSocial[] => {
   if (!redes || typeof redes !== 'object' || Array.isArray(redes)) return [];
-  return Object.entries(redes).map(([plataforma, url], index) => ({
-    id: index, plataforma: plataforma, url: url as string,
+  const redesObj = redes as Record<string, string>;
+  return Object.entries(redesObj).map(([plataforma, url], index) => ({
+    id: index, plataforma: plataforma, url: url,
   }));
 };
 
-const parseGalleryDefault = (gallery: any): string[] => {
+const parseGalleryDefault = (gallery: unknown): string[] => {
   if (Array.isArray(gallery)) return gallery.filter(item => typeof item === 'string');
   return [];
 };
@@ -149,11 +153,12 @@ export function ConfigForm({
   const initialState: ConfigNegocioState = undefined;
   const [state, dispatch] = useFormState(updateNegocioConfig, initialState);
   const { toast } = useToast();
-  const router = useRouter(); // Para redirigir
+  const router = useRouter(); 
 
-  const [defaultHorarios] = useState(() => parseHorarioDefault(JSON.parse(negocio.horario || "null")));
-  const [redes, setRedes] = useState(() => parseRedesSocialesDefault(JSON.parse(negocio.url_redes_sociales || "null")));
-  const [gallery, setGallery] = useState(() => parseGalleryDefault(JSON.parse(negocio.galeria_fotos || "null")));
+  // Casteamos el resultado de JSON.parse para que TypeScript sepa qué esperar
+  const [defaultHorarios] = useState(() => parseHorarioDefault(JSON.parse(negocio.horario || "null") as unknown));
+  const [redes, setRedes] = useState(() => parseRedesSocialesDefault(JSON.parse(negocio.url_redes_sociales || "null") as unknown));
+  const [gallery, setGallery] = useState(() => parseGalleryDefault(JSON.parse(negocio.galeria_fotos || "null") as unknown));
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>(categoriasActualesIds);
 
   const getRedesJsonString = () => {
@@ -166,7 +171,7 @@ export function ConfigForm({
 
   const addRedSocial = () => setRedes([...redes, { id: Date.now(), plataforma: '', url: '' }]);
   const removeRedSocial = (id: number) => setRedes(redes.filter(red => red.id !== id));
-  const updateRedSocial = (id: number, field: 'plataforma' | 'url', value: string) => {
+  const updateRedSocial = (id: number, field: 'plataforma' | 'url', value: string): void => {
     setRedes(redes.map(red => red.id === id ? { ...red, [field]: value } : red));
   };
 
@@ -187,19 +192,18 @@ export function ConfigForm({
         description: state.message,
       });
 
-      // Si todo salió bien, redirigimos a la vista principal de configuración
       if (state.success) {
         const timer = setTimeout(() => {
             router.push('/configuracion');
-            router.refresh(); // Actualizamos los datos de la página destino
-        }, 500); // Pequeño delay para ver el toast
+            router.refresh(); 
+        }, 500); 
         return () => clearTimeout(timer);
       }
     }
   }, [state, toast, router]);
 
   return (
-    <form action={dispatch} className="space-y-8 pb-24"> {/* Padding bottom extra para móvil */}
+    <form action={dispatch} className="space-y-8 pb-24"> 
       
       {/* Header con Botón de Guardar (Visible en Desktop) */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -391,7 +395,7 @@ export function ConfigForm({
                                 dia={dia} 
                                 label={dia} 
                                 defaultState={defaultHorarios[dia]} 
-                                error={(state?.errors as any)?.[`horario_${dia}_cierre`]} 
+                                error={(state?.errors as Record<string, string[] | undefined>)?.[`horario_${dia}_cierre`]} 
                             />
                         ))}
                     </div>

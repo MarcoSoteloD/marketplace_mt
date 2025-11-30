@@ -1,7 +1,7 @@
 // app/(gestor)/vacantes/editar/[id]/page.tsx
 
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getVacanteById } from '@/lib/data/vacancies';
 import { notFound, redirect } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';

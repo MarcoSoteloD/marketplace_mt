@@ -2,10 +2,16 @@
 
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { estado_pedido, Prisma } from '@prisma/client';
 import { updatePedidoEstado, getKanbanPedidos } from '@/lib/data/orders';
+import { resend, EMAIL_REMITENTE } from '@/lib/email';
+import OrderStatusEmail from '@/components/emails/OrderStatusEmail';
+import { render } from '@react-email/render';
+import React from 'react';
+import { prisma } from '@/lib/prisma';
 
+// Definimos el tipo de Pedido que el cliente espera
 export type PedidoConCliente = Omit<Prisma.pedidosGetPayload<{
   include: {
     usuarios: {
@@ -47,7 +53,44 @@ export async function updatePedidoEstadoAction(
   }
 
   try {
+    // Actualizar el estado en la BD
     await updatePedidoEstado(pedidoId, session.user.negocioId, nuevoEstado);
+    
+    // ENVIAR CORREO DE ACTUALIZACIÓN AL CLIENTE (Fire & Forget)
+    // Buscamos los datos necesarios para el correo (Email del cliente, Nombre del Negocio)
+    (async () => {
+        try {
+            const pedidoInfo = await prisma.pedidos.findUnique({
+                where: { id_pedido: pedidoId },
+                include: {
+                    usuarios: { select: { email: true, nombre: true } },
+                    negocios: { select: { nombre: true } }
+                }
+            });
+
+            if (pedidoInfo && pedidoInfo.usuarios.email) {
+                console.log(`Enviando notificación de estado '${nuevoEstado}' a ${pedidoInfo.usuarios.email}`);
+                
+                const emailHtml = await render(
+                    React.createElement(OrderStatusEmail, {
+                        nombreCliente: pedidoInfo.usuarios.nombre,
+                        nombreNegocio: pedidoInfo.negocios.nombre,
+                        idPedido: pedidoId,
+                        nuevoEstado: nuevoEstado
+                    })
+                );
+
+                await resend.emails.send({
+                    from: EMAIL_REMITENTE,
+                    to: pedidoInfo.usuarios.email,
+                    subject: `Actualización de tu pedido #${pedidoId} 🔔`,
+                    html: emailHtml,
+                });
+            }
+        } catch (emailError) {
+            console.error("Error enviando correo de estado:", emailError);
+        }
+    })();
     
     // Revalidamos la ruta (para que la próxima carga SSR esté actualizada)
     revalidatePath('/(gestor)/pedidos'); 
@@ -72,7 +115,7 @@ export async function getPedidosAction(): Promise<PedidoConCliente[]> {
     // Obtenemos datos crudos
     const pedidosRaw = await getKanbanPedidos(session.user.negocioId);
     
-    // TRANSFORMACIÓN DE DATOS
+    // TRANSFORMACIÓN DE DATOS (Decimal -> Number)
     const pedidosLimpios = pedidosRaw.map(pedido => ({
         ...pedido,
         total: Number(pedido.total),

@@ -50,11 +50,11 @@ export default function HistoriaPage() {
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-stone-800">Tonillan</h2>
             <p className="text-stone-600 text-lg leading-relaxed">
-              El nombre de <strong>Tonila</strong> proviene del vocablo náhuatl <em>"Tonillan"</em>.
-              Se compone de <em>"Tonilli"</em> (lugar asoleado o calentado) y <em>"Tlan"</em> (lugar).
+              El nombre de <strong>Tonila</strong> proviene del vocablo náhuatl <em>&quot;Tonillan&quot;</em>.
+              Se compone de <em>&quot;Tonilli&quot;</em> (lugar asoleado o calentado) y <em>&quot;Tlan&quot;</em> (lugar).
             </p>
             <p className="text-stone-600 text-lg leading-relaxed">
-              Por ello, se traduce poéticamente como <strong>"Lugar donde comienza a salir el sol"</strong>.
+              Por ello, se traduce poéticamente como <strong>&quot;Lugar donde comienza a salir el sol&quot;</strong>.
               Esta denominación hace referencia a su ubicación geográfica privilegiada al oriente del
               Volcán de Fuego, recibiendo los primeros rayos del amanecer sobre el valle.
             </p>

@@ -33,20 +33,26 @@ const socialIconMap: Record<string, IconType | LucideIcon> = {
 
 const getSocialIcon = (plataforma: string): IconType | LucideIcon => {
     const key = plataforma.toLowerCase();
-    return socialIconMap[key] || socialIconMap.default;
+    return socialIconMap[key] || socialIconMap['default'];
 };
 
-function DisplayHorario({ horario }: { horario: any }) {
+function DisplayHorario({ horario }: { horario: unknown }) {
     const diasOrdenados = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+    
+    // Validación de tipo básica
     if (!horario || typeof horario !== 'object' || Array.isArray(horario)) {
         return <p className="text-sm text-muted-foreground">Horario no disponible.</p>;
     }
+
+    // Casting seguro a un objeto diccionario
+    const horarioObj = horario as Record<string, string | undefined>;
+
     return (
         <ul className="space-y-1">
             {diasOrdenados.map(dia => (
                 <li key={dia} className="flex justify-between text-sm">
                     <span className="capitalize font-medium">{dia}:</span>
-                    <span className="text-muted-foreground">{horario[dia] || "Cerrado"}</span>
+                    <span className="text-muted-foreground">{horarioObj[dia] || "Cerrado"}</span>
                 </li>
             ))}
         </ul>
@@ -57,12 +63,12 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
 
     const slug = params.slug_negocio;
     
-    // Obtenemos los datos "crudos" de la DB (vienen con Decimal)
+    // Obtenemos los datos "crudos" de la DB
     const negocioRaw = await getNegocioPublicoBySlug(slug); 
     
     if (!negocioRaw) notFound();
 
-    // TRANSFORMACIÓN DE DATOS
+    // TRANSFORMACIÓN DE DATOS (Decimal -> Number)
     const negocio = {
         ...negocioRaw,
         latitud: negocioRaw.latitud ? Number(negocioRaw.latitud) : null,
@@ -89,8 +95,10 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
     const logoUrl = negocio.url_logo;
 
     const isOpen = checkOpenStatus(negocio.horario);
-    const redes = negocio.url_redes_sociales && typeof negocio.url_redes_sociales === "object"
-        ? negocio.url_redes_sociales
+    
+    // Validación segura para redes sociales
+    const redes = (negocio.url_redes_sociales && typeof negocio.url_redes_sociales === "object" && !Array.isArray(negocio.url_redes_sociales))
+        ? negocio.url_redes_sociales as Record<string, string>
         : null;
 
     return (
@@ -115,14 +123,17 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Separator />
+                        
                         <div className="flex items-start gap-3">
-                            <MapPin className="h-5 w-5 text-stone-700 shrink-0 mt-0.5" />
+                            <MapPin className="h-5 w-5 text-stone-700 shrink-0 mt-0.5" /> 
                             <p className="font-medium text-stone-700">{direccion || "Sin dirección"}</p>
                         </div>
+                        
                         <div className="flex items-start gap-3">
                             <Phone className="h-5 w-5 text-stone-700 shrink-0 mt-0.5" />
                             <p className="font-medium text-stone-700">{negocio.telefono || "Sin teléfono"}</p>
                         </div>
+
                         {redes && Object.keys(redes).length > 0 && (
                             <>
                                 <Separator />
@@ -158,15 +169,15 @@ export default async function PaginaNegocio({ params }: { params: { slug_negocio
                 </Card>
             </aside>
 
-            {/* Columna Derecha (GALERÍA + PRODUCTOS) */}
+            {/* Columna Derecha (PRODUCTOS) */}
             <main className="md:col-span-2 lg:col-span-3 space-y-10">
                 <section className="space-y-6">
-                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Conócenos</h2>
+                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Conoce de nosotros</h2>
                     <NegocioGallery galeria={galeria} nombreNegocio={negocio.nombre} />
                 </section>
 
                 <section className="space-y-10">
-                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Te ofrecemos</h2>
+                    <h2 className="text-3xl font-bold text-stone-700 tracking-tight">Nuestros Productos</h2>
 
                     {negocio.categorias_producto.length > 0 ? (
                         negocio.categorias_producto.map(categoria => (

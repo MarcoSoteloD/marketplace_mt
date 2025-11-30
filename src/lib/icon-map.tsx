@@ -5,7 +5,6 @@ import {
   ForkKnife,    // Para Restaurante
   Scissors,       // Para Peluquería
   Tag,            // Icono por defecto
-  Store,     // Otro ícono genérico
   ShoppingBasket,   // Para Tiendas
   Shirt,          // Para Ropa
   Hammer          // Para Ferretería

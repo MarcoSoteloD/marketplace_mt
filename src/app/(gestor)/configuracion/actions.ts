@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { Prisma } from '@prisma/client';
 import { updateNegocio } from '@/lib/data/businesses';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -214,7 +214,7 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
   const parseJsonField = (jsonString: string | undefined): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput => {
     if (!jsonString || jsonString.trim() === "") return Prisma.JsonNull;
     try { return JSON.parse(jsonString); } 
-    catch (e) { throw new Error(`El JSON proporcionado no es válido.`); }
+    catch { throw new Error(`El JSON proporcionado no es válido.`); }
   };
 
   const horarioData = {
@@ -251,7 +251,7 @@ export async function updateNegocioConfig(prevState: ConfigNegocioState, formDat
       })),
     };
 
-  } catch (error) {
+  } catch {
     return { errors: { _form: ['Error al procesar las categorías.'] }, message: "Error de JSON.", success: false };
   }
 

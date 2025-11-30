@@ -6,15 +6,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Users, Store, DollarSign, ShoppingBag, ArrowRight, TrendingUp, ShoppingCart } from "lucide-react";
+import { Prisma } from '@prisma/client';
 
 // Helper de moneda
-function formatCurrency(amount: any) {
+function formatCurrency(amount: number | Prisma.Decimal | null | undefined) {
+    if (!amount) return "$0.00";
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(amount));
 }
 
-function formatDate(date: any) {
-    if(!date) return "";
-    return new Intl.DateTimeFormat('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(date));
+function formatDate(date: Date | string | null | undefined) {
+    if (!date) return "";
+    const dateObj = new Date(date);
+    return new Intl.DateTimeFormat('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(dateObj);
 }
 
 export default async function AdminDashboardPage() {

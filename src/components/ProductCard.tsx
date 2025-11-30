@@ -12,8 +12,21 @@ function formatCurrency(amount: number) {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
 }
 
+// Definimos la interfaz exacta que esperamos
+interface ProductFrontend {
+  id_producto: number;
+  nombre: string;
+  descripcion: string | null;
+  precio: number;
+  precio_promo: number | null;
+  url_foto: string | null;
+  promo_activa: boolean | null;
+  tipo_promo: string | null;
+  activo: boolean | null;
+}
+
 interface ProductCardProps {
-  producto: any;
+  producto: ProductFrontend;
   negocioId: number;
 }
 

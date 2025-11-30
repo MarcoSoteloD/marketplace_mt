@@ -1,19 +1,11 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getProductosByNegocioId, getCategoriasByNegocioId } from '@/lib/data/products';
 import { redirect } from "next/navigation";
-import { Prisma } from '@prisma/client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ProductoForm } from './ProductoForm';
 import { ListaProductosAgrupados } from './ListaProductosAgrupados';
 import { createProductoAction } from './actions';
-
-// Definimos manualmente el tipo que esperamos en el cliente (precios como number)
-// Esto evita conflictos de tipado con lo que Prisma devuelve por defecto
-type ProductoFrontend = Omit<Prisma.productosGetPayload<{ include: { categorias_producto: true } }>, 'precio' | 'precio_promo'> & {
-    precio: number;
-    precio_promo: number | null;
-};
 
 export default async function PaginaProductos() {
 
@@ -22,20 +14,11 @@ export default async function PaginaProductos() {
 
     const negocioId = session.user.negocioId;
 
-    // Obtenemos datos
-    const [productosRaw, categorias] = await Promise.all([
+    // Obtenemos datos ya limpios desde el servidor
+    const [productos, categorias] = await Promise.all([
         getProductosByNegocioId(negocioId),
         getCategoriasByNegocioId(negocioId) 
     ]);
-
-    // SANITIZACIÓN EXPLÍCITA
-    // Forzamos la conversión a Number aquí mismo, en la entrada de la página.
-    // Esto garantiza que el componente cliente reciba datos limpios sí o sí.
-    const productos: ProductoFrontend[] = productosRaw.map((prod) => ({
-        ...prod,
-        precio: Number(prod.precio),
-        precio_promo: prod.precio_promo ? Number(prod.precio_promo) : null,
-    }));
 
     // Agrupación por Categoría
     const productosAgrupados = productos.reduce((acc, producto) => {
@@ -47,7 +30,7 @@ export default async function PaginaProductos() {
 
         acc[categoriaNombre].push(producto);
         return acc;
-    }, {} as Record<string, ProductoFrontend[]>);
+    }, {} as Record<string, typeof productos>);
 
     return (
         <div className="flex flex-col gap-6 pb-24">
@@ -85,7 +68,7 @@ export default async function PaginaProductos() {
                         </CardHeader>
                         <CardContent className="pt-6">
                             <ListaProductosAgrupados
-                                groupedProducts={productosAgrupados as any}
+                                groupedProducts={productosAgrupados}
                                 totalProducts={productos.length}
                             />
                         </CardContent>

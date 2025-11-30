@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getUsuarioById } from '@/lib/data/users';
 import { getPedidosByClienteId } from '@/lib/data/orders';
 import { redirect } from "next/navigation";
@@ -18,22 +18,36 @@ export default async function PerfilPage() {
     redirect("/login");
   }
 
-  const usuarioFresco = await getUsuarioById(Number(session.user.id));
-
-  // Obtenemos los datos crudos (con Decimales)
+  // Obtenemos datos crudos
+  const usuarioRaw = await getUsuarioById(Number(session.user.id));
   const pedidosRaw = await getPedidosByClienteId(Number(session.user.id));
   
-  // Transformamos los datos para eliminar los Decimales
+  // TRANSFORMACIÓN USUARIO
+  // Creamos un objeto limpio solo con strings. Si usuarioRaw es null, usamos datos de sesión.
+  const userForClient = usuarioRaw ? {
+      nombre: usuarioRaw.nombre,
+      email: usuarioRaw.email,
+      telefono: usuarioRaw.telefono,
+      name: usuarioRaw.nombre
+  } : {
+      nombre: session.user.name,
+      email: session.user.email,
+      telefono: null,
+      name: session.user.name
+  };
+
+  // TRANSFORMACIÓN PEDIDOS
   const pedidos = pedidosRaw.map(pedido => ({
     ...pedido,
-    total: Number(pedido.total), // Convertimos el total del pedido
+    total: Number(pedido.total), 
     detalle_pedido: pedido.detalle_pedido.map(detalle => ({
       ...detalle,
-      precio_unitario: Number(detalle.precio_unitario) // Convertimos el precio unitario de cada item
+      precio_unitario: Number(detalle.precio_unitario) 
     }))
   }));
   
-  const displayName = usuarioFresco?.nombre || session.user.name || "Usuario";
+  // Datos para el encabezado
+  const displayName = userForClient.nombre || session.user.name || "Usuario";
   
   const userInitials = displayName
     .split(' ')
@@ -58,7 +72,7 @@ export default async function PerfilPage() {
               Hola, {displayName.split(' ')[0]}
             </h1>
             <p className="text-muted-foreground">
-              {usuarioFresco?.email || session.user.email}
+              {userForClient.email}
             </p>
           </div>
         </div>
@@ -90,7 +104,7 @@ export default async function PerfilPage() {
         <TabsContent value="cuenta" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-2">
-                    <EditProfileForm user={usuarioFresco} />
+                    <EditProfileForm user={userForClient} />
                 </div>
                 
                 <div className="md:col-span-1">

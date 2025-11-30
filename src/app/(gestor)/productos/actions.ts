@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { Prisma, tipo_promocion } from '@prisma/client'; 
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { createProducto, updateProducto, deleteProducto, reactivateProducto } from '@/lib/data/products'; 
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 

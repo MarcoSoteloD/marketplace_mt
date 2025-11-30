@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AdminSidebar } from "./_components/Sidebar";
 import { AdminMobileSidebar } from "./_components/MobileSidebar";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export default async function AdminLayout({
   children,

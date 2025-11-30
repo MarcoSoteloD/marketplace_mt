@@ -1,7 +1,7 @@
 // app/(gestor)/configuracion/page.tsx
 
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getNegocioById } from "@/lib/data/businesses";
 import { notFound, redirect } from "next/navigation";
 import ConfigDisplay from "./ConfigDisplay"; 

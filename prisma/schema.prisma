@@ -81,17 +81,17 @@ model negocios {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model pedidos {
-  id_pedido      Int               @id @default(autoincrement())
+  id_pedido      Int              @id @default(autoincrement())
   id_usuario     Int
   id_negocio     Int
-  fecha_hora     DateTime?         @default(now()) @db.Timestamptz(6)
+  fecha_hora     DateTime?        @default(now()) @db.Timestamptz(6)
   comentarios    String?
   metodo_pago    metodo_pago_tipo?
-  estado         estado_pedido     @default(Recibido)
-  total          Decimal           @db.Decimal(10, 2)
+  estado         estado_pedido    @default(Recibido)
+  total          Decimal          @db.Decimal(10, 2)
   detalle_pedido detalle_pedido[]
-  negocios       negocios          @relation(fields: [id_negocio], references: [id_negocio], onDelete: Cascade, onUpdate: NoAction, map: "fk_negocio_pedidos")
-  usuarios       usuarios          @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario")
+  negocios       negocios         @relation(fields: [id_negocio], references: [id_negocio], onDelete: Cascade, onUpdate: NoAction, map: "fk_negocio_pedidos")
+  usuarios       usuarios         @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuario")
 
   @@index([id_negocio], map: "idx_pedidos_id_negocio")
   @@index([id_usuario], map: "idx_pedidos_id_usuario")
@@ -118,18 +118,21 @@ model productos {
 }
 
 model usuarios {
-  id_usuario     Int         @id @default(autoincrement())
-  email          String      @unique @db.VarChar(100)
-  password       String      @db.VarChar(255)
-  rol            rol_usuario
-  nombre         String      @db.VarChar(100)
-  telefono       String?     @db.VarChar(20)
-  id_negocio     Int?
-  fecha_registro DateTime?   @default(now()) @db.Timestamptz(6)
-  activo         Boolean?    @default(true)
+  id_usuario          Int       @id @default(autoincrement())
+  email               String    @unique @db.VarChar(100)
+  password            String    @db.VarChar(255)
+  rol                 rol_usuario
+  nombre              String    @db.VarChar(100)
+  telefono            String?   @db.VarChar(20)
+  id_negocio          Int?
+  fecha_registro      DateTime? @default(now()) @db.Timestamptz(6)
+  activo              Boolean?  @default(true)
   carrito_persistente Json?
-  pedidos        pedidos[]
-  negocios       negocios?   @relation(fields: [id_negocio], references: [id_negocio], onUpdate: NoAction, map: "fk_negocio_dueño")
+  token_recuperacion  String?   @unique
+  token_expiracion    DateTime?
+
+  pedidos             pedidos[]
+  negocios            negocios? @relation(fields: [id_negocio], references: [id_negocio], onUpdate: NoAction, map: "fk_negocio_dueño")
 
   @@index([id_negocio], map: "idx_usuarios_id_negocio")
   @@index([rol], map: "idx_usuarios_rol")

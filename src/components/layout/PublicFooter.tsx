@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Phone, Mail, ExternalLink, LayoutDashboard } from "lucide-react";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function PublicFooter() {
   const currentYear = new Date().getFullYear();
@@ -34,7 +34,7 @@ export async function PublicFooter() {
            
            <p className="text-sm text-center md:text-left leading-relaxed max-w-xs text-stone-500">
              Impulsando el comercio local y fortaleciendo la economía de nuestra comunidad. <br/>
-             <span className="italic text-stone-400">"Un Gobierno para Todos".</span>
+             <span className="italic text-stone-400">&quot;Un Gobierno para Todos&quot;.</span>
            </p>
         </div>
 

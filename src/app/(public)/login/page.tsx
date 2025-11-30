@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
-import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-export default function LoginPage() {
+// CREAMOS EL COMPONENTE INTERNO CON LA LÓGICA DE PARÁMETROS
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -23,6 +24,8 @@ export default function LoginPage() {
 
   const authError = searchParams.get("error");
   const registroExitoso = searchParams.get("registro");
+  const resetExitoso = searchParams.get("reset");
+  
   const callbackUrl = searchParams.get("callbackUrl") || "/"; 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,20 +56,29 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start pt-24 md:pt-32 px-4 pb-12 bg-stone-50">
       <Card className="w-full max-w-sm rounded-3xl shadow-xl bg-white border-stone-100">
         <form onSubmit={handleSubmit}>
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-2xl text-stone-700">¡Hola de nuevo!</CardTitle>
             
+            {/* Mensaje de Registro Exitoso */}
             {registroExitoso === 'exitoso' && (
                 <div className="flex items-center gap-2 justify-center text-sm text-green-600 bg-green-50 p-2 rounded-lg mt-2">
                     <CheckCircle2 className="h-4 w-4" />
                     <span>Cuenta creada con éxito. Inicia sesión.</span>
                 </div>
             )}
+
+            {/* Mensaje de Contraseña Restablecida */}
+            {resetExitoso === 'exitoso' && (
+                <div className="flex items-center gap-2 justify-center text-sm text-green-600 bg-green-50 p-2 rounded-lg mt-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Contraseña actualizada. Inicia sesión.</span>
+                </div>
+            )}
             
-            {!registroExitoso && (
+            {/* Solo mostramos la descripción si no hay mensajes de éxito */}
+            {!registroExitoso && !resetExitoso && (
                 <CardDescription>Ingresa a tu cuenta para continuar</CardDescription>
             )}
           </CardHeader>
@@ -88,6 +100,12 @@ export default function LoginPage() {
             <div className="grid gap-2">
               <div className="flex justify-between items-center">
                   <Label htmlFor="password" className="text-stone-700">Contraseña</Label>
+                  <Link 
+                    href="/recuperar-password" 
+                    className="text-xs text-orange-600 hover:underline font-medium"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
               </div>
               <div className="relative">
                 <Input
@@ -131,6 +149,20 @@ export default function LoginPage() {
           </CardFooter>
         </form>
       </Card>
+  );
+}
+
+// COMPONENTE PRINCIPAL: Solo un wrapper con Suspense
+export default function LoginPage() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-start pt-24 md:pt-32 px-4 pb-12 bg-stone-50">
+      <Suspense fallback={
+        <div className="w-full max-w-sm flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        </div>
+      }>
+        <LoginForm />
+      </Suspense>
     </main>
   );
 }

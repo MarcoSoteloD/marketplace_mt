@@ -8,7 +8,7 @@ import { rol_usuario } from "@prisma/client";
 import { Loader } from "@/components/ui/loader";
 
 export default function RouterPage() {
-  const { data: session, status } = useSession() as { data: any; status: string };
+  const { data: session, status } = useSession(); 
   const router = useRouter();
 
   // El hook 'useEffect' se ejecuta en el cliente

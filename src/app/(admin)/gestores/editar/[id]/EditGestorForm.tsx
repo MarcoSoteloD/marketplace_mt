@@ -4,7 +4,6 @@
 import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
 import { useEffect, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { updateGestorInfoAction, UpdateGestorState, toggleGestorStatusAction, deleteGestorYNegocioAction } from '../../actions';
 import type { usuarios, negocios } from '@prisma/client';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,6 @@ function DeleteButton() {
 
 export function EditGestorForm({ gestorConNegocio }: { gestorConNegocio: GestorConNegocio }) {
   const { toast } = useToast();
-  const router = useRouter();
   
   // Estado de transición para los botones (switch y eliminar) que no usan useFormState
   const [isPending, startTransition] = useTransition();
@@ -157,17 +155,7 @@ export function EditGestorForm({ gestorConNegocio }: { gestorConNegocio: GestorC
               />
             </div>
           </div>
-
-          {/* Futuro: Reseteo de Contraseña */}
-          <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
-            <div className="flex flex-col">
-              <Label className="font-medium">Reestablecer Contraseña</Label>
-              <span className="text-sm text-muted-foreground">
-                Envía un email al gestor para reestablecer su contraseña (función futura).
-              </span>
-            </div>
-            <Button variant="outline" disabled>Enviar Email</Button>
-          </div>
+          
         </CardContent>
       </Card>
 

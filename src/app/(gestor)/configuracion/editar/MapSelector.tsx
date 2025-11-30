@@ -1,4 +1,3 @@
-// app/(gestor)/configuracion/editar/MapSelector.tsx
 "use client";
 
 import 'leaflet/dist/leaflet.css';
@@ -8,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { MapContainer, TileLayer, Marker, useMapEvents, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
-// @ts-ignore
-delete L.Icon.Default.prototype._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)["_getIconUrl"];
+
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
@@ -32,10 +31,9 @@ interface MapSelectorProps {
 }
 
 export function MapSelector({ defaultLat, defaultLng }: MapSelectorProps) {
-  // Coordenadas de Colima como fallback si no hay nada guardado
   const defaultPosition: [number, number] = [
-    Number(defaultLat) || 19.2433, 
-    Number(defaultLng) || -103.725
+    Number(defaultLat) || 19.4096792, 
+    Number(defaultLng) || -103.5490783
   ];
   
   const [position, setPosition] = useState<[number, number]>(defaultPosition);

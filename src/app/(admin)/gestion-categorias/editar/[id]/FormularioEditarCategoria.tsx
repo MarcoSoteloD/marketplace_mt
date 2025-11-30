@@ -13,8 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect } from 'react';
 import type { categorias_globales } from '@prisma/client';
 
-// Botón de Submit (reutilizable)
-function SubmitButton({ variant = "default", text }: { variant?: any, text: string }) {
+type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+
+function SubmitButton({ variant = "default", text }: { variant?: ButtonVariant, text: string }) {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" aria-disabled={pending} variant={variant} className="w-full">

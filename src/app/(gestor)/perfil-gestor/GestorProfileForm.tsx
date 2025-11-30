@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormState, useFormStatus } from 'react-dom';
-import { updatePerfilAction, PerfilState } from './actions';
+import { updatePerfilAction, PerfilState } from '../../(public)/perfil/actions';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Save } from 'lucide-react';
+
+interface GestorUser {
+  nombre: string | null;
+  email: string;
+  telefono: string | null;
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -20,7 +26,8 @@ function SubmitButton() {
   );
 }
 
-export default function GestorProfileForm({ user }: { user: any }) {
+// Usamos la interfaz en las props
+export default function GestorProfileForm({ user }: { user: GestorUser }) {
   const { toast } = useToast();
   
   const initialState: PerfilState = undefined;

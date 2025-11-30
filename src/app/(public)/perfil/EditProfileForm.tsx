@@ -9,6 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
+// Definimos la interfaz para el usuario
+interface UserProfile {
+  nombre?: string | null;
+  name?: string | null;
+  email?: string | null;
+  telefono?: string | null;
+}
+
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -18,8 +26,8 @@ function SubmitButton() {
   );
 }
 
-// Recibimos el usuario como prop
-export default function EditProfileForm({ user }: { user: any }) { 
+// Usamos la interfaz en las props
+export default function EditProfileForm({ user }: { user: UserProfile }) { 
   const { toast } = useToast();
   
   const initialState: PerfilState = undefined;
@@ -50,10 +58,10 @@ export default function EditProfileForm({ user }: { user: any }) {
         <CardContent className="space-y-5">
           
           <div className="grid gap-2">
-            <Label htmlFor="nombre" className="text-stone-600">Nombre</Label>
+            <Label htmlFor="nombre" className="text-stone-600">Nombre Completo</Label>
             <Input 
               id="nombre" 
-              name="nombre"
+              name="nombre" 
               defaultValue={user?.nombre || user?.name || ''} 
               required 
               className="rounded-xl bg-stone-50 border-stone-200 focus-visible:ring-orange-500"
